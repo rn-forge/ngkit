@@ -1,0 +1,21 @@
+<rnf-crud [manager]="manager" [addUpdateFormTemplate]="addUpdateTpl" />
+
+<ng-template #addUpdateTpl let-ctx>
+  <rnf-input-field name="name" label="Name" [formGroup]="ctx.formGroup" />
+  <rnf-dropdown-field
+    name="category"
+    label="Category"
+    [optionList]="manager.categories"
+    [formGroup]="ctx.formGroup" />
+  <rnf-input-field
+    name="price"
+    label="Price"
+    type="number"
+    [htmlAttributes]="{ min: '0', step: '0.01' }"
+    [formGroup]="ctx.formGroup" />
+  <rnf-dropdown-field
+    name="active"
+    label="Active"
+    [optionList]="manager.activeOptions"
+    [formGroup]="ctx.formGroup" />
+</ng-template>

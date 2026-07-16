@@ -4,7 +4,7 @@
   "projectType": "application",
   "prefix": "app",
   "sourceRoot": "apps/ng-demo/src",
-  "tags": [],
+  "tags": ["scope:ngkit", "type:app"],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
@@ -21,15 +21,26 @@
             "input": "apps/ng-demo/public"
           }
         ],
-        "styles": ["apps/ng-demo/src/styles.scss"]
+        "styles": ["apps/ng-demo/src/styles.scss"],
+        "polyfills": [
+          "@angular/localize/init",
+          "@rn-forge/ng-bootstrap/assets"
+        ],
+        "scripts": [],
+        "allowedCommonJsDependencies": [
+          "build-url-ts",
+          "jquery",
+          "jquery-treegrid",
+          "quill-delta"
+        ]
       },
       "configurations": {
         "production": {
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumWarning": "2mb",
+              "maximumError": "4mb"
             },
             {
               "type": "anyComponentStyle",
