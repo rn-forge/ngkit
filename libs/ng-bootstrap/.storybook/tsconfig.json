@@ -5,12 +5,19 @@
   },
   "exclude": ["../**/*.spec.ts"],
   "include": [
-    "../src/**/*.stories.ts",
-    "../src/**/*.stories.js",
-    "../src/**/*.stories.jsx",
-    "../src/**/*.stories.tsx",
-    "../src/**/*.stories.mdx",
+    "../**/*.stories.ts",
+    "../**/*.stories.js",
+    "../**/*.stories.jsx",
+    "../**/*.stories.tsx",
+    "../**/*.stories.mdx",
+    "../assets/src/**/*.ts",
+    "../auth/src/**/*.ts",
+    "../crud/src/**/*.ts",
+    "../form/src/**/*.ts",
+    "../shell/src/**/*.ts",
+    "../src/**/*.ts",
     "*.js",
-    "*.ts"
+    "main.ts",
+    "preview.ts"
   ]
 }

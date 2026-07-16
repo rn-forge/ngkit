@@ -83,6 +83,35 @@
         }
       },
       "outputs": ["{workspaceRoot}/dist/compodoc/ng-bootstrap"]
+    },
+    "storybook": {
+      "executor": "@storybook/angular:start-storybook",
+      "options": {
+        "configDir": "libs/ng-bootstrap/.storybook",
+        "browserTarget": "ng-demo:build",
+        "styles": [
+          "node_modules/bootstrap/dist/css/bootstrap.min.css",
+          "./libs/ng-bootstrap/assets/src/vendor-styles.scss",
+          "./libs/ng-bootstrap/assets/src/ng-bootstrap-styles.scss"
+        ],
+        "port": 4400
+      }
+    },
+    "build-storybook": {
+      "executor": "@storybook/angular:build-storybook",
+      "options": {
+        "configDir": "libs/ng-bootstrap/.storybook",
+        "browserTarget": "ng-demo:build",
+        "styles": [
+          "node_modules/bootstrap/dist/css/bootstrap.min.css",
+          "./libs/ng-bootstrap/assets/src/vendor-styles.scss",
+          "./libs/ng-bootstrap/assets/src/ng-bootstrap-styles.scss"
+        ],
+        "outputDir": "dist/storybook/ng-bootstrap"
+      },
+      "configurations": {
+        "production": {}
+      }
     }
   }
 }
