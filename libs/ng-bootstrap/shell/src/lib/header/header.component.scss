@@ -1,0 +1,23 @@
+// :root,
+// [data-bs-theme] {
+//     --header-bg: var(--bs-light);
+// }
+
+// [data-bs-theme=dark] {
+//     --header-bg: var(--bs-dark);
+// }
+
+header {
+  font-weight: bold;
+
+  // margin-bottom: 1rem;
+  border-bottom: var(--bs-border-width) var(--bs-border-style)
+    var(--bs-border-color);
+
+  // nav.navbar {
+  // }
+  // a.navbar-brand {
+  //     margin-left: auto;
+  //     margin-right: auto;
+  // }
+}

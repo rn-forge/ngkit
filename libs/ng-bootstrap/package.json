@@ -1,9 +1,48 @@
 {
   "name": "@rn-forge/ng-bootstrap",
   "version": "0.0.1",
-  "peerDependencies": {
-    "@angular/common": "^22.0.0",
-    "@angular/core": "^22.0.0"
+  "sideEffects": true,
+  "devDependencies": {
+    "@angular/cdk": "^22.0.4",
+    "@angular/common": "~22.0.6",
+    "@angular/core": "~22.0.6",
+    "@angular/forms": "~22.0.6",
+    "@angular/localize": "^22.0.6",
+    "@angular/router": "~22.0.6",
+    "@ng-bootstrap/ng-bootstrap": "^21.0.0",
+    "@rn-forge/ng": "workspace:*",
+    "@types/bootstrap": "^5.2.11",
+    "@types/jquery": "^4.0.1",
+    "@types/lodash-es": "^4.17.12",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
+    "bootstrap-table": "^1.27.3",
+    "jquery": "^4.0.0",
+    "jquery-treegrid": "^0.3.0",
+    "lodash-es": "^4.18.1",
+    "ngx-quill": "^31.0.1",
+    "quill": "^2.0.3",
+    "rxjs": "~7.8.2",
+    "uuid": "^14.0.1"
   },
-  "sideEffects": false
+  "peerDependencies": {
+    "@angular/cdk": "^22.0.4",
+    "@angular/common": "~22.0.6",
+    "@angular/core": "~22.0.6",
+    "@angular/forms": "~22.0.6",
+    "@angular/localize": "^22.0.6",
+    "@angular/router": "~22.0.6",
+    "@ng-bootstrap/ng-bootstrap": "^21.0.0",
+    "@rn-forge/ng": "workspace:*",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
+    "bootstrap-table": "^1.27.3",
+    "jquery": "^4.0.0",
+    "jquery-treegrid": "^0.3.0",
+    "lodash-es": "^4.18.1",
+    "ngx-quill": "^31.0.1",
+    "quill": "^2.0.3",
+    "rxjs": "~7.8.2",
+    "uuid": "^14.0.1"
+  }
 }

@@ -1,0 +1,17 @@
+<rnf-form-field [field]="this" [template]="template" />
+<ng-template #template [formGroup]="formGroup()">
+  <select
+    class="form-control"
+    [id]="fieldId"
+    [name]="name()"
+    [formControlName]="fieldFormControlName"
+    [ngClass]="checkValidation()"
+    (change)="onItemSelect($event)"
+    [rnfHtmlAttributes]="htmlAttributes()">
+    @for (option of optionList(); track $index) {
+      <option [value]="getOptionValue(option)">
+        {{ getOptionLabel(option) }}
+      </option>
+    }
+  </select>
+</ng-template>

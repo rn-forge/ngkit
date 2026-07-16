@@ -1,0 +1,22 @@
+<h4 class="page-header">
+  <i class="bi bi-person-{{ subpath === 'profile' ? 'lock' : 'gear' }}"></i>User
+  {{ subpath | titlecase }}
+</h4>
+
+<rnf-alert />
+
+<div class="row mt-2">
+  @if (config.profile.enabled && subpath === 'profile') {
+    <rnf-user-profile [profile]="userProfile" />
+  }
+  @if (config.settings.enabled && subpath === 'settings') {
+    <rnf-user-settings />
+  }
+
+  <rnf-button
+    type="button"
+    class="primary"
+    label="Ok"
+    additionalClasses="my-4 float-end me-4"
+    (buttonClick)="routeService.goBack()" />
+</div>

@@ -1,0 +1,21 @@
+<header
+  [id]="config.id"
+  class="bg-{{ navbarColor() }} {{ config.headerClass }}">
+  @if (config.watermark) {
+    <rnf-watermark [options]="config.watermark!" />
+  }
+
+  <div
+    class="container-fluid position-relative d-flex align-items-center {{
+      config.containerClass
+    }}">
+    @if (config.brand) {
+      <rnf-brand [options]="config.brand!" [class]="brandPositionClass()" />
+    }
+    <rnf-navbar
+      [options]="config.navbar!"
+      [template]="template()"
+      [contextParams]="contextParams()"
+      [class]="menuPositionClass()" />
+  </div>
+</header>

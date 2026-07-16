@@ -230,13 +230,70 @@ importers:
         version: 7.8.2
 
   libs/ng-bootstrap:
-    dependencies:
+    devDependencies:
+      '@angular/cdk':
+        specifier: ^22.0.4
+        version: 22.0.4(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(@angular/platform-browser@22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)))(rxjs@7.8.2)
       '@angular/common':
-        specifier: ^22.0.0
+        specifier: ~22.0.6
         version: 22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2)
       '@angular/core':
-        specifier: ^22.0.0
+        specifier: ~22.0.6
         version: 22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)
+      '@angular/forms':
+        specifier: ~22.0.6
+        version: 22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(@angular/platform-browser@22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)))(rxjs@7.8.2)
+      '@angular/localize':
+        specifier: ^22.0.6
+        version: 22.0.6(@angular/compiler-cli@22.0.6(@angular/compiler@22.0.6)(typescript@6.0.3))(@angular/compiler@22.0.6)
+      '@angular/router':
+        specifier: ~22.0.6
+        version: 22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(@angular/platform-browser@22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)))(rxjs@7.8.2)
+      '@ng-bootstrap/ng-bootstrap':
+        specifier: ^21.0.0
+        version: 21.0.0(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(@angular/forms@22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(@angular/platform-browser@22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)))(rxjs@7.8.2))(@angular/localize@22.0.6(@angular/compiler-cli@22.0.6(@angular/compiler@22.0.6)(typescript@6.0.3))(@angular/compiler@22.0.6))(@popperjs/core@2.11.8)(rxjs@7.8.2)
+      '@rn-forge/ng':
+        specifier: workspace:*
+        version: link:../ng
+      '@types/bootstrap':
+        specifier: ^5.2.11
+        version: 5.2.11
+      '@types/jquery':
+        specifier: ^4.0.1
+        version: 4.0.1
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
+      bootstrap:
+        specifier: ^5.3.8
+        version: 5.3.8(@popperjs/core@2.11.8)
+      bootstrap-icons:
+        specifier: ^1.13.1
+        version: 1.13.1
+      bootstrap-table:
+        specifier: ^1.27.3
+        version: 1.27.3(jquery@4.0.0)
+      jquery:
+        specifier: ^4.0.0
+        version: 4.0.0
+      jquery-treegrid:
+        specifier: ^0.3.0
+        version: 0.3.0
+      lodash-es:
+        specifier: ^4.18.1
+        version: 4.18.1
+      ngx-quill:
+        specifier: ^31.0.1
+        version: 31.0.1(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(quill@2.0.3)(rxjs@7.8.2)
+      quill:
+        specifier: ^2.0.3
+        version: 2.0.3
+      rxjs:
+        specifier: ~7.8.2
+        version: 7.8.2
+      uuid:
+        specifier: ^14.0.1
+        version: 14.0.1
 
 packages:
 
@@ -3457,6 +3514,9 @@ packages:
   '@types/babel__traverse@7.28.0':
     resolution: {integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==}
 
+  '@types/bootstrap@5.2.11':
+    resolution: {integrity: sha512-69ykbLiNzQxi6Q/y/aYJLrlzI5QkLQjhIYW2U+cxujBxAmaBtmXKtxnFes59Ttfpt936as6xJU0dYnmVpcwIwg==}
+
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
@@ -3495,6 +3555,9 @@ packages:
 
   '@types/istanbul-reports@3.0.4':
     resolution: {integrity: sha512-pk2B1NWalF9toCRu6gjBzR69syFjP4Od8WRAX+0mmf9lAjCRicLOWc+ZrxZHx/0XRjotgkF9t6iaMJ+aXcOdZQ==}
+
+  '@types/jquery@4.0.1':
+    resolution: {integrity: sha512-9a59A/tycXgYuPABcp6/3spSShn0NT2UOM4EfHvMumjYi4lJWTsK5SZWjhx3yRm9IHGCeWXdV2YfNsrWrft/CA==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -12162,6 +12225,10 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.7
 
+  '@types/bootstrap@5.2.11':
+    dependencies:
+      '@popperjs/core': 2.11.8
+
   '@types/chai@5.2.3':
     dependencies:
       '@types/deep-eql': 4.0.2
@@ -12204,6 +12271,8 @@ snapshots:
   '@types/istanbul-reports@3.0.4':
     dependencies:
       '@types/istanbul-lib-report': 3.0.3
+
+  '@types/jquery@4.0.1': {}
 
   '@types/json-schema@7.0.15': {}
 

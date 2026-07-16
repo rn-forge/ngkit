@@ -1,1 +1,2 @@
-export * from './lib/assets-module';
+import './vendor-scripts';
+import './ng-bootstrap-scripts';

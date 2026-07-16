@@ -1,0 +1,94 @@
+<rnf-alert />
+
+<!-- List View -->
+@if (manager().enableList()) {
+  <div
+    aria-label="List View"
+    [ngClass]="manager().currentMode() === 'list' ? '' : 'd-none'">
+    <h4 class="text-center mt-2 mb-0 list-table-header">
+      {{ manager().pluralName }}
+    </h4>
+    <rnf-table #listTable [options]="manager().tableOptions()" />
+  </div>
+}
+
+<!-- Add/Update View -->
+@if (manager().enableAddUpdate() && addUpdateFormTemplate()) {
+  <div
+    aria-label="Add/Update View"
+    [ngClass]="manager().currentMode() === 'addupdate' ? '' : 'd-none'">
+    <rnf-form
+      #addUpdateForm
+      [template]="addUpdateFormTemplate()"
+      [options]="manager().addUpdateFormOptions()"
+      (formSubmit)="manager().submitAddUpdate()"
+      (formCancel)="manager().cancelAddUpdate()" />
+  </div>
+}
+
+<!-- Delete Confirm View -->
+@if (manager().enableDelete()) {
+  <div aria-label="Delete Confirm View">
+    <rnf-modal
+      #deleteModal
+      id="delete"
+      [options]="manager().deleteModalOptions()"
+      [bodyTemplate]="deleteModalTemplate" />
+    <ng-template #deleteModalTemplate let-context>
+      <h5>
+        Are you sure you want to delete {{ context.count }}
+        {{ context.name }}(s)? This action cannot be undone.
+      </h5>
+    </ng-template>
+  </div>
+}
+
+<!-- Upload View -->
+@if (manager().enableUpload()) {
+  <div
+    aria-label="Upload View"
+    [ngClass]="manager().currentMode() === 'upload' ? '' : 'd-none'"
+    class="text-center">
+    <rnf-form
+      #uploadForm
+      [template]="uploadFormTemplate"
+      [options]="manager().uploadFormOptions()"
+      (formSubmit)="manager().submitUpload()"
+      (formCancel)="manager().cancelUpload()" />
+    <ng-template #uploadFormTemplate let-context>
+      <rnf-input-field
+        type="file"
+        name="uploadFile"
+        label=""
+        [htmlAttributes]="{ accept: '.xlsx' }"
+        [formGroup]="context.formGroup" />
+    </ng-template>
+    <rnf-button
+      type="button"
+      class="info"
+      icon="file-arrow-down"
+      label="Template"
+      (buttonClick)="manager().downloadTemplate(false)" />
+    <rnf-button
+      type="button"
+      class="success"
+      icon="file-arrow-down"
+      label="Template (With Data)"
+      [additionalClasses]="'ms-2'"
+      (buttonClick)="manager().downloadTemplate(true)" />
+  </div>
+}
+
+<!-- Download View -->
+@if (manager().enableDownload() && downloadFormTemplate()) {
+  <div
+    aria-label="Download View"
+    [ngClass]="manager().currentMode() === 'download' ? '' : 'd-none'">
+    <rnf-form
+      #downloadForm
+      [template]="downloadFormTemplate()"
+      [options]="manager().downloadFormOptions()"
+      (formSubmit)="manager().submitDownload()"
+      (formCancel)="manager().cancelDownload()" />
+  </div>
+}

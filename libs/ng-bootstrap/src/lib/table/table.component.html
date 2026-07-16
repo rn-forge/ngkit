@@ -1,0 +1,14 @@
+@if (config) {
+  <div [id]="toolbarId()">
+    @if (rendered) {
+      <div class="btn-group">
+        @for (btnConfig of config.toolbarButtons; track $index) {
+          <rnf-button [options]="btnConfig" />
+        }
+      </div>
+    }
+  </div>
+  <div class="mt-2 table-responsive">
+    <table #table [rnfHtmlAttributes]="htmlAttributes()"></table>
+  </div>
+}

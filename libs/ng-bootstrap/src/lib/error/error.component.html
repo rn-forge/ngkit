@@ -1,0 +1,21 @@
+<div class="d-flex flex-column text-center mt-5 pt-5">
+  <h1>{{ message() }} 🙃</h1>
+  <p>
+    @if (config.support) {
+      <span>
+        Please
+        <a class="text-danger fw-bold" href="{{ config.support!.url }}">{{
+          config.support!.label
+        }}</a>
+      </span>
+    }
+    @if (config.home) {
+      <span
+        >, or go to
+        <a class="text-primary fw-bold" href="{{ config.home!.url }}">{{
+          config.home!.label
+        }}</a></span
+      >
+    }
+  </p>
+</div>

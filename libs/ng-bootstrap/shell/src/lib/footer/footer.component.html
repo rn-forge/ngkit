@@ -1,0 +1,22 @@
+<footer
+  [id]="config.id"
+  class="bg-{{ config.bgColor }} {{ config.footerClass }}">
+  <div
+    class="container-fluid align-items-center position-relative d-flex"
+    [ngClass]="containerClass()">
+    @if (config.brand) {
+      <rnf-brand [options]="config.brand" />
+    }
+    @if (config.copyright) {
+      <span class="text-muted ps-2" style="font-size: small">{{
+        config.copyright
+      }}</span>
+    }
+    @if (config.navbar) {
+      <rnf-navbar
+        [options]="config.navbar"
+        [template]="template()"
+        [class]="menuPositionClass()" />
+    }
+  </div>
+</footer>
