@@ -1,0 +1,33 @@
+@if (icon()) {
+  <ng-container>
+    <div class="input-group">
+      <div class="input-group-text">
+        <i class="bi bi-{{ icon() }}"></i>
+      </div>
+      <ng-container [ngTemplateOutlet]="formField"></ng-container>
+    </div>
+  </ng-container>
+} @else {
+  <ng-container [ngTemplateOutlet]="formField"></ng-container>
+}
+<ng-template #formField>
+  <div class="form-field-error">{{ validationError() }}</div>
+
+  <div class="form-floating" [attr.form-field]="'form-field-' + field().id">
+    <ng-container [ngTemplateOutlet]="template()"></ng-container>
+
+    @if (label()) {
+      <label [for]="field().fieldId" class="form-label">{{
+        field().fieldLabel
+      }}</label>
+    }
+    @if (!readonly()) {
+      <rnf-button
+        type="close"
+        label=""
+        additionalClasses="clear-btn"
+        (buttonClick)="clearField()"
+        [htmlAttributes]="{ tabindex: '-1' }" />
+    }
+  </div>
+</ng-template>

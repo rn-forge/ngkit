@@ -1,0 +1,11 @@
+div.form-floating,
+div.input-group {
+  // add margin-bottom to the input fields in vertical forms
+  margin-bottom: 1rem;
+}
+
+div.form-field-error {
+  color: var(--bs-danger);
+  font-style: italic;
+  font-weight: bolder;
+}

@@ -1,0 +1,196 @@
+<nav
+  [attr.id]="config.id"
+  class="navbar {{ config.navClass }}"
+  [ngClass]="
+    config.breakpoint ? 'navbar-expand-' + config.breakpoint : 'navbar-expand'
+  "
+  [rnfHtmlAttributes]="htmlAttributes()">
+  @if (config.offcanvas) {
+    <rnf-offcanvas
+      [options]="config.offcanvas"
+      [template]="template() ?? navbarTemplate"
+      [context]="config" />
+  } @else {
+    <ng-container
+      [ngTemplateOutlet]="template() ?? navbarTemplate"
+      [ngTemplateOutletContext]="{ $implicit: config }"></ng-container>
+  }
+</nav>
+
+<!-- Template for menu -->
+<!-- options are actual objects as signal are evaluated on line #5, and #8 -->
+<ng-template #navbarTemplate let-config>
+  <ul class="navbar-nav {{ config.menuClass }}">
+    <!-- primary loop for top nav items -->
+    @for (item of config.items; track $index) {
+      @if (isNavEnabled(item, 'link')) {
+        <li class="nav-item {{ config.itemClass }} {{ item.itemClass }}">
+          <ng-container
+            [ngTemplateOutlet]="linkTemplate"
+            [ngTemplateOutletContext]="getLinkContext(item)"></ng-container>
+        </li>
+      }
+      @if (isNavEnabled(item, 'url')) {
+        <li class="nav-item {{ config.itemClass }} {{ item.itemClass }}">
+          <ng-container
+            [ngTemplateOutlet]="urlTemplate"
+            [ngTemplateOutletContext]="getLinkContext(item)"></ng-container>
+        </li>
+      }
+      @if (isNavEnabled(item, 'callback')) {
+        <li class="nav-item {{ config.itemClass }} {{ item.itemClass }}">
+          <ng-container
+            [ngTemplateOutlet]="callbackTemplate"
+            [ngTemplateOutletContext]="getLinkContext(item)"></ng-container>
+        </li>
+      }
+      @if (isNavEnabled(item, 'submenu')) {
+        <li
+          class="nav-item {{ item.submenu.type }} {{ config.itemClass }} {{
+            item.itemClass
+          }}">
+          <a
+            class="nav-link {{ config.linkClass }} {{
+              item.class
+            }} dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+            @if (item.icon) {
+              <i class="bi bi-{{ item.icon }}"></i>
+            }
+            {{ item.label }}
+          </a>
+          <ul
+            class="dropdown-menu {{ item.submenu.class }}"
+            [ngClass]="config.type === 'sidebar' ? 'sidebar-submenu' : ''">
+            @for (submenuItem of item.submenu.items; track $index) {
+              <li
+                class="{{ item.submenu.itemClass }} {{
+                  submenuItem.itemClass
+                }} ">
+                @if (isNavEnabled(submenuItem, 'link')) {
+                  <ng-container
+                    [ngTemplateOutlet]="linkTemplate"
+                    [ngTemplateOutletContext]="
+                      getLinkContext(item, submenuItem)
+                    "></ng-container>
+                }
+                @if (isNavEnabled(submenuItem, 'url')) {
+                  <ng-container
+                    [ngTemplateOutlet]="urlTemplate"
+                    [ngTemplateOutletContext]="
+                      getLinkContext(item, submenuItem)
+                    "></ng-container>
+                }
+                @if (isNavEnabled(submenuItem, 'callback')) {
+                  <ng-container
+                    [ngTemplateOutlet]="callbackTemplate"
+                    [ngTemplateOutletContext]="
+                      getLinkContext(item, submenuItem)
+                    "></ng-container>
+                }
+                @if (isNavEnabled(submenuItem, 'divider')) {
+                  <hr />
+                }
+              </li>
+            }
+          </ul>
+        </li>
+      }
+      @if (isNavEnabled(item, 'color-mode')) {
+        <rnf-color-mode
+          [mode]="'menu'"
+          [options]="{
+            class: [config.itemClass, item.itemClass].join(' ').trim(),
+            menuClass: [config.linkClass, item.class].join(' ').trim(),
+            menu: item.submenu,
+          }" />
+      }
+      @if (isNavEnabled(item, 'divider')) {
+        <li class="nav-item {{ config.itemClass }} {{ item.itemClass }}">
+          <ng-container
+            [ngTemplateOutlet]="dividerTemplate"
+            [ngTemplateOutletContext]="{ config: config }"></ng-container>
+          <!-- <div class="vr" [ngClass]="config.breakpoint?'d-none d-'+config.breakpoint+'-block':''"></div>
+                <hr [ngClass]="config.breakpoint?'d-block d-'+config.breakpoint+'-none':''" /> -->
+        </li>
+      }
+    }
+
+    <!-- Render custom template if provided -->
+    <!-- will never get here due to check in link #8 -->
+    <!-- @if(template()) {
+        <ng-container [ngTemplateOutlet]="template()" [ngTemplateOutletContext]="templateContext()"></ng-container>
+        } -->
+  </ul>
+</ng-template>
+
+<!-- Templates to render <a> tags for different link types -->
+<ng-template #linkTemplate let-context>
+  <a
+    class="{{ context.class }}"
+    [routerLink]="context.item.href"
+    [queryParams]="context.item.queryParams"
+    routerLinkActive="active"
+    [attr.data-bs-dismiss]="context.offcanvasTarget ? 'offcanvas' : undefined"
+    [attr.data-bs-target]="context.offcanvasTarget">
+    <ng-container
+      [ngTemplateOutlet]="anchorTemplate"
+      [ngTemplateOutletContext]="{ $implicit: context.item }"></ng-container>
+  </a>
+</ng-template>
+<ng-template #urlTemplate let-context>
+  <a
+    class="{{ context.class }}"
+    [attr.href]="context.item.href"
+    [attr.target]="context.item.target"
+    [attr.data-bs-dismiss]="context.offcanvasTarget ? 'offcanvas' : undefined"
+    [attr.data-bs-target]="context.offcanvasTarget">
+    <ng-container
+      [ngTemplateOutlet]="anchorTemplate"
+      [ngTemplateOutletContext]="{ $implicit: context.item }"></ng-container>
+  </a>
+</ng-template>
+<ng-template #callbackTemplate let-context>
+  <a
+    class="{{ context.class }}"
+    href="javascript:void(0);"
+    (click)="context.item.callback!()"
+    [attr.data-bs-dismiss]="context.offcanvasTarget ? 'offcanvas' : undefined"
+    [attr.data-bs-target]="context.offcanvasTarget">
+    <ng-container
+      [ngTemplateOutlet]="anchorTemplate"
+      [ngTemplateOutletContext]="{ $implicit: context.item }"></ng-container>
+  </a>
+</ng-template>
+
+<!-- Template to render icon, image and label within the <a> tag -->
+<ng-template #anchorTemplate let-item>
+  @if (item.icon) {
+    <i class="bi bi-{{ item.icon }}"></i>
+  }
+  @if (item.img) {
+    <img class="{{ item.img.class }}" src="{{ item.img.src }}" alt="IMAGE" />
+  }
+  {{ item.label }}
+</ng-template>
+
+<!-- Template to render menu divider item -->
+<ng-template #dividerTemplate let-config="config">
+  @if (config.type !== 'sidebar') {
+    <div
+      class="vr"
+      [ngClass]="
+        config.breakpoint ? 'd-none d-' + config.breakpoint + '-block' : ''
+      "></div>
+  }
+  @if (config.type === 'header') {
+    <hr
+      [ngClass]="
+        config.breakpoint ? 'd-block d-' + config.breakpoint + '-none' : ''
+      " />
+  }
+  @if (config.type === 'sidebar') {
+    <hr />
+  }
+</ng-template>

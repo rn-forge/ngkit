@@ -1,0 +1,15 @@
+<a
+  [href]="config.href ?? '#'"
+  class="navbar-brand d-flex gap-2 align-items-center"
+  [ngClass]="config.class">
+  @if (config.logo) {
+    <img
+      [src]="config.logo!.src"
+      [alt]="config.logo!.alt ?? config.text"
+      [height]="config.logo!.height"
+      [width]="config.logo!.width" />
+  }
+  @if (config.text) {
+    <span>{{ config.text }}</span>
+  }
+</a>

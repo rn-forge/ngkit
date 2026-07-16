@@ -1,0 +1,24 @@
+:host {
+  cursor: default !important;
+}
+
+// When inside a .btn-group, strip the inner border-radius so buttons join seamlessly.
+// :host-context queries the ancestor tree from within the component, avoiding the need
+// for a global stylesheet rule.
+:host-context(.btn-group):not(:first-child) > .btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+:host-context(.btn-group):not(:last-child) > .btn {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+button.clear-btn {
+  font-size: x-small;
+  position: absolute;
+  right: 0.3rem;
+  top: 0.3rem;
+  z-index: 2;
+}

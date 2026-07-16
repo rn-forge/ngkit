@@ -1,0 +1,24 @@
+@if (config.enabled) {
+  <form class="col-12 col-md-6 col-lg-8 col-xl-6 col-xxl-4 mx-auto">
+    @for (attr of profileAttributes(); track attr; let index = $index) {
+      <div class="form-floating mb-3">
+        <input
+          [id]="attr.key"
+          class="form-control"
+          type="text"
+          [value]="attr.value" />
+        <label [for]="attr.key" class="form-label">{{ attr.label }}</label>
+      </div>
+    }
+  </form>
+  @if (config.admin) {
+    <p class="text-center mt-4">
+      <strong>
+        <em
+          >If you are facing any issue with your account, contact
+          <a [href]="config.admin.url">{{ config.admin.label }}</a>
+        </em>
+      </strong>
+    </p>
+  }
+}

@@ -1,0 +1,47 @@
+@if (visible()) {
+  @if (config.header) {
+    <h5 class="my-4 text-center">{{ config.header }}</h5>
+  }
+  <form
+    #form
+    [formGroup]="formGroup"
+    class="needs-validation mx-auto"
+    [ngClass]="config.classes"
+    [rnfHtmlAttributes]="htmlAttributes()">
+    @if (template()) {
+      <ng-container
+        [ngTemplateOutlet]="template()"
+        [ngTemplateOutletContext]="context"></ng-container>
+    }
+
+    <div class="text-center mb-3">
+      @if (config.submitBtn !== false) {
+        <rnf-button
+          type="submit"
+          class="primary"
+          [label]="config.submitBtn!.toString()"
+          [disabled]="!isSubmitAllowed()"
+          (buttonClick)="handleSubmit()" />
+      }
+      @if (config.cancelBtn) {
+        <rnf-button
+          type="button"
+          class="secondary"
+          [label]="config.cancelBtn!.toString()"
+          additionalClasses="ms-2"
+          (buttonClick)="handleCancel()" />
+      }
+      @if (config.resetBtn) {
+        <rnf-button
+          type="reset"
+          class="warning"
+          label="Reset"
+          [additionalClasses]="config.submitBtn !== undefined ? 'ms-2' : ''"
+          (buttonClick)="handleReset()" />
+      }
+    </div>
+  </form>
+  @if (DEBUG) {
+    <div class="card card-body text-bg-warning" [innerHTML]="getStatus()"></div>
+  }
+}

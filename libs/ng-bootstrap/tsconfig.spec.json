@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": ["vitest/globals"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "assets/src/**/*.ts",
+    "auth/src/**/*.ts",
+    "crud/src/**/*.ts",
+    "form/src/**/*.ts",
+    "shell/src/**/*.ts"
+  ],
+  "exclude": ["**/*.stories.ts", "**/*.stories.js"]
+}

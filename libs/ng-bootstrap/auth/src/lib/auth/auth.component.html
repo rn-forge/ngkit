@@ -1,0 +1,21 @@
+<rnf-alert />
+
+@if (authError()) {
+  <div
+    class="card card-body text-bg-{{ config.errorStyle }} my-3"
+    [innerHTML]="authError()"></div>
+}
+
+<rnf-form
+  #loginForm
+  [template]="loginFormTemplate"
+  [options]="loginFormOptions"
+  (formSubmit)="login()" />
+<ng-template #loginFormTemplate let-context>
+  <rnf-dropdown-field
+    name="user"
+    [formGroup]="context.formGroup"
+    [optionList]="config.users"
+    [labelField]="config.userType!.label"
+    [valueField]="config.userType!.value" />
+</ng-template>

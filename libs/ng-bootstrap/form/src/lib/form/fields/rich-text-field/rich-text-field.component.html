@@ -1,0 +1,11 @@
+<rnf-form-field [field]="this" [template]="template" [label]="false" />
+<ng-template #template [formGroup]="formGroup()">
+  <quill-editor
+    #editor
+    [formControlName]="fieldFormControlName"
+    [styles]="styles()"
+    [required]="true"
+    [minLength]="10"
+    [placeholder]="fieldLabel"
+    [rnfHtmlAttributes]="htmlAttributes()" />
+</ng-template>

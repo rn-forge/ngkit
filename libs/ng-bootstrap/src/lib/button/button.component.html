@@ -1,0 +1,14 @@
+@if (config) {
+  <button
+    [attr.id]="config.id"
+    [type]="config.type === 'close' ? 'button' : config.type"
+    [class]="buttonClass()"
+    [disabled]="isDisabled()"
+    (click)="handleClick()"
+    [rnfHtmlAttributes]="htmlAttributes()">
+    @if (config.icon) {
+      <i class="bi bi-{{ config.icon }}"></i>
+    }
+    {{ config.label }}
+  </button>
+}

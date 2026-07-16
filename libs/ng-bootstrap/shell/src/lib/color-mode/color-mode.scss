@@ -1,0 +1,32 @@
+svg.bi {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+}
+
+svg.check {
+  display: none;
+}
+
+// .toggleButton {
+//     display: block;
+// }
+
+// .toggleMenu {
+//   a.dropdown-toggle {
+//     // padding-top: 0.4rem;
+//     &::after {
+//       // padding-top: 0.6rem;
+//     }
+//   }
+// }
+
+ul.dropdown-menu {
+  a.dropdown-item {
+    cursor: pointer;
+
+    &.active > svg.check {
+      display: block !important;
+    }
+  }
+}

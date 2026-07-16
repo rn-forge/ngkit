@@ -1,0 +1,20 @@
+:host {
+  ul.navbar-nav {
+    li.nav-item {
+      a.nav-link {
+        cursor: pointer;
+      }
+    }
+
+    div.vr {
+      margin-top: 0.75rem;
+    }
+  }
+}
+
+.sidebar-submenu {
+  position: static !important;
+  border: none !important;
+  margin-top: -0.5rem !important;
+  margin-left: 0.5rem !important;
+}
