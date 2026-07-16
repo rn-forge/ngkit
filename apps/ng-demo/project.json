@@ -8,9 +8,7 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/ng-demo",
@@ -23,9 +21,7 @@
             "input": "apps/ng-demo/public"
           }
         ],
-        "styles": [
-          "apps/ng-demo/src/styles.scss"
-        ]
+        "styles": ["apps/ng-demo/src/styles.scss"]
       },
       "configurations": {
         "production": {
