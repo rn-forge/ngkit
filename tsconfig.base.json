@@ -15,7 +15,11 @@
     "skipDefaultLibCheck": true,
     "strict": false,
     "paths": {
-      "@rn-forge/ng": ["./libs/ng/src/index.ts"]
+      "@rn-forge/ng": ["./libs/ng/src/index.ts"],
+      "@rn-forge/ng/core": ["./libs/ng/core/src/index.ts"],
+      "@rn-forge/ng/auth": ["./libs/ng/auth/src/index.ts"],
+      "@rn-forge/ng/http": ["./libs/ng/http/src/index.ts"],
+      "@rn-forge/ng/http/crud": ["./libs/ng/http/crud/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
