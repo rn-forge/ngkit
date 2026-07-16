@@ -69,6 +69,18 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "compodoc": {
+      "executor": "@twittwer/compodoc:compodoc",
+      "options": {
+        "tsConfig": "libs/ng/tsconfig.compodoc.json",
+        "outputPath": "dist/compodoc/ng"
+      },
+      "configurations": {
+        "json": {
+          "exportFormat": "json"
+        }
+      }
     }
   }
 }
