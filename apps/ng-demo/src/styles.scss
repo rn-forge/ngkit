@@ -1,1 +1,8 @@
-/* You can add global styles to this file, and also import other style files */
+// To customize Bootstrap variables, replace the line below with a 'with' clause, e.g.:
+// @use '@rn-forge/ng-bootstrap/assets/theme' with (
+//   $primary: #6200ea,
+//   $secondary: #03dac6,
+//   $font-family-base: 'Inter', sans-serif,
+// );
+// Full variable reference: https://github.com/twbs/bootstrap/blob/main/scss/_variables.scss
+@use '@rn-forge/ng-bootstrap/assets/theme';

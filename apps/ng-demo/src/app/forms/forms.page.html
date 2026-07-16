@@ -1,0 +1,77 @@
+<div class="container py-4">
+  <h4 class="mb-1">Forms Demo</h4>
+  <p class="text-muted mb-4">
+    All field types from <code>&#64;rn-forge/ng-bootstrap/form</code>: text,
+    number, date, textarea, dropdown, typeahead (single + multi), and rich text.
+  </p>
+
+  <rnf-form
+    #form
+    [options]="formOptions"
+    [template]="fields"
+    (formSubmit)="onSubmit($event)"
+    (formCancel)="onCancel()" />
+
+  <ng-template #fields let-ctx>
+    <!-- text / number / date / textarea inputs -->
+    <rnf-input-field
+      name="name"
+      label="Product Name"
+      [formGroup]="ctx.formGroup" />
+
+    <rnf-input-field
+      name="price"
+      label="Price"
+      type="number"
+      [htmlAttributes]="{ min: '0', step: '0.01' }"
+      [formGroup]="ctx.formGroup" />
+
+    <rnf-input-field
+      name="launchDate"
+      label="Launch Date"
+      type="date"
+      [formGroup]="ctx.formGroup" />
+
+    <rnf-input-field
+      name="notes"
+      label="Short Notes (textarea)"
+      [htmlAttributes]="{ type: 'textarea', rows: '3' }"
+      [formGroup]="ctx.formGroup" />
+
+    <!-- dropdown — string list -->
+    <rnf-dropdown-field
+      name="category"
+      label="Category"
+      [optionList]="categories"
+      [formGroup]="ctx.formGroup" />
+
+    <!-- typeahead — object list with formatFields -->
+    <rnf-typeahead-field
+      name="country"
+      label="Country (typeahead)"
+      [values]="countries"
+      type="country"
+      [formatFields]="{ country: ['name'] }"
+      [formGroup]="ctx.formGroup" />
+
+    <!-- multi-select typeahead -->
+    <rnf-multi-typeahead-field
+      name="tags"
+      label="Tags (multi-select)"
+      [values]="tags"
+      [formGroup]="ctx.formGroup" />
+
+    <!-- rich text (Quill) -->
+    <rnf-rich-text-field
+      name="description"
+      label="Description (rich text)"
+      [styles]="{ height: '150px' }"
+      [formGroup]="ctx.formGroup" />
+  </ng-template>
+
+  @if (submitted) {
+    <pre class="mt-4 p-3 bg-body-secondary rounded small">{{
+      submitted | json
+    }}</pre>
+  }
+</div>
