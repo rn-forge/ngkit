@@ -1,1 +1,2 @@
-export * from './lib/http/crud-module';
+export * from './lib/crud.services';
+export * from './lib/crud.types';
