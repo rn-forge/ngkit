@@ -1,0 +1,91 @@
+{
+  "name": "ng",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ng/src",
+  "prefix": "rnf",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": ["dist/{projectRoot}"],
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
+  "tags": ["scope:ngkit", "type:core"],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:package",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "project": "libs/ng/ng-package.json",
+        "tsConfig": "libs/ng/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/ng/tsconfig.lib.prod.json"
+        },
+        "development": {}
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
+    },
+    "test": {
+      "executor": "@nx/angular:unit-test",
+      "options": {
+        "tsConfig": "libs/ng/tsconfig.spec.json",
+        "watch": false,
+        "include": [
+          "../core/src/**/*.spec.ts",
+          "../auth/src/**/*.spec.ts",
+          "../http/src/**/*.spec.ts",
+          "../http/crud/src/**/*.spec.ts"
+        ],
+        "coverage": true,
+        "coverageReporters": ["text-summary", "lcov"],
+        "coverageInclude": [
+          "libs/ng/core/src/**",
+          "libs/ng/auth/src/**",
+          "libs/ng/http/src/**",
+          "libs/ng/http/crud/src/**"
+        ],
+        "coverageExclude": [
+          "**/*.config.ts",
+          "**/*.types.ts",
+          "**/*.mixins.ts",
+          "libs/ng/http/crud/src/**"
+        ],
+        "coverageThresholds": {
+          "statements": 80,
+          "branches": 80,
+          "functions": 80,
+          "lines": 80
+        },
+        "runnerConfig": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "compodoc": {
+      "executor": "@twittwer/compodoc:compodoc",
+      "options": {
+        "tsConfig": "libs/ng/tsconfig.compodoc.json",
+        "outputPath": "dist/compodoc/ng"
+      },
+      "configurations": {
+        "json": {
+          "exportFormat": "json"
+        },
+        "serve": {
+          "serve": true,
+          "watch": true
+        }
+      },
+      "outputs": ["{workspaceRoot}/dist/compodoc/ng"]
+    }
+  }
+}

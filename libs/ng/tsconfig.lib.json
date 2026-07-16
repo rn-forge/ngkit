@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "declaration": true,
+    "declarationMap": true,
+    "inlineSources": true,
+    "types": []
+  },
+  "include": [
+    "src/**/*.ts",
+    "core/src/**/*.ts",
+    "auth/src/**/*.ts",
+    "http/src/**/*.ts",
+    "http/crud/src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "core/src/**/*.spec.ts",
+    "core/src/**/*.test.ts",
+    "auth/src/**/*.spec.ts",
+    "auth/src/**/*.test.ts",
+    "http/src/**/*.spec.ts",
+    "http/src/**/*.test.ts",
+    "http/crud/src/**/*.spec.ts",
+    "http/crud/src/**/*.test.ts"
+  ]
+}

@@ -1,0 +1,14 @@
+<div
+  class="watermark {{ config.class }}"
+  [ngClass]="
+    config.breakpoint ? 'd-none d-' + config.breakpoint + '-block' : ''
+  ">
+  {{ config.text }}
+</div>
+<div
+  class="watermark rotate {{ config.class }}"
+  [ngClass]="
+    config.breakpoint ? 'd-block d-' + config.breakpoint + '-none' : 'd-none'
+  ">
+  {{ config.text }}
+</div>

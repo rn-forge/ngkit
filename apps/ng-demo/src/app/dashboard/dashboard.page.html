@@ -1,0 +1,39 @@
+<div class="container py-4">
+  <rnf-alert />
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5 class="card-title">Products in Catalog</h5>
+          <p class="display-4">5</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5 class="card-title">Active Products</h5>
+          <p class="display-4">4</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5 class="card-title">Categories</h5>
+          <p class="display-4">3</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button class="btn btn-danger" (click)="triggerBackendError()">
+      Trigger Backend Error
+    </button>
+    <button class="btn btn-warning" (click)="triggerFrontendError()">
+      Trigger Frontend Error
+    </button>
+  </div>
+</div>

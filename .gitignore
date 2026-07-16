@@ -49,3 +49,5 @@ Thumbs.db
 
 
 storybook-static
+__screenshots__/
+documentation.json

@@ -1,0 +1,39 @@
+<rnf-form-field [field]="this" [template]="template" />
+<ng-template #template [formGroup]="formGroup()">
+  <div class="mb-2" [rnfHtmlAttributes]="htmlAttributes()">
+    @for (option of selectedOptions; track $index) {
+      <span class="badge rounded-pill bg-primary me-1">
+        {{ formatter(option) }}
+        <button
+          type="button"
+          class="btn-close btn-close-white btn-sm ms-1"
+          aria-label="Remove"
+          (click)="removeValue(option)"></button>
+      </span>
+    }
+  </div>
+
+  <div class="position-relative">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Type to search"
+      [formControlName]="fieldFormControlName"
+      (input)="onInputChange()" />
+
+    @if (filteredOptions.length > 0) {
+      <ul class="list-group position-absolute w-100 z-3" style="top: 100%">
+        @for (option of filteredOptions; track $index) {
+          <li class="list-group-item list-group-item-action p-0">
+            <button
+              type="button"
+              class="btn w-100 text-start px-3 py-2"
+              (click)="addValue(option)">
+              {{ formatter(option) }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</ng-template>
