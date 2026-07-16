@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from 'eslint-plugin-storybook';
+
 import nx from '@nx/eslint-plugin';
 import baseConfig from '../../eslint.config.mjs';
 
@@ -12,6 +15,12 @@ export default [
         'error',
         {
           ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
+          ignoredDependencies: [
+            'bootstrap-icons',
+            'jquery-treegrid',
+            'quill',
+            'vitest',
+          ],
         },
       ],
     },
@@ -38,6 +47,17 @@ export default [
           style: 'kebab-case',
         },
       ],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          vars: 'all',
+          args: 'after-used',
+          caughtErrors: 'none',
+          ignoreRestSiblings: true,
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+        },
+      ],
     },
   },
   {
@@ -45,4 +65,5 @@ export default [
     // Override or add rules here
     rules: {},
   },
+  ...storybook.configs['flat/recommended'],
 ];

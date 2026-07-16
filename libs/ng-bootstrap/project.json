@@ -36,7 +36,32 @@
     "test": {
       "executor": "@nx/angular:unit-test",
       "options": {
-        "watch": false
+        "setupFiles": ["libs/ng-bootstrap/src/test-setup.ts"],
+        "watch": false,
+        "include": [
+          "lib/**/*.spec.ts",
+          "../auth/src/**/*.spec.ts",
+          "../crud/src/**/*.spec.ts",
+          "../form/src/**/*.spec.ts",
+          "../shell/src/**/*.spec.ts"
+        ],
+        "coverage": true,
+        "coverageReporters": ["text-summary", "lcov"],
+        "coverageInclude": [
+          "libs/ng-bootstrap/src/**",
+          "libs/ng-bootstrap/auth/src/**",
+          "libs/ng-bootstrap/crud/src/**",
+          "libs/ng-bootstrap/form/src/**",
+          "libs/ng-bootstrap/shell/src/**"
+        ],
+        "coverageExclude": ["libs/ng-bootstrap/**/*.stories.ts"],
+        "coverageThresholds": {
+          "statements": 35,
+          "branches": 35,
+          "functions": 35,
+          "lines": 35
+        },
+        "runnerConfig": true
       }
     },
     "lint": {
