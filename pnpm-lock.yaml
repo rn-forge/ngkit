@@ -213,16 +213,6 @@ importers:
       '@rn-forge/ng-bootstrap':
         specifier: workspace:*
         version: link:../../libs/ng-bootstrap
-    devDependencies:
-      '@types/bootstrap':
-        specifier: ^5.2.11
-        version: 5.2.11
-      '@types/jquery':
-        specifier: ^4.0.1
-        version: 4.0.1
-      '@types/lodash-es':
-        specifier: ^4.17.12
-        version: 4.17.12
 
   libs/ng:
     devDependencies:
