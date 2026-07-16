@@ -79,8 +79,13 @@
       "configurations": {
         "json": {
           "exportFormat": "json"
+        },
+        "serve": {
+          "serve": true,
+          "watch": true
         }
-      }
+      },
+      "outputs": ["{workspaceRoot}/dist/compodoc/ng"]
     }
   }
 }
