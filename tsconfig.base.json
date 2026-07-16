@@ -20,7 +20,14 @@
       "@rn-forge/ng/auth": ["./libs/ng/auth/src/index.ts"],
       "@rn-forge/ng/http": ["./libs/ng/http/src/index.ts"],
       "@rn-forge/ng/http/crud": ["./libs/ng/http/crud/src/index.ts"],
-      "@rn-forge/ng-bootstrap": ["./libs/ng-bootstrap/src/index.ts"]
+      "@rn-forge/ng-bootstrap": ["./libs/ng-bootstrap/src/index.ts"],
+      "@rn-forge/ng-bootstrap/assets": [
+        "./libs/ng-bootstrap/assets/src/index.ts"
+      ],
+      "@rn-forge/ng-bootstrap/auth": ["./libs/ng-bootstrap/auth/src/index.ts"],
+      "@rn-forge/ng-bootstrap/crud": ["./libs/ng-bootstrap/crud/src/index.ts"],
+      "@rn-forge/ng-bootstrap/form": ["./libs/ng-bootstrap/form/src/index.ts"],
+      "@rn-forge/ng-bootstrap/shell": ["./libs/ng-bootstrap/shell/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
