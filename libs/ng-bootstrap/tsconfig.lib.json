@@ -27,6 +27,8 @@
     "form/src/**/*.spec.ts",
     "form/src/**/*.test.ts",
     "shell/src/**/*.spec.ts",
-    "shell/src/**/*.test.ts"
+    "shell/src/**/*.test.ts",
+    "**/*.stories.ts",
+    "**/*.stories.js"
   ]
 }
