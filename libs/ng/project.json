@@ -36,7 +36,35 @@
     "test": {
       "executor": "@nx/angular:unit-test",
       "options": {
-        "watch": false
+        "tsConfig": "libs/ng/tsconfig.spec.json",
+        "watch": false,
+        "include": [
+          "../core/src/**/*.spec.ts",
+          "../auth/src/**/*.spec.ts",
+          "../http/src/**/*.spec.ts",
+          "../http/crud/src/**/*.spec.ts"
+        ],
+        "coverage": true,
+        "coverageReporters": ["text-summary", "lcov"],
+        "coverageInclude": [
+          "libs/ng/core/src/**",
+          "libs/ng/auth/src/**",
+          "libs/ng/http/src/**",
+          "libs/ng/http/crud/src/**"
+        ],
+        "coverageExclude": [
+          "**/*.config.ts",
+          "**/*.types.ts",
+          "**/*.mixins.ts",
+          "libs/ng/http/crud/src/**"
+        ],
+        "coverageThresholds": {
+          "statements": 80,
+          "branches": 80,
+          "functions": 80,
+          "lines": 80
+        },
+        "runnerConfig": true
       }
     },
     "lint": {
