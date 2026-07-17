@@ -1,0 +1,26 @@
+{
+  "name": "@rn-forge/ng",
+  "version": "0.0.1",
+  "sideEffects": false,
+  "devDependencies": {
+    "@angular/common": "~22.0.6",
+    "@angular/core": "~22.0.6",
+    "@angular/forms": "~22.0.6",
+    "@angular/router": "~22.0.6",
+    "@types/lodash-es": "^4.17.12",
+    "build-url-ts": "^6.3.0",
+    "jwt-decode": "^4.0.0",
+    "lodash-es": "^4.18.1",
+    "rxjs": "~7.8.2"
+  },
+  "peerDependencies": {
+    "@angular/common": "~22.0.6",
+    "@angular/core": "~22.0.6",
+    "@angular/forms": "~22.0.6",
+    "@angular/router": "~22.0.6",
+    "build-url-ts": "^6.3.0",
+    "jwt-decode": "^4.0.0",
+    "lodash-es": "^4.18.1",
+    "rxjs": "~7.8.2"
+  }
+}

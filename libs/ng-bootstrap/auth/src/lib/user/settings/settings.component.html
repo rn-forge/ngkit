@@ -1,0 +1,40 @@
+@if (config.enabled) {
+  <div class="row">
+    <div class="col-xs-12 col-md-6 col-lg-4 text-center ms-0 ms-lg-4">
+      <h5 class="my-4">Current Settings</h5>
+      <rnf-table [options]="userSettingsTableOptions" />
+      <!-- <div class="mb-2 card card-body text-bg-success">
+            {{userSettingsService.currentUserSettings2 | json}}
+        </div>
+        <rnf-button [options]="clearButtonOptions" /> -->
+    </div>
+
+    <div class="col-xs-12 col-md-6 col-lg-7">
+      <rnf-form
+        #userSettingsForm
+        [template]="userSettingsFormTemplate"
+        [options]="userSettingsFormOptions"
+        (formSubmit)="saveUserSettings($event)" />
+      <ng-template #userSettingsFormTemplate let-context>
+        @if (config.format === 'dropdown') {
+          @for (setting of context.settings; track $index) {
+            <rnf-dropdown-field
+              [name]="setting.key"
+              [label]="setting.label"
+              [formGroup]="context.formGroup"
+              [optionList]="setting.optionList" />
+          }
+        } @else {
+          @for (setting of context.settings; track $index) {
+            <rnf-typeahead-field
+              [name]="setting.key"
+              [label]="setting.label"
+              [formGroup]="context.formGroup"
+              [values]="setting.optionList"
+              [type]="'string'" />
+          }
+        }
+      </ng-template>
+    </div>
+  </div>
+}

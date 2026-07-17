@@ -1,0 +1,8 @@
+quill-editor.ng-touched.ng-invalid {
+  border: 1px solid var(--bs-danger);
+}
+
+quill-editor[disabled] {
+  background-color: var(--bs-secondary-bg);
+  opacity: 1;
+}

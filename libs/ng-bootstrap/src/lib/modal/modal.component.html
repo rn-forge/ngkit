@@ -1,0 +1,32 @@
+<ng-template #defaultContent let-modal>
+  <div class="modal-header {{ config.header!.classes }}">
+    <h5 class="modal-title">
+      @if (config.header!.icon) {
+        <i class="bi bi-{{ config.header!.icon }}"></i>
+      }
+      {{ config.header!.text }}
+    </h5>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="modal.dismiss('close')"></button>
+  </div>
+  <div class="modal-body">
+    <ng-container
+      [ngTemplateOutlet]="bodyTemplate()"
+      [ngTemplateOutletContext]="{
+        $implicit: config.contextParams ?? {},
+      }"></ng-container>
+  </div>
+  <div class="modal-footer">
+    @if (config.submitBtn) {
+      <rnf-button [options]="config.submitBtn" />
+    }
+    @if (config.cancelBtn !== false) {
+      <rnf-button
+        [options]="cancelButtonOptions()"
+        (buttonClick)="modal.dismiss('cancel')" />
+    }
+  </div>
+</ng-template>

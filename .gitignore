@@ -46,3 +46,8 @@ Thumbs.db
 
 .nx/polygraph
 .angular
+
+
+storybook-static
+__screenshots__/
+documentation.json

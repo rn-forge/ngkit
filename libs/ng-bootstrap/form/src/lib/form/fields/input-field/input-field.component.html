@@ -1,0 +1,24 @@
+<rnf-form-field [field]="this" [template]="template" [icon]="icon()" />
+<ng-template #template [formGroup]="formGroup()">
+  @switch (type()) {
+    @case ('textarea') {
+      <textarea
+        class="form-control"
+        [id]="fieldId"
+        [name]="name()"
+        [formControlName]="fieldFormControlName"
+        [ngClass]="checkValidation()"
+        style="height: 100px"></textarea>
+    }
+    @default {
+      <input
+        [type]="type()"
+        class="form-control"
+        [id]="fieldId"
+        [name]="name()"
+        [formControlName]="fieldFormControlName"
+        [ngClass]="checkValidation()"
+        [rnfHtmlAttributes]="resolvedAttributes()" />
+    }
+  }
+</ng-template>

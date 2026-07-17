@@ -1,2 +1,17 @@
-<app-nx-welcome></app-nx-welcome>
-<router-outlet></router-outlet>
+<rnf-header [options]="headerOptions" />
+
+<main class="container-fluid mb-auto">
+  <router-outlet />
+</main>
+
+<rnf-footer [options]="footerOptions" />
+
+<rnf-modal
+  #helpModal
+  [options]="helpModalOptions"
+  [bodyTemplate]="helpModalTemplate" />
+<ng-template #helpModalTemplate>
+  <p>This is the RN Forge Demo application.</p>
+</ng-template>
+
+<rnf-color-mode class="position-fixed" style="bottom: 4em; right: 1em" />

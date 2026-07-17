@@ -1,0 +1,49 @@
+@if (config.toggler?.button) {
+  <rnf-button [options]="config.toggler!.button!" />
+} @else {
+  <button
+    [id]="getTogglerButtonId(config)"
+    class="navbar-toggler"
+    [ngClass]="getTogglerClass()"
+    type="button"
+    data-bs-toggle="offcanvas"
+    [attr.data-bs-target]="'#' + config.id">
+    @if (!config.toggler?.icon) {
+      <span class="navbar-toggler-icon"></span>
+    } @else {
+      <i class="bi bi-{{ config.toggler!.icon }}"></i>
+    }
+  </button>
+}
+
+<div
+  [id]="config.id"
+  class="offcanvas offcanvas-{{ config.direction }}"
+  [ngClass]="config.class"
+  tabindex="-1"
+  [attr.aria-labelledby]="config.id + '-label'">
+  @if (config.header) {
+    <div class="offcanvas-header" [ngClass]="config.header!.class">
+      <h5 class="offcanvas-title" [id]="config.id + '-label'">
+        {{ config.header!.title }}
+      </h5>
+      @if (config.header.closeBtn?.options !== undefined) {
+        <rnf-button
+          [options]="config.header.closeBtn!.options"
+          [htmlAttributes]="{ 'aria-label': 'Close' }" />
+      } @else {
+        <button
+          type="button"
+          class="btn-close"
+          [ngClass]="config.header.closeBtn?.class"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"></button>
+      }
+    </div>
+  }
+  <div class="offcanvas-body" [ngClass]="config.body?.class">
+    <ng-container
+      [ngTemplateOutlet]="template()"
+      [ngTemplateOutletContext]="{ $implicit: context() }"></ng-container>
+  </div>
+</div>

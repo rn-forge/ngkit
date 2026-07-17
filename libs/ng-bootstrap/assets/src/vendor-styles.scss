@@ -1,0 +1,26 @@
+@use 'sass:meta';
+
+// icons
+@use 'bootstrap-icons/font/bootstrap-icons.scss';
+
+// table
+@include meta.load-css('bootstrap-table/dist/bootstrap-table.css');
+@include meta.load-css(
+  'bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.css'
+);
+@include meta.load-css(
+  'bootstrap-table/dist/extensions/fixed-columns/bootstrap-table-fixed-columns.css'
+);
+@include meta.load-css(
+  'bootstrap-table/dist/extensions/page-jump-to/bootstrap-table-page-jump-to.css'
+);
+@include meta.load-css(
+  'bootstrap-table/dist/extensions/reorder-rows/bootstrap-table-reorder-rows.css'
+);
+@include meta.load-css(
+  'bootstrap-table/dist/extensions/sticky-header/bootstrap-table-sticky-header.css'
+);
+@include meta.load-css('jquery-treegrid/css/jquery.treegrid.css');
+
+// quill
+@include meta.load-css('quill/dist/quill.snow.css');

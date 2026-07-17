@@ -1,0 +1,20 @@
+<rnf-form-field [field]="this" [template]="template" />
+<ng-template #template [formGroup]="formGroup()">
+  <input
+    type="text"
+    class="form-control"
+    [id]="fieldId"
+    [name]="name()"
+    [formControlName]="fieldFormControlName"
+    [ngClass]="checkValidation()"
+    [focusFirst]="false"
+    [inputFormatter]="formatter.bind(this)"
+    [ngbTypeahead]="typeaheadListener"
+    [resultFormatter]="formatter.bind(this)"
+    [selectOnExact]="true"
+    [showHint]="true"
+    (focus)="focus$.next($any($event).target.value)"
+    (click)="click$.next($any($event).target.value)"
+    (selectItem)="onItemSelect($event)"
+    [rnfHtmlAttributes]="htmlAttributes()" />
+</ng-template>
