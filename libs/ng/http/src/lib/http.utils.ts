@@ -41,7 +41,7 @@ export class HttpUtil {
     response: HttpResponse<Blob>,
   ): DownloadResponse {
     const disposition = response.headers.get('Content-Disposition') ?? '';
-    const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+    const match = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
     const fileName = match?.[1]?.replace(/['"]/g, '').trim() ?? 'download';
     if (!response.body) {
       throw new Error('Download response body is empty');

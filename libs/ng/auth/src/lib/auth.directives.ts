@@ -18,10 +18,10 @@ import { RNF_PERMISSION } from './auth.config';
   selector: '[rnfHasPermission]',
 })
 export class HasPermissionDirective {
-  host: ElementRef = inject(ElementRef);
-  private templateRef: TemplateRef<unknown> = inject(TemplateRef);
-  private viewContainer: ViewContainerRef = inject(ViewContainerRef);
-  private permission = inject(RNF_PERMISSION);
+  readonly host: ElementRef = inject(ElementRef);
+  private readonly templateRef: TemplateRef<unknown> = inject(TemplateRef);
+  private readonly viewContainer: ViewContainerRef = inject(ViewContainerRef);
+  private readonly permission = inject(RNF_PERMISSION);
 
   @Input() set rnfHasPermission(key: string) {
     if (this.permission.hasPermission(key)) {
@@ -40,10 +40,10 @@ export class HasPermissionDirective {
   selector: '[rnfHasAnyPermission]',
 })
 export class HasAnyPermissionDirective {
-  host: ElementRef = inject(ElementRef);
-  private templateRef: TemplateRef<unknown> = inject(TemplateRef);
-  private viewContainer: ViewContainerRef = inject(ViewContainerRef);
-  private permission = inject(RNF_PERMISSION);
+  readonly host: ElementRef = inject(ElementRef);
+  private readonly templateRef: TemplateRef<unknown> = inject(TemplateRef);
+  private readonly viewContainer: ViewContainerRef = inject(ViewContainerRef);
+  private readonly permission = inject(RNF_PERMISSION);
 
   @Input() set rnfHasAnyPermission(keys: string[]) {
     if (this.permission.hasAnyPermission(...keys)) {

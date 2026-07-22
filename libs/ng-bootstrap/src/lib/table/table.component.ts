@@ -63,18 +63,17 @@ import { TableOptions, ToolbarButton } from './table.types';
   standalone: true,
   imports: [CommonModule, ButtonComponent, HtmlAttributesDirective],
   templateUrl: './table.component.html',
-  styleUrl: './table.component.scss',
 })
 export class TableComponent
   extends ConfigurableComponent<TableOptions>
   implements AfterViewInit
 {
-  @ViewChild('table') private tableElement!: ElementRef<HTMLElement>;
+  @ViewChild('table') private readonly tableElement!: ElementRef<HTMLElement>;
 
-  private _rendered: WritableSignal<boolean> = signal(false);
+  private readonly _rendered: WritableSignal<boolean> = signal(false);
   private _table!: JQuery<HTMLElement>;
   private idField = 'id';
-  private _selectedCount: WritableSignal<number> = signal(0);
+  private readonly _selectedCount: WritableSignal<number> = signal(0);
 
   readonly toolbarId: Signal<string> = computed(
     () => `${this.instanceId}-toolbar`,

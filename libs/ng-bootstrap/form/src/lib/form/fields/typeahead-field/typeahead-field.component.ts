@@ -17,7 +17,7 @@ import {
   NgbTypeaheadModule,
   NgbTypeaheadSelectItemEvent,
 } from '@ng-bootstrap/ng-bootstrap';
-import { isDebugMode } from '@rn-forge/ng/core';
+import { HtmlAttributesDirective, isDebugMode } from '@rn-forge/ng/core';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -30,7 +30,6 @@ import {
 } from 'rxjs';
 
 // internal imports
-import { HtmlAttributesDirective } from '@rn-forge/ng/core';
 import {
   FormFieldComponent,
   ParentFieldComponent,
@@ -49,12 +48,11 @@ const DEFAULT_FILTER = (
 
   return component
     .values()
-    .filter(
-      (value) =>
-        component
-          .formatterFn()(value, component)
-          .toLowerCase()
-          .indexOf(input.toLowerCase()) > -1,
+    .filter((value) =>
+      component
+        .formatterFn()(value, component)
+        .toLowerCase()
+        .includes(input.toLowerCase()),
     );
 };
 
@@ -72,15 +70,15 @@ const DEFAULT_FORMATTER = (
 
   const attrList = component.formatFields()[component.valueType()] ?? ['name'];
   return attrList
-    .map((attr) =>
-      attr
+    .map((attr) => {
+      const resolved = attr
         .split('.')
-        .reduce(
-          (o: Record<string, unknown>, i: string) =>
-            o[i] as Record<string, unknown>,
-          value as Record<string, unknown>,
-        ),
-    )
+        .reduce<unknown>(
+          (o, i) => (o as Record<string, unknown> | undefined)?.[i],
+          value,
+        );
+      return resolved == null ? '' : String(resolved);
+    })
     .join(' - ');
 };
 

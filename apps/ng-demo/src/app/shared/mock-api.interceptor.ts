@@ -1,10 +1,12 @@
 import {
   HttpErrorResponse,
+  HttpEvent,
   HttpHeaders,
   HttpInterceptorFn,
+  HttpRequest,
   HttpResponse,
 } from '@angular/common/http';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { getJwtForEmail } from './demo-jwt';
 
 const SEED_PRODUCTS = [
@@ -32,34 +34,11 @@ function blob(content: string, filename: string, contentType = 'text/csv') {
   );
 }
 
-export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
-  const { url, method } = req;
-
-  if (!url.includes('/api/')) {
-    return next(req);
-  }
-
-  if (req.headers.get('X-Demo-Error') === 'true') {
-    return throwError(
-      () =>
-        new HttpErrorResponse({
-          status: 500,
-          statusText: 'Internal Server Error',
-        }),
-    );
-  }
-
-  // Strip query string for path matching
-  const path = url.split('?')[0];
-
-  // Auth login — return token keyed on email
-  if (method === 'POST' && path.endsWith('/api/auth/')) {
-    const body = req.body as { user?: string } | null;
-    return ok({
-      access_token: getJwtForEmail(body?.user ?? 'admin@example.com'),
-    });
-  }
-
+function handleProductsRoute(
+  method: string,
+  path: string,
+  req: HttpRequest<unknown>,
+): Observable<HttpEvent<unknown>> | undefined {
   // Upload template (must come before the generic upload check)
   if (method === 'GET' && path.endsWith('/api/products/upload/template/')) {
     return blob('id,name,category,price,active\n', 'products-template.csv');
@@ -100,5 +79,36 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
     });
   }
 
-  return next(req);
+  return undefined;
+}
+
+export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
+  const { url, method } = req;
+
+  if (!url.includes('/api/')) {
+    return next(req);
+  }
+
+  if (req.headers.get('X-Demo-Error') === 'true') {
+    return throwError(
+      () =>
+        new HttpErrorResponse({
+          status: 500,
+          statusText: 'Internal Server Error',
+        }),
+    );
+  }
+
+  // Strip query string for path matching
+  const path = url.split('?')[0];
+
+  // Auth login — return token keyed on email
+  if (method === 'POST' && path.endsWith('/api/auth/')) {
+    const body = req.body as { user?: string } | null;
+    return ok({
+      access_token: getJwtForEmail(body?.user ?? 'admin@example.com'),
+    });
+  }
+
+  return handleProductsRoute(method, path, req) ?? next(req);
 };

@@ -49,13 +49,12 @@ import { ModalOptions } from './modal.types';
   standalone: true,
   imports: [CommonModule, ButtonComponent],
   templateUrl: './modal.component.html',
-  styleUrl: './modal.component.scss',
 })
 export class ModalComponent
   extends ConfigurableComponent<ModalOptions>
   implements OnInit
 {
-  private modalService = inject(NgbModal);
+  private readonly modalService = inject(NgbModal);
 
   /** Input properties **/
   bodyTemplate: InputSignal<TemplateRef<unknown>> = input.required();
@@ -63,14 +62,15 @@ export class ModalComponent
     TemplateRef<unknown> | undefined
   >();
 
-  @ViewChild('defaultContent') private defaultContent!: TemplateRef<unknown>;
+  @ViewChild('defaultContent')
+  private readonly defaultContent!: TemplateRef<unknown>;
 
   /** Output events **/
   @Output() opened = new EventEmitter<NgbModalRef>();
   @Output() dismissed = new EventEmitter<unknown>();
 
-  protected cancelButtonOptions: Signal<Partial<ButtonOptions>> = computed(
-    () => {
+  protected readonly cancelButtonOptions: Signal<Partial<ButtonOptions>> =
+    computed(() => {
       return {
         type: 'button',
         class: 'secondary',
@@ -82,8 +82,7 @@ export class ModalComponent
           ? (this.config.cancelBtn as object)
           : {}),
       };
-    },
-  );
+    });
 
   /** ConfigurableComponent overrides **/
   override configKey = 'modal';

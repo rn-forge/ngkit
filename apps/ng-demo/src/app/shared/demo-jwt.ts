@@ -3,9 +3,9 @@
 
 function base64url(obj: object): string {
   return btoa(JSON.stringify(obj))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replaceAll('=', '');
 }
 
 function buildJwt(payload: object): string {

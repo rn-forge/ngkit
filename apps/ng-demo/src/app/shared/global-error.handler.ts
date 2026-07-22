@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 
 @Injectable()
 export class DemoErrorHandler implements ErrorHandler {
-  private router = inject(Router);
+  private readonly router = inject(Router);
 
   handleError(error: unknown): void {
     console.error('Uncaught error:', error);

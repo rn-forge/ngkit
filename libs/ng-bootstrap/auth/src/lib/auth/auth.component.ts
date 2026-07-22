@@ -20,10 +20,8 @@ import {
   RnForgeAuthConfig,
 } from '@rn-forge/ng/auth';
 import { GenericType, RouteService } from '@rn-forge/ng/core';
-import { AlertComponent } from '@rn-forge/ng-bootstrap';
+import { AlertComponent, ConfigOptions, STYLE } from '@rn-forge/ng-bootstrap';
 import { AbstractAuthPage } from '../abstract-auth-page';
-import { ConfigOptions } from '@rn-forge/ng-bootstrap';
-import { STYLE } from '@rn-forge/ng-bootstrap';
 import {
   DropdownFieldComponent,
   FormComponent,
@@ -45,7 +43,6 @@ export interface AuthOptions extends ConfigOptions {
   selector: 'rnf-auth',
   imports: [AlertComponent, FormComponent, DropdownFieldComponent],
   templateUrl: './auth.component.html',
-  styleUrl: './auth.component.scss',
 })
 export class AuthComponent extends AbstractAuthPage<AuthOptions> {
   private readonly routeService = inject(RouteService);
@@ -64,7 +61,7 @@ export class AuthComponent extends AbstractAuthPage<AuthOptions> {
     string | undefined
   >(undefined);
 
-  @ViewChild('loginForm') private loginForm!: FormComponent;
+  @ViewChild('loginForm') private readonly loginForm!: FormComponent;
 
   override ngOnInit(): void {
     super.ngOnInit();

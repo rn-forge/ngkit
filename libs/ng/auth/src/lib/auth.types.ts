@@ -1,7 +1,7 @@
 // external imports
 import { Signal, signal } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
-import { flatten, get, map, set, union, uniq } from 'lodash-es';
+import { get, map, set, union } from 'lodash-es';
 
 // internal imports
 import { GenericType } from '@rn-forge/ng/core';
@@ -81,13 +81,11 @@ export interface Credentials {
 
 /** {@link Permission} implementation that grants every permission check — the default when auth is disabled. */
 export class AllowAnyPermission implements Permission {
-  hasPermission(key: string): boolean {
-    void key;
+  hasPermission(_key: string): boolean {
     return true;
   }
 
-  hasAnyPermission(...keys: string[]): boolean {
-    void keys;
+  hasAnyPermission(..._keys: string[]): boolean {
     return true;
   }
 }
@@ -101,13 +99,11 @@ export class AnonymousCredentials implements Credentials {
   readonly isAuthenticated = false;
   readonly userProfile: Signal<Partial<UserProfile>> = signal({});
 
-  hasPermission(key: string): boolean {
-    void key;
+  hasPermission(_key: string): boolean {
     return false;
   }
 
-  hasAnyPermission(...keys: string[]): boolean {
-    void keys;
+  hasAnyPermission(..._keys: string[]): boolean {
     return false;
   }
 }
@@ -130,12 +126,14 @@ export class JwtCredentials implements Credentials {
   constructor(private readonly jwtToken: JwtToken) {
     const profile = jwtToken.getAttribute<UserProfile>('profile') ?? {};
     this.userProfile = signal(profile);
-    this._permissions = uniq(
-      union(
-        (profile as UserProfile).permissions ?? [],
-        flatten(map((profile as UserProfile).groups, 'permissions')),
+    this._permissions = [
+      ...new Set(
+        union(
+          (profile as UserProfile).permissions ?? [],
+          map((profile as UserProfile).groups, 'permissions').flat(),
+        ),
       ),
-    );
+    ];
   }
 
   hasPermission(key: string): boolean {
@@ -167,7 +165,7 @@ export class JwtCredentials implements Credentials {
  * | `iat`       | `issuedAt` |
  */
 export class JwtToken {
-  private static _JWT_ATTRS: Record<string, string> = {
+  private static readonly _JWT_ATTRS: Record<string, string> = {
     token_type: 'type',
     jti: 'id',
     iss: 'issuer',
@@ -184,7 +182,7 @@ export class JwtToken {
   readonly subject!: string;
   readonly audience!: string;
   readonly expiry!: number;
-  readonly issuedAt!: string;
+  readonly issuedAt!: number;
 
   constructor(token: string) {
     this.token = token;

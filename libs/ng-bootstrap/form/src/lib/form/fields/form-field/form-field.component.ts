@@ -17,8 +17,11 @@ import {
 } from '@angular/forms';
 
 // internal imports
-import { ConfigOptions, ConfigurableComponent } from '@rn-forge/ng-bootstrap';
-import { ButtonComponent } from '@rn-forge/ng-bootstrap';
+import {
+  ButtonComponent,
+  ConfigOptions,
+  ConfigurableComponent,
+} from '@rn-forge/ng-bootstrap';
 
 @Component({
   selector: 'rnf-form-field',
@@ -36,7 +39,7 @@ export class FormFieldComponent {
 
   readonly: Signal<boolean> = computed(() => {
     return ['true', 'readonly'].includes(
-      (this.field().htmlAttributes() ?? {})['readonly'],
+      this.field().htmlAttributes()?.['readonly'],
     );
   });
 
@@ -101,7 +104,7 @@ export abstract class ParentFieldComponent<
     }
 
     const control = this.getControl();
-    return control && control.invalid && (control.dirty || control.touched)
+    return control?.invalid && (control.dirty || control.touched)
       ? 'is-invalid'
       : '';
   }

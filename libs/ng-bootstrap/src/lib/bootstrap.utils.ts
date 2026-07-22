@@ -61,7 +61,7 @@ export class StyleHelper {
         .matches
         ? 'dark'
         : colorMode;
-    this.document.documentElement.setAttribute('data-bs-theme', effective);
+    this.document.documentElement.dataset['bsTheme'] = effective;
   }
 
   toggleColorMode(colorMode: string): string {

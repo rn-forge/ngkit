@@ -13,8 +13,11 @@ import {
 // internal imports
 import { GenericType } from '@rn-forge/ng/core';
 import { startCase } from 'lodash-es';
-import { ConfigOptions, ConfigurableComponent } from '@rn-forge/ng-bootstrap';
-import { StyleHelper } from '@rn-forge/ng-bootstrap';
+import {
+  ConfigOptions,
+  ConfigurableComponent,
+  StyleHelper,
+} from '@rn-forge/ng-bootstrap';
 import { SubMenu } from '../navbar/navbar.types';
 import { UserSettingsService } from '@rn-forge/ng-bootstrap/auth';
 
@@ -36,9 +39,9 @@ export const COLOR_MODE_ICON_MAP: GenericType<string> = {
 export class ColorMode extends ConfigurableComponent<ColorModeOptions> {
   mode: InputSignal<VIEW_MODE> = input<VIEW_MODE>('button');
 
-  private userSettingsService: UserSettingsService =
+  private readonly userSettingsService: UserSettingsService =
     inject(UserSettingsService);
-  private styleHelper: StyleHelper = inject(StyleHelper);
+  private readonly styleHelper: StyleHelper = inject(StyleHelper);
   private dragging = false;
 
   protected activeMode: WritableSignal<COLOR_MODE> = signal<COLOR_MODE>('auto');

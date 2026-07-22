@@ -364,14 +364,12 @@ describe('FormUtil.VALIDATORS', () => {
 
     afterEach(() => vi.useRealTimers());
 
-    it('returns null for a pristine control', () => {
-      const control = new FormControl('2025-06-15');
-      expect(FormUtil.VALIDATORS.DATE()(control)).toBeNull();
-    });
-
-    it('returns null when control has no value', () => {
-      const control = dirtyControl('');
-      expect(FormUtil.VALIDATORS.DATE()(control)).toBeNull();
+    it.each([
+      ['a pristine control', () => new FormControl('2025-06-15')],
+      ['a control with no value', () => dirtyControl('')],
+      ['today regardless of allowPast', () => dirtyControl('2025-06-15')],
+    ])('returns null for %s', (_desc, makeControl) => {
+      expect(FormUtil.VALIDATORS.DATE()(makeControl())).toBeNull();
     });
 
     it('returns an error for an invalid date format', () => {
@@ -389,11 +387,6 @@ describe('FormUtil.VALIDATORS', () => {
     it('allows past dates when allowPast is true', () => {
       const control = dirtyControl('2025-06-14');
       expect(FormUtil.VALIDATORS.DATE({ allowPast: true })(control)).toBeNull();
-    });
-
-    it('allows today regardless of allowPast', () => {
-      const control = dirtyControl('2025-06-15');
-      expect(FormUtil.VALIDATORS.DATE()(control)).toBeNull();
     });
 
     it('rejects future dates when disallowFuture is true', () => {

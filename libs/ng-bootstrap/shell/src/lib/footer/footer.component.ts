@@ -10,8 +10,11 @@ import {
 } from '@angular/core';
 
 // internal imports
-import { ConfigOptions, ConfigurableComponent } from '@rn-forge/ng-bootstrap';
-import { BREAKPOINT } from '@rn-forge/ng-bootstrap';
+import {
+  BREAKPOINT,
+  ConfigOptions,
+  ConfigurableComponent,
+} from '@rn-forge/ng-bootstrap';
 import { Brand, BrandOptions } from '../header/brand/brand';
 import { Navbar, NavbarOptions } from '../navbar/navbar';
 
@@ -53,12 +56,14 @@ export class FooterComponent extends ConfigurableComponent<FooterOptions> {
   });
 
   protected readonly menuPositionClass: Signal<string> = computed(() => {
-    const marginClass =
-      this.config.menuPosition === 'left'
-        ? 'e'
-        : this.config.menuPosition === 'right'
-          ? 's'
-          : 'x';
+    let marginClass: string;
+    if (this.config.menuPosition === 'left') {
+      marginClass = 'e';
+    } else if (this.config.menuPosition === 'right') {
+      marginClass = 's';
+    } else {
+      marginClass = 'x';
+    }
     if (this.config.breakpoint) {
       return `mx-auto mx-${this.config.breakpoint}-0 m${marginClass}-${this.config.breakpoint}-auto`;
     }

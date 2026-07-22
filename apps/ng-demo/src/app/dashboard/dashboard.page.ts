@@ -11,7 +11,7 @@ import { AlertComponent } from '@rn-forge/ng-bootstrap';
 export class DashboardPageComponent implements AfterViewInit {
   protected readonly authService = inject(AuthService);
 
-  @ViewChild(AlertComponent) private alert?: AlertComponent;
+  @ViewChild(AlertComponent) private readonly alert?: AlertComponent;
 
   ngAfterViewInit(): void {
     this.alert?.success(

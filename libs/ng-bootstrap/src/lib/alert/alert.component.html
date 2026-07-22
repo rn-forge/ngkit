@@ -23,13 +23,12 @@
   </ngb-alert>
 
   @if (showProgress()) {
-    <div
-      class="progress"
-      role="progressbar"
+    <progress
+      class="visually-hidden"
       aria-label="progress"
-      [attr.aria-valuenow]="progress()"
-      aria-valuemin="0"
-      aria-valuemax="100">
+      [value]="progress()"
+      max="100"></progress>
+    <div class="progress" aria-hidden="true">
       <div
         class="progress-bar progress-bar-striped bg-{{ type() }}"
         [attr.style]="'width: ' + progress() + '%;'"></div>

@@ -34,10 +34,12 @@ import { HttpUtil } from './http.utils';
  * ```
  */
 export abstract class AbstractHTTPService {
-  protected httpConfig: RnForgeHttpConfig = inject(RN_FORGE_HTTP_CONFIG_TOKEN);
+  protected readonly httpConfig: RnForgeHttpConfig = inject(
+    RN_FORGE_HTTP_CONFIG_TOKEN,
+  );
 
   private _basePath: string;
-  private _httpClient: HttpClient;
+  private readonly _httpClient: HttpClient;
 
   constructor(apiRoot = '') {
     this._basePath = HttpUtil.trimURL(

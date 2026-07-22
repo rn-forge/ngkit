@@ -45,8 +45,10 @@ export class HeaderComponent
   >();
   readonly contextParams: InputSignal<GenericType> = input<GenericType>({});
 
-  private appConfig: RnForgeCoreConfig = inject(RN_FORGE_APP_CONFIG_TOKEN);
-  private userSettingsService: UserSettingsService =
+  private readonly appConfig: RnForgeCoreConfig = inject(
+    RN_FORGE_APP_CONFIG_TOKEN,
+  );
+  private readonly userSettingsService: UserSettingsService =
     inject(UserSettingsService);
   protected navbarColor: WritableSignal<string> = signal('default');
 
@@ -65,13 +67,16 @@ export class HeaderComponent
     const togglerPosition = this.config.position?.toggler ?? position;
     const marginClass = togglerPosition === 'left' ? 'e' : 's';
 
-    return position === 'left'
-      ? 'me-auto'
-      : position === 'right'
-        ? 'ms-auto'
-        : togglerPosition === 'center'
-          ? 'mx-auto'
-          : `m${marginClass}-auto mx-${this.config.navbar?.breakpoint}-auto`;
+    if (position === 'left') {
+      return 'me-auto';
+    }
+    if (position === 'right') {
+      return 'ms-auto';
+    }
+    if (togglerPosition === 'center') {
+      return 'mx-auto';
+    }
+    return `m${marginClass}-auto mx-${this.config.navbar?.breakpoint}-auto`;
   });
 
   constructor() {
@@ -119,6 +124,8 @@ export class HeaderComponent
   }
 }
 
+export type HEADER_POSITION = 'left' | 'right' | 'center';
+
 export interface HeaderOptions extends ConfigOptions {
   id?: string;
   navbarColor?: string;
@@ -128,8 +135,8 @@ export interface HeaderOptions extends ConfigOptions {
   brand?: BrandOptions;
   navbar: NavbarOptions;
   position?: {
-    brand?: 'left' | 'right' | 'center';
-    menu?: 'left' | 'right' | 'center';
-    toggler?: 'left' | 'right' | 'center';
+    brand?: HEADER_POSITION;
+    menu?: HEADER_POSITION;
+    toggler?: HEADER_POSITION;
   };
 }
