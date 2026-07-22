@@ -12,21 +12,10 @@ rnf-table {
       font-size: smaller;
 
       tr {
-        // th {
-        //     background-color: var(--bs-primary);
-        //     color: var(--bs-light);
-
-        //     // reduce padding around column name
-        //     div.th-inner {
-        //         padding: 0.4rem !important;
-        //     }
-        // }
-
         // additional header rows
         &:nth-child(n + 2) {
           th {
             background-color: var(--bs-secondary);
-            // color: var(--bs-dark);
           }
         }
       }

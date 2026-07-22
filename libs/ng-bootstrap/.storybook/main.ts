@@ -19,10 +19,6 @@ const config: StorybookConfig = {
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@rn-forge/ng-bootstrap/assets': path.resolve(
-        workspaceRoot,
-        'libs/ng-bootstrap/assets/src/index.ts',
-      ),
       '@rn-forge/ng-bootstrap': path.resolve(
         workspaceRoot,
         'libs/ng-bootstrap/src/index.ts',

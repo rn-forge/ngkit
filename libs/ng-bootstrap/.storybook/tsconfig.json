@@ -10,7 +10,6 @@
     "../**/*.stories.jsx",
     "../**/*.stories.tsx",
     "../**/*.stories.mdx",
-    "../assets/src/**/*.ts",
     "../auth/src/**/*.ts",
     "../crud/src/**/*.ts",
     "../form/src/**/*.ts",

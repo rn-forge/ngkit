@@ -1,19 +1,17 @@
 # @rn-forge/ng-bootstrap/assets
 
-Secondary entry point of `@rn-forge/ng-bootstrap`. Provides the stylesheet and script bundles that wire Bootstrap, Bootstrap Table, Bootstrap Icons, Quill, and jQuery-Treegrid into a consuming application.
+Stylesheet entry point of `@rn-forge/ng-bootstrap`. Provides the Sass theme that wires Bootstrap, Bootstrap Table, Bootstrap Icons, Quill, and jQuery-Treegrid CSS into a consuming application.
+
+> **Scripts are not loaded from here.** All vendor JavaScript (Bootstrap bundle, bootstrap-table + extensions, jQuery globals, treegrid) is loaded dynamically at app startup by `provideRnForgeBootstrapConfig()` — see `src/lib/bootstrap-loader.ts`, `src/lib/table/bootstrap-table-loader.ts`, and `src/lib/ng-bootstrap-scripts.ts` in the main entry point. Consuming apps need no `scripts`/`polyfills` entries in their build config.
 
 ---
 
 ## What's in this entry point
 
-```
+```text
 assets/
 ├── theme.scss              ← stylesheet entry (Bootstrap @forward chain)
-├── styles.scss             ← legacy alias (deprecated — use theme.scss)
 └── src/
-    ├── index.ts            ← script entry (side-effect imports)
-    ├── vendor-scripts.ts   ← Bootstrap + Bootstrap Table extension imports
-    ├── ng-bootstrap-scripts.ts  ← reserved for library-level script overrides
     ├── vendor-styles.scss  ← vendor CSS (Bootstrap Icons, table extensions, Quill)
     └── ng-bootstrap-styles.scss ← library-level global style overrides
 ```
@@ -53,46 +51,9 @@ Library-level global style overrides. These exist at this level because Bootstra
 
 ---
 
-## Scripts
-
-### `src/index.ts` — the script entry point
-
-```ts
-import './vendor-scripts';
-import './ng-bootstrap-scripts';
-```
-
-Import order matters: `vendor-scripts` must load before any library code that reads `window.jQuery` or bootstrap-table's global registry.
-
-### `src/vendor-scripts.ts`
-
-Side-effect-only imports that register globals and extend `$.fn`:
-
-| Import | Effect |
-|---|---|
-| `bootstrap/dist/js/bootstrap.bundle.js` | Registers Bootstrap components (`Tooltip`, `Modal`, etc.) on `window.bootstrap` |
-| `bootstrap-table/dist/bootstrap-table.js` | Registers `$.fn.bootstrapTable` |
-| `bootstrap-table-export` | Adds export toolbar button |
-| `bootstrap-table-filter-control` | Adds per-column filter inputs |
-| `bootstrap-table-mobile` | Responsive card layout on small screens |
-| `bootstrap-table-print` | Print toolbar button |
-| `bootstrap-table-sticky-header` | Sticky `<thead>` on scroll |
-| `bootstrap-table-toolbar` | Custom toolbar slots |
-| `bootstrap-table-treegrid` | Hierarchical row support (bridge to jQuery Treegrid) |
-
-**Why `.ts` and not `.js`?**
-
-ng-packagr compiles secondary entry points with TypeScript, then bundles declarations with rollup. Rollup resolves imports by following the `.d.ts` files emitted by TypeScript into `tmp-typings/`. TypeScript only emits `.d.ts` for files it actually compiles — i.e. `.ts` files. If these were `.js` files, rollup would fail to find them in `tmp-typings/` at build time. Keeping them as `.ts` (even though the content is pure side-effect imports) ensures the declaration chain stays intact.
-
-### `src/ng-bootstrap-scripts.ts`
-
-Reserved for future library-level script initialization. Currently empty (`export {}`). Kept separate so library patches can be added here without touching `vendor-scripts.ts`.
-
----
-
 ## Usage
 
-### 1. Styles — minimal (no Bootstrap customization)
+### 1. Minimal (no Bootstrap customization)
 
 In `apps/<your-app>/src/styles.scss`:
 
@@ -100,7 +61,7 @@ In `apps/<your-app>/src/styles.scss`:
 @use '@rn-forge/ng-bootstrap/assets/theme';
 ```
 
-### 2. Styles — with Bootstrap variable overrides
+### 2. With Bootstrap variable overrides
 
 ```scss
 // styles.scss
@@ -111,25 +72,6 @@ In `apps/<your-app>/src/styles.scss`:
 );
 ```
 
-Full variable reference: https://github.com/twbs/bootstrap/blob/main/scss/_variables.scss
+Full variable reference: <https://github.com/twbs/bootstrap/blob/main/scss/_variables.scss>
 
 > Only Bootstrap variables can be overridden this way. Vendor CSS (Bootstrap Table, Bootstrap Icons, Quill) is loaded as plain CSS and is not configurable via Sass variables.
-
-### 3. Scripts — via `angular.json` / `project.json`
-
-Add the script entry to your app's build target:
-
-```json
-{
-  "styles": ["apps/<your-app>/src/styles.scss"],
-  "scripts": ["node_modules/@rn-forge/ng-bootstrap/assets/src/index.js"]
-}
-```
-
-> The `setup-assets` generator handles this automatically. Run it instead of editing `project.json` by hand.
-
----
-
-## `sideEffects: true`
-
-The root `package.json` sets `"sideEffects": true`. This is required. Without it, bundlers (esbuild, webpack) apply tree-shaking and silently drop imports that have no exported symbols — exactly what `vendor-scripts.ts` consists of. The flag tells the bundler to always include these modules regardless of whether their exports are referenced.

@@ -13,6 +13,8 @@ import type { ButtonOptions } from './button/button.types';
 import type { ErrorOptions } from './error/error.types';
 import type { ModalOptions } from './modal/modal.types';
 import type { TableOptions } from './table/table.types';
+import { loadBootstrap } from './bootstrap-loader';
+import { loadBootstrapTable } from './table/bootstrap-table-loader';
 import { loadTreegrid } from './table/treegrid-loader';
 
 /**
@@ -74,6 +76,17 @@ export const provideRnForgeBootstrapConfig = (
 ) => {
   return makeEnvironmentProviders([
     { provide: RN_FORGE_BOOTSTRAP_CONFIG_PARTS, useValue: config, multi: true },
-    ...(config.table?.treegrid ? [provideAppInitializer(loadTreegrid)] : []),
+    // Single initializer loading all vendor scripts sequentially — apps get the
+    // full script setup from this provider alone (no scripts/polyfills entry in
+    // the app build config). Order matters: jQuery/bootstrap-table globals must
+    // exist before treegrid, and ng-bootstrap-scripts may patch any of them.
+    provideAppInitializer(async () => {
+      await loadBootstrap();
+      await loadBootstrapTable();
+      if (config.table?.treegrid) {
+        await loadTreegrid();
+      }
+      await import('./ng-bootstrap-scripts');
+    }),
   ]);
 };
