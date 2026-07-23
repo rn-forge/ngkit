@@ -9,7 +9,7 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import { get, map } from 'lodash-es';
+import { get } from 'lodash-es';
 
 // internal imports — UserProfile type from auth (only this file + auth EP import it)
 import { UserProfile } from '@rn-forge/ng/auth';
@@ -30,7 +30,6 @@ export interface UserProfileOptions extends ConfigOptions {
   selector: 'rnf-user-profile',
   imports: [CommonModule],
   templateUrl: './profile.component.html',
-  styleUrl: './profile.component.scss',
 })
 export class UserProfileComponent
   extends ConfigurableComponent<UserProfileOptions>
@@ -51,7 +50,7 @@ export class UserProfileComponent
     // }
     effect(() => {
       this.profileAttributes.set(
-        map(this.config.attributes, (attr) => {
+        this.config.attributes.map((attr) => {
           return {
             key: attr.key,
             label: attr.label,

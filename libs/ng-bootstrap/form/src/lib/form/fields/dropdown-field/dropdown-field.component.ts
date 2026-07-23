@@ -27,7 +27,6 @@ import {
     HtmlAttributesDirective,
   ],
   templateUrl: './dropdown-field.component.html',
-  styleUrl: './dropdown-field.component.scss',
 })
 export class DropdownFieldComponent extends ParentFieldComponent {
   override configKey = 'dropdownField';

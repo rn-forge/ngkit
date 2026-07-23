@@ -16,18 +16,14 @@ import {
   HtmlAttributesDirective,
   TemplateContext,
 } from '@rn-forge/ng/core';
-import { ConfigOptions, ConfigurableComponent } from '@rn-forge/ng-bootstrap';
-import { BREAKPOINT } from '@rn-forge/ng-bootstrap';
+import {
+  BREAKPOINT,
+  ConfigOptions,
+  ConfigurableComponent,
+} from '@rn-forge/ng-bootstrap';
 import { ColorMode } from '../color-mode/color-mode';
 import { Offcanvas, OffcanvasOptions } from '../offcanvas/offcanvas';
-import {
-  DIVIDER,
-  NAV_ITEM_TYPE,
-  NAV_LINK_TYPE,
-  NavItem,
-  NavLink,
-  SubMenuItem,
-} from './navbar.types';
+import { DIVIDER, NAV_ITEM_TYPE, NavItem, SubMenuItem } from './navbar.types';
 
 /**
  * Pure renderer navbar.
@@ -129,11 +125,5 @@ export interface NavbarOptions extends ConfigOptions {
   useDivider?: boolean;
 }
 
-export {
-  DIVIDER,
-  type NAV_ITEM_TYPE,
-  type NAV_LINK_TYPE,
-  type NavItem,
-  type NavLink,
-  type SubMenuItem,
-};
+export { DIVIDER, type NAV_ITEM_TYPE, type NavItem, type SubMenuItem };
+export type { NAV_LINK_TYPE, NavLink } from './navbar.types';

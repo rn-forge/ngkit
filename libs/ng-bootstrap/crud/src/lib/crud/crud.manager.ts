@@ -19,9 +19,9 @@ import {
   WriteModel,
 } from '@rn-forge/ng/http/crud';
 import { FormOptions } from '@rn-forge/ng-bootstrap/form';
-import { ModalOptions } from '@rn-forge/ng-bootstrap';
 import {
   ColumnOptions,
+  ModalOptions,
   TableOptions,
   ToolbarHelper,
 } from '@rn-forge/ng-bootstrap';
@@ -338,11 +338,15 @@ export abstract class AbstractCRUDManager<
 
   protected toRequestParams<T>(rawValue: GenericType): T {
     return Object.entries(rawValue).reduce((result: T, [key, value]) => {
-      (result as GenericType)[key] = !value
-        ? null
-        : typeof value === 'object'
-          ? (value as GenericType)['id']
-          : value;
+      let resolvedValue: unknown;
+      if (!value) {
+        resolvedValue = null;
+      } else if (typeof value === 'object') {
+        resolvedValue = (value as GenericType)['id'];
+      } else {
+        resolvedValue = value;
+      }
+      (result as GenericType)[key] = resolvedValue;
       return result;
     }, {} as T);
   }

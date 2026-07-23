@@ -26,7 +26,6 @@ export type { ErrorOptions } from './error.types';
   selector: 'rnf-error',
   imports: [CommonModule],
   templateUrl: './error.component.html',
-  styleUrl: './error.component.scss',
 })
 export class ErrorComponent
   extends ConfigurableComponent<ErrorOptions>
@@ -41,16 +40,21 @@ export class ErrorComponent
   private getMessage(config: Partial<ErrorOptions>): string {
     switch (config.code) {
       case 404:
-        return (config.message ??= 'Page not found');
+        config.message ??= 'Page not found';
+        break;
       case 403:
-        return (config.message ??= 'Access denied');
+        config.message ??= 'Access denied';
+        break;
       case 500:
-        return (config.message ??= 'Internal server error');
+        config.message ??= 'Internal server error';
+        break;
       case 401:
-        return (config.message ??= 'Unauthorized');
+        config.message ??= 'Unauthorized';
+        break;
       default:
-        return (config.message ??= 'An unknown error occurred');
+        config.message ??= 'An unknown error occurred';
     }
+    return config.message;
   }
 
   override defaultOptions(): Partial<ErrorOptions> {

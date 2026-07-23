@@ -1,0 +1,131 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      specifier:
+        description: 'Version bump'
+        required: true
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      exact-version:
+        description: 'Exact version (overrides bump; leave empty normally)'
+        required: false
+        type: string
+      dist-tag:
+        description: 'npm dist-tag (latest for current releases; v<major>-lts for hotfixes to older majors)'
+        required: true
+        type: string
+        default: 'latest'
+      dry-run:
+        description: 'Dry run (no commit/tag/publish)'
+        required: true
+        type: boolean
+        default: true
+      first-release:
+        description: 'First release ever (no existing git tags)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # push release commit + tags, create GitHub Releases
+  id-token: write # npm OIDC trusted publishing
+
+concurrency:
+  group: release
+  cancel-in-progress: false # never cancel a running release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # full history required for git-tag version resolution
+          filter: tree:0
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24 # npm >= 11.5.1 required for OIDC publishing
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Configure git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Validate (lint, test, build)
+        run: pnpm exec nx run-many -t lint test build --projects=ng,ng-bootstrap
+
+      # Version + changelog + git commit/tag/push + GitHub Release. Publishing
+      # is deliberately excluded here (--skip-publish) because the combined
+      # `nx release` command has no way to pass a custom npm dist-tag; that's
+      # done as a separate `nx release publish` step below, which resolves
+      # the version from the tag/commit this step just created.
+      - name: Version and changelog
+        run: >
+          pnpm exec nx release
+          "${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}"
+          --skip-publish
+          ${{ inputs.dry-run && '--dry-run' || '' }}
+          ${{ inputs.first-release && '--first-release' || '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for createRelease: github
+
+      # Only meaningful after versioning has rewritten workspace:* peer deps
+      # to exact pins in the dist manifest roots - skipped on dry-run since
+      # nothing gets rewritten then.
+      - name: Verify publishable dist manifests
+        if: ${{ !inputs.dry-run }}
+        run: node tools/scripts/verify-dist-manifests.mjs
+
+      - name: Publish
+        run: >
+          pnpm exec nx release publish
+          --tag="$DIST_TAG"
+          ${{ inputs.dry-run && '--dry-run' || '' }}
+          ${{ inputs.first-release && '--first-release' || '' }}
+        env:
+          DIST_TAG: ${{ inputs.dist-tag }}
+
+      - name: Pack publishable tarballs
+        if: ${{ !inputs.dry-run }}
+        run: pnpm exec nx run-many -t pack --projects=ng,ng-bootstrap
+
+      - name: Resolve release tag
+        if: ${{ !inputs.dry-run }}
+        id: tag
+        run: echo "name=v$(node -p "require('./dist/libs/ng/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      # `nx release`'s `changelog.workspaceChangelog.createRelease: "github"` (nx.json)
+      # already created the GitHub Release for this tag in the "Version and changelog"
+      # step above; this just attaches the packed tarballs to it as downloadable assets.
+      - name: Attach tarballs to versioned release
+        if: ${{ !inputs.dry-run }}
+        run: gh release upload ${{ steps.tag.outputs.name }} dist/tarballs/*.tgz --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Rolling pointer so consumers can depend on a stable, version-less URL
+      # (.../releases/download/latest/<pkg>.tgz) instead of tracking exact tags.
+      # Only moves on main - hotfix releases from release/** branches keep their
+      # own versioned tag/release but don't touch the main-line "latest" pointer.
+      - name: Update rolling "latest" release
+        if: ${{ !inputs.dry-run && github.ref_name == 'main' }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          git tag -f latest
+          git push origin latest --force
+          gh release create latest dist/tarballs/*.tgz --title "Latest" --notes "Rolling pointer to ${{ steps.tag.outputs.name }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

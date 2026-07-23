@@ -12,15 +12,17 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 // internal imports
 import { ReadModel, WriteModel } from '@rn-forge/ng/http/crud';
-import { AlertComponent } from '@rn-forge/ng-bootstrap';
-import { ConfigurableComponent } from '@rn-forge/ng-bootstrap';
-import { ButtonComponent } from '@rn-forge/ng-bootstrap';
+import {
+  AlertComponent,
+  ButtonComponent,
+  ConfigurableComponent,
+  ModalComponent,
+  TableComponent,
+} from '@rn-forge/ng-bootstrap';
 import {
   FormComponent,
   InputFieldComponent,
 } from '@rn-forge/ng-bootstrap/form';
-import { ModalComponent } from '@rn-forge/ng-bootstrap';
-import { TableComponent } from '@rn-forge/ng-bootstrap';
 import { AbstractCRUDManager } from './crud.manager';
 import { CRUDContext, CRUDOptions } from './crud.types';
 
@@ -40,7 +42,6 @@ export type { CRUDOptions } from './crud.types';
     TableComponent,
   ],
   templateUrl: './crud.component.html',
-  styleUrl: './crud.component.scss',
 })
 export class CRUDComponent
   extends ConfigurableComponent<CRUDOptions>
@@ -57,7 +58,7 @@ export class CRUDComponent
     TemplateRef<unknown> | undefined
   >();
 
-  @ViewChild(AlertComponent) private alertComponent!: AlertComponent;
+  @ViewChild(AlertComponent) private readonly alertComponent!: AlertComponent;
   @ViewChild('listTable') private readonly listTable!: TableComponent;
   @ViewChild('addUpdateForm') private readonly addUpdateForm!: FormComponent;
   @ViewChild('deleteModal') private readonly deleteModal!: ModalComponent;

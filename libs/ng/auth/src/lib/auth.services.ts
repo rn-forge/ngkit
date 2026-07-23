@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { buildUrl } from 'build-url-ts';
-import { flatten, map, union, uniq } from 'lodash-es';
+import { map, union } from 'lodash-es';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 
 // internal imports
@@ -161,12 +161,14 @@ export class AuthService {
     this.localStorageService.set(JWT_TOKEN_KEY, jwtToken.token);
     this._jwtToken = jwtToken;
     this._userProfile = jwtToken.getAttribute<UserProfile>('profile');
-    this._userPermissions = uniq(
-      union(
-        this._userProfile?.permissions ?? [],
-        flatten(map(this._userProfile?.groups, 'permissions')),
+    this._userPermissions = [
+      ...new Set(
+        union(
+          this._userProfile?.permissions ?? [],
+          map(this._userProfile?.groups, 'permissions').flat(),
+        ),
       ),
-    );
+    ];
 
     // Update signal-based credentials
     this._credentials.set(new JwtCredentials(jwtToken));

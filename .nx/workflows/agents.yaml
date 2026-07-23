@@ -1,0 +1,25 @@
+launch-templates:
+  rn-forge-ng:
+    resource-class: 'docker_linux_amd64/medium'
+    image: 'ubuntu22.04-node24.14-v1'
+    init-steps:
+      - name: Checkout
+        uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/checkout/main.yaml'
+      - name: Restore PNPM Store Cache
+        uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/cache/main.yaml'
+        inputs:
+          # Invalidate cache when lockfile or patches change
+          key: 'pnpm-lock.yaml|patches/**'
+          # Target the standard PNPM global store directory path
+          paths: |
+            ~/.local/share/pnpm/store
+          base-branch: 'main'
+      - name: Setup PNPM
+        script: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm config set store-dir ~/.local/share/pnpm/store
+      - name: Install Node Modules
+        uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/install-node-modules/main.yaml'
+      - name: Install Browsers
+        uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/install-browsers/main.yaml'

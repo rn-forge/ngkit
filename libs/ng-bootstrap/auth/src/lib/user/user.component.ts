@@ -5,10 +5,12 @@ import { ActivatedRoute } from '@angular/router';
 
 // internal imports
 import { RouteService } from '@rn-forge/ng/core';
-import { AlertComponent } from '@rn-forge/ng-bootstrap';
+import {
+  AlertComponent,
+  ButtonComponent,
+  ConfigOptions,
+} from '@rn-forge/ng-bootstrap';
 import { AbstractAuthPage } from '../abstract-auth-page';
-import { ConfigOptions } from '@rn-forge/ng-bootstrap';
-import { ButtonComponent } from '@rn-forge/ng-bootstrap';
 import {
   UserProfileComponent,
   UserProfileOptions,
@@ -33,7 +35,6 @@ export interface UserOptions extends ConfigOptions {
     UserSettingsComponent,
   ],
   templateUrl: './user.component.html',
-  styleUrl: './user.component.scss',
 })
 export class UserComponent
   extends AbstractAuthPage<UserOptions>
@@ -46,8 +47,7 @@ export class UserComponent
   override ngOnInit(): void {
     super.ngOnInit();
     const segments = this.activatedRoute.snapshot.url;
-    this.subpath =
-      segments.length > 0 ? segments[segments.length - 1].path : '';
+    this.subpath = segments.at(-1)?.path ?? '';
   }
 
   override configKey = 'user';

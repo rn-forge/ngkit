@@ -3,8 +3,11 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 
 // internal imports
-import { ConfigOptions, ConfigurableComponent } from '@rn-forge/ng-bootstrap';
-import { BREAKPOINT } from '@rn-forge/ng-bootstrap';
+import {
+  BREAKPOINT,
+  ConfigOptions,
+  ConfigurableComponent,
+} from '@rn-forge/ng-bootstrap';
 
 @Component({
   selector: 'rnf-watermark',

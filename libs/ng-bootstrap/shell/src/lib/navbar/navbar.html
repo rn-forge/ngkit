@@ -111,17 +111,9 @@
           <ng-container
             [ngTemplateOutlet]="dividerTemplate"
             [ngTemplateOutletContext]="{ config: config }"></ng-container>
-          <!-- <div class="vr" [ngClass]="config.breakpoint?'d-none d-'+config.breakpoint+'-block':''"></div>
-                <hr [ngClass]="config.breakpoint?'d-block d-'+config.breakpoint+'-none':''" /> -->
         </li>
       }
     }
-
-    <!-- Render custom template if provided -->
-    <!-- will never get here due to check in link #8 -->
-    <!-- @if(template()) {
-        <ng-container [ngTemplateOutlet]="template()" [ngTemplateOutletContext]="templateContext()"></ng-container>
-        } -->
   </ul>
 </ng-template>
 
@@ -170,7 +162,10 @@
     <i class="bi bi-{{ item.icon }}"></i>
   }
   @if (item.img) {
-    <img class="{{ item.img.class }}" src="{{ item.img.src }}" alt="IMAGE" />
+    <img
+      class="{{ item.img.class }}"
+      src="{{ item.img.src }}"
+      alt="{{ item.label }}" />
   }
   {{ item.label }}
 </ng-template>

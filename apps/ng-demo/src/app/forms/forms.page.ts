@@ -51,7 +51,7 @@ const TAGS = [
   templateUrl: './forms.page.html',
 })
 export class FormsPageComponent {
-  @ViewChild('form') private form!: FormComponent;
+  @ViewChild('form') private readonly form!: FormComponent;
 
   protected submitted: unknown;
 

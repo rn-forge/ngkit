@@ -1,7 +1,12 @@
 import { Component, inject, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from '@rn-forge/ng/auth';
-import { StyleHelper } from '@rn-forge/ng-bootstrap';
+import {
+  ModalComponent,
+  ModalOptions,
+  StyleHelper,
+} from '@rn-forge/ng-bootstrap';
+import { UserSettingsService } from '@rn-forge/ng-bootstrap/auth';
 import {
   ColorMode,
   DIVIDER,
@@ -10,8 +15,6 @@ import {
   HeaderComponent,
   HeaderOptions,
 } from '@rn-forge/ng-bootstrap/shell';
-import { ModalComponent, ModalOptions } from '@rn-forge/ng-bootstrap';
-import { UserSettingsService } from '@rn-forge/ng-bootstrap/auth';
 
 @Component({
   selector: 'app-root',
@@ -32,7 +35,7 @@ export class App {
   private readonly _styleHelper = inject(StyleHelper);
   private readonly _userSettingsService = inject(UserSettingsService);
 
-  @ViewChild('helpModal') private helpModal!: ModalComponent;
+  @ViewChild('helpModal') private readonly helpModal!: ModalComponent;
 
   protected headerOptions: HeaderOptions = {
     id: 'app-header',

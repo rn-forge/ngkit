@@ -73,18 +73,17 @@ export class ButtonComponent
     return !!this.config.disabled;
   });
 
-  protected readonly buttonClass: Signal<string> = computed(() =>
-    [
+  protected readonly buttonClass: Signal<string> = computed(() => {
+    const outlinePrefix = this.config.outline ? 'outline-' : '';
+    return [
       'btn',
       this.config.type === 'close' ? 'btn-close' : '',
-      this.config.class
-        ? `btn-${this.config.outline ? 'outline-' : ''}${this.config.class}`
-        : '',
+      this.config.class ? `btn-${outlinePrefix}${this.config.class}` : '',
       this.config.additionalClasses ?? '',
     ]
       .join(' ')
-      .trim(),
-  );
+      .trim();
+  });
 
   /** Output events **/
   @Output() buttonClick = new EventEmitter();

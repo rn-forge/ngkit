@@ -30,8 +30,11 @@ import {
 } from '@rn-forge/ng/core';
 
 // internal imports
-import { ConfigOptions, ConfigurableComponent } from '@rn-forge/ng-bootstrap';
-import { ButtonComponent } from '@rn-forge/ng-bootstrap';
+import {
+  ButtonComponent,
+  ConfigOptions,
+  ConfigurableComponent,
+} from '@rn-forge/ng-bootstrap';
 
 // global variables
 const _VERTICAL_FORM_CLASSES =
@@ -49,13 +52,12 @@ const _INLINE_FORM_CLASSES =
     HtmlAttributesDirective,
   ],
   templateUrl: './form.component.html',
-  styleUrl: './form.component.scss',
 })
 export class FormComponent
   extends ConfigurableComponent<FormOptions>
   implements OnInit
 {
-  private formBuilder: FormBuilder = inject(FormBuilder);
+  private readonly formBuilder: FormBuilder = inject(FormBuilder);
 
   /** Input properties **/
   template: InputSignal<TemplateRef<unknown> | undefined> = input<
@@ -63,11 +65,11 @@ export class FormComponent
   >();
 
   /** Output events */
-  @Output() private formSubmit = new EventEmitter();
-  @Output() private formCancel = new EventEmitter();
-  @Output() private formReset = new EventEmitter();
+  @Output() private readonly formSubmit = new EventEmitter();
+  @Output() private readonly formCancel = new EventEmitter();
+  @Output() private readonly formReset = new EventEmitter();
 
-  @ViewChild('form') private _formElement!: ElementRef<HTMLElement>;
+  @ViewChild('form') private readonly _formElement!: ElementRef<HTMLElement>;
 
   private _formGroup!: FormGroup;
   private _context!: TemplateContext;
@@ -83,7 +85,7 @@ export class FormComponent
     effect(() => {
       const controls = this.config.controls;
       const controlKeys = Object.keys(controls ?? {})
-        .sort()
+        .sort((a, b) => a.localeCompare(b))
         .join(',');
       if (controlKeys === this._lastControlKeys) {
         return;

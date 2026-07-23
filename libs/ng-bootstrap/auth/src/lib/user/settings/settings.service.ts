@@ -32,12 +32,12 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class UserSettingsService {
-  private localStorageService: LocalStorageService =
+  private readonly localStorageService: LocalStorageService =
     inject(LocalStorageService);
 
   private _storedUserSettings!: Partial<UserSettings>;
   private _currentUserSettings!: UserSettings;
-  private _changeListeners: GenericType<BehaviorSubject<string>> = {};
+  private readonly _changeListeners: GenericType<BehaviorSubject<string>> = {};
 
   constructor() {
     this.readStoredSettings();

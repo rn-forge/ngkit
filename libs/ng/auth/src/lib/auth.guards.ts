@@ -44,7 +44,7 @@ export const authRouteGuard: CanActivateChildFn = (route, state) => {
     return false;
   }
 
-  const routePermission = (route.data ?? {})['permission'];
+  const routePermission = route.data?.['permission'];
   if (routePermission && !permissionService.hasPermission(routePermission)) {
     if (isDebugMode()) {
       console.warn(

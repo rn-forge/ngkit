@@ -2,22 +2,22 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { forIn, merge, pickBy, transform, values } from 'lodash-es';
+import { forIn, merge, pickBy, transform } from 'lodash-es';
 
 // internal imports
 import { GenericType, RouteService, isDebugMode } from '@rn-forge/ng/core';
-import { ConfigurableComponent } from '@rn-forge/ng-bootstrap';
+import {
+  ColumnOptions,
+  ConfigurableComponent,
+  TableComponent,
+  TableOptions,
+} from '@rn-forge/ng-bootstrap';
 import {
   DropdownFieldComponent,
   FormComponent,
   FormOptions,
   TypeaheadFieldComponent,
 } from '@rn-forge/ng-bootstrap/form';
-import {
-  ColumnOptions,
-  TableComponent,
-  TableOptions,
-} from '@rn-forge/ng-bootstrap';
 import { UserSettingsService } from './settings.service';
 import {
   DEFAULT_USER_SETTINGS_OPTIONS,
@@ -64,14 +64,13 @@ import {
     TableComponent,
   ],
   templateUrl: './settings.component.html',
-  styleUrl: './settings.component.scss',
 })
 export class UserSettingsComponent
   extends ConfigurableComponent<UserSettingsOptions>
   implements OnInit
 {
-  private formBuilder: FormBuilder = inject(FormBuilder);
-  private routeService: RouteService = inject(RouteService);
+  private readonly formBuilder: FormBuilder = inject(FormBuilder);
+  private readonly routeService: RouteService = inject(RouteService);
   protected userSettingsService: UserSettingsService =
     inject(UserSettingsService);
 
@@ -102,7 +101,7 @@ export class UserSettingsComponent
 
   /** Component methods **/
   private initialize(): void {
-    this.activeSettings = values(
+    this.activeSettings = Object.values(
       pickBy(
         merge({}, this.config.standardSettings, this.config.customSettings),
         (setting) => setting.enabled ?? true,

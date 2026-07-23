@@ -9,7 +9,6 @@ import { ConfigOptions, ConfigurableComponent } from '@rn-forge/ng-bootstrap';
   selector: 'rnf-brand',
   imports: [CommonModule],
   templateUrl: './brand.html',
-  styleUrl: './brand.scss',
 })
 export class Brand extends ConfigurableComponent<BrandOptions> {
   override configKey = 'brand';

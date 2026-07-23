@@ -6,7 +6,13 @@
   "projectType": "library",
   "release": {
     "version": {
-      "manifestRootsToUpdate": ["dist/{projectRoot}"],
+      "manifestRootsToUpdate": [
+        "{projectRoot}",
+        {
+          "path": "dist/{projectRoot}",
+          "preserveLocalDependencyProtocols": false
+        }
+      ],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
@@ -28,9 +34,27 @@
         "development": {}
       }
     },
-    "nx-release-publish": {
+    "patch-package-exports": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
       "options": {
-        "packageRoot": "dist/{projectRoot}"
+        "cwd": "{workspaceRoot}",
+        "command": "node libs/ng-bootstrap/scripts/patch-package-exports.mjs"
+      }
+    },
+    "pack": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["patch-package-exports"],
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
+      }
+    },
+    "nx-release-publish": {
+      "dependsOn": ["patch-package-exports"],
+      "options": {
+        "packageRoot": "dist/{projectRoot}",
+        "dryRun": true
       }
     },
     "test": {

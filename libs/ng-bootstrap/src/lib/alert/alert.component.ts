@@ -60,21 +60,24 @@ export class AlertComponent
   extends ConfigurableComponent<AlertOptions>
   implements AfterViewInit, OnDestroy
 {
-  @ViewChild('ngbAlert') private ngbAlert!: NgbAlert;
-  @ViewChild('ngbAlert', { read: ElementRef }) private ngbAlertRef!: ElementRef;
+  @ViewChild('ngbAlert') private readonly ngbAlert!: NgbAlert;
+  @ViewChild('ngbAlert', { read: ElementRef })
+  private readonly ngbAlertRef!: ElementRef;
 
-  private alertRenderer = inject(Renderer2);
+  private readonly alertRenderer = inject(Renderer2);
 
-  protected type: WritableSignal<STYLE> = signal('primary');
-  protected icon: WritableSignal<string | undefined> = signal(undefined);
-  protected message: WritableSignal<string | undefined> = signal(undefined);
+  protected readonly type: WritableSignal<STYLE> = signal('primary');
+  protected readonly icon: WritableSignal<string | undefined> =
+    signal(undefined);
+  protected readonly message: WritableSignal<string | undefined> =
+    signal(undefined);
 
-  protected hidden: WritableSignal<boolean> = signal(true);
-  protected loading: WritableSignal<boolean> = signal(false);
-  protected progress: WritableSignal<number> = signal(0);
+  protected readonly hidden: WritableSignal<boolean> = signal(true);
+  protected readonly loading: WritableSignal<boolean> = signal(false);
+  protected readonly progress: WritableSignal<number> = signal(0);
   protected interval?: ReturnType<typeof setInterval>;
   protected autoHideTimeout?: ReturnType<typeof setTimeout>;
-  protected showProgress = computed(() => this.progress() > 0);
+  protected readonly showProgress = computed(() => this.progress() > 0);
 
   constructor() {
     super();

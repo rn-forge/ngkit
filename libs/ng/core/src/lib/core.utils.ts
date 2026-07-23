@@ -157,47 +157,11 @@ export class ObjectUtil {
    * Returns an empty object `{}` when the two objects are equivalent.
    */
   static diff<T extends object>(source?: T, target?: T): GenericType {
-    const result = {}; //new ObjectDiff();
+    const result = {};
 
     if (target) {
       for (const key in target) {
-        const targetValue = target[key];
-
-        if (!(source && key in source)) {
-          // directly carry over the value if it doesn't exist in the target or is an array
-          ObjectUtil.setDefault<GenericType>(result, 'missing_in_source', {})[
-            key
-          ] = targetValue;
-          continue;
-        }
-
-        const sourceValue = source[key];
-        if (isEmpty(sourceValue) && isEmpty(targetValue)) {
-          // both source and target are empty, do nothing
-          continue;
-        } else if (
-          typeof sourceValue === 'object' &&
-          typeof targetValue === 'object'
-        ) {
-          // Recursively merge nested objects
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const diff = ObjectUtil.diff(sourceValue as any, targetValue);
-          if (!isEmpty(diff)) {
-            ObjectUtil.setDefault<GenericType>(result, 'conflicts', {})[key] =
-              diff;
-          }
-        } else if (
-          sourceValue !== targetValue &&
-          typeof sourceValue !== 'function'
-        ) {
-          // Overwrite value with override
-          ObjectUtil.setDefault<GenericType>(result, 'conflicts', {})[key] = [
-            typeof sourceValue,
-            sourceValue,
-            typeof targetValue,
-            targetValue,
-          ];
-        }
+        ObjectUtil._diffTargetKey(result, key, target[key], source);
       }
     }
 
@@ -212,6 +176,47 @@ export class ObjectUtil {
     }
 
     return result;
+  }
+
+  /** Compares a single `target` key against `source` and records the result into `result`. */
+  private static _diffTargetKey<T extends object>(
+    result: GenericType<GenericType>,
+    key: string,
+    targetValue: unknown,
+    source?: T,
+  ): void {
+    if (!(source && key in source)) {
+      // directly carry over the value if it doesn't exist in the source
+      ObjectUtil.setDefault<GenericType>(result, 'missing_in_source', {})[key] =
+        targetValue;
+      return;
+    }
+
+    const sourceValue = (source as GenericType)[key];
+    if (isEmpty(sourceValue) && isEmpty(targetValue)) {
+      // both source and target are empty, do nothing
+      return;
+    }
+
+    if (typeof sourceValue === 'object' && typeof targetValue === 'object') {
+      // Recursively diff nested objects
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const diff = ObjectUtil.diff(sourceValue as any, targetValue as any);
+      if (!isEmpty(diff)) {
+        ObjectUtil.setDefault<GenericType>(result, 'conflicts', {})[key] = diff;
+      }
+      return;
+    }
+
+    if (sourceValue !== targetValue && typeof sourceValue !== 'function') {
+      // Overwrite value with override
+      ObjectUtil.setDefault<GenericType>(result, 'conflicts', {})[key] = [
+        typeof sourceValue,
+        sourceValue,
+        typeof targetValue,
+        targetValue,
+      ];
+    }
   }
 
   // /**
@@ -293,7 +298,7 @@ export class DateUtil {
    * parseable as an integer (positive = future, negative = past).
    */
   static diffDate(diff: string): string {
-    return new Date(Date.now() + parseInt(diff) * DAY_IN_MILLIS)
+    return new Date(Date.now() + Number.parseInt(diff) * DAY_IN_MILLIS)
       .toISOString()
       .split('T')[0];
   }
@@ -377,7 +382,7 @@ export class FormUtil {
   ): ValidationErrors | null {
     const value = control.value;
     let compareDate;
-    if (checkValue.match(DATE_PATTERN)) {
+    if (DATE_PATTERN.exec(checkValue)) {
       // checkValue is a date
       compareDate = checkValue;
     } else {
@@ -398,7 +403,7 @@ export class FormUtil {
     return null;
   }
 
-  static VALIDATORS = {
+  static readonly VALIDATORS = {
     /**
      * Validates a text control against optional `pattern`, `minLength`, `maxLength`,
      * or exact `length` constraints. Only runs on dirty, non-empty controls.
@@ -412,8 +417,7 @@ export class FormUtil {
       } = {},
     ): ValidatorFn {
       return (control: AbstractControl): ValidationErrors | null => {
-        const errors = FormUtil._validateControl(control, options);
-        return errors ? errors : null;
+        return FormUtil._validateControl(control, options);
       };
     },
 
@@ -442,7 +446,7 @@ export class FormUtil {
           return null;
         }
 
-        if (isNaN(control.value)) {
+        if (Number.isNaN(Number(control.value))) {
           return { error: 'Value must be a number' };
         }
 

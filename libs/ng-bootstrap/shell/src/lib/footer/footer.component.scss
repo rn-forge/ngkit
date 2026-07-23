@@ -1,18 +1,8 @@
-// :root,
-// [data-bs-theme] {
-//     --footer-bg: var(--bs-light);
-// }
-
-// [data-bs-theme=dark] {
-//     --footer-bg: var(--bs-dark);
-// }
-
 footer {
   background-color: var(--footer-bg);
 
   font-weight: bold;
 
-  // margin-top: 1rem;
   border-top: var(--bs-border-width) var(--bs-border-style)
     var(--bs-border-color);
 

@@ -29,7 +29,6 @@ type InputType = 'text' | 'textarea' | 'number' | 'date' | 'file';
     FormFieldComponent,
   ],
   templateUrl: './input-field.component.html',
-  styleUrl: './input-field.component.scss',
 })
 export class InputFieldComponent
   extends ParentFieldComponent
@@ -51,10 +50,10 @@ export class InputFieldComponent
       attrs['min'] ??= '0.01';
       attrs['step'] ??= '0.01';
     } else if (this.type() === 'date') {
-      if (attrs['min'] && !attrs['min'].match(/^\d{4}-\d{2}-\d{2}$/)) {
+      if (attrs['min'] && !/^\d{4}-\d{2}-\d{2}$/.exec(attrs['min'])) {
         attrs['min'] = DateUtil.diffDate(attrs['min']);
       }
-      if (attrs['max'] && !attrs['max'].match(/^\d{4}-\d{2}-\d{2}$/)) {
+      if (attrs['max'] && !/^\d{4}-\d{2}-\d{2}$/.exec(attrs['max'])) {
         attrs['max'] = DateUtil.diffDate(attrs['max']);
       }
     } else if (this.type() === 'file') {

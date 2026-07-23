@@ -1,19 +1,22 @@
 // external imports
 import { CommonModule } from '@angular/common';
 import { Component, input, InputSignal, TemplateRef } from '@angular/core';
-import { Offcanvas as BootstrapOffcanvas } from 'bootstrap';
+import type { Offcanvas as BootstrapOffcanvas } from 'bootstrap';
 
 // internal imports
 import { GenericType } from '@rn-forge/ng/core';
-import { ConfigOptions, ConfigurableComponent } from '@rn-forge/ng-bootstrap';
-import { STYLE } from '@rn-forge/ng-bootstrap';
-import { ButtonComponent, ButtonOptions } from '@rn-forge/ng-bootstrap';
+import {
+  ButtonComponent,
+  ButtonOptions,
+  ConfigOptions,
+  ConfigurableComponent,
+  STYLE,
+} from '@rn-forge/ng-bootstrap';
 
 @Component({
   selector: 'rnf-offcanvas',
   imports: [CommonModule, ButtonComponent],
   templateUrl: './offcanvas.html',
-  styleUrl: './offcanvas.scss',
 })
 export class Offcanvas extends ConfigurableComponent<OffcanvasOptions> {
   readonly template: InputSignal<TemplateRef<unknown>> = input.required();
@@ -62,14 +65,17 @@ export class Offcanvas extends ConfigurableComponent<OffcanvasOptions> {
   }
 
   protected getTogglerClass(): string {
+    let directionClass = '';
+    if (this.config.direction === 'start') {
+      directionClass = 'me-auto';
+    } else if (this.config.direction === 'end') {
+      directionClass = 'ms-auto';
+    }
+
     return [
       this.config.toggler?.class ?? '',
       this.config.toggler?.color ? 'text-' + this.config.toggler.color : '',
-      this.config.direction === 'start'
-        ? 'me-auto'
-        : this.config.direction === 'end'
-          ? 'ms-auto'
-          : '',
+      directionClass,
     ]
       .join(' ')
       .trim();

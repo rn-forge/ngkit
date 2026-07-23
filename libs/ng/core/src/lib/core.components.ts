@@ -37,7 +37,7 @@ export abstract class BaseComponent
     AfterViewChecked,
     OnDestroy
 {
-  private _NAME: string = this.constructor.name;
+  private readonly _NAME: string = this.constructor.name;
 
   constructor() {
     afterNextRender(() => {

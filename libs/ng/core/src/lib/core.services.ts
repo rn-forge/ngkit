@@ -28,8 +28,10 @@ import { isDebugMode } from './core.utils';
  */
 @Injectable({ providedIn: 'root' })
 export class LocalStorageService {
-  private appName: string;
-  private config: RnForgeCoreConfig = inject(RN_FORGE_APP_CONFIG_TOKEN);
+  private readonly appName: string;
+  private readonly config: RnForgeCoreConfig = inject(
+    RN_FORGE_APP_CONFIG_TOKEN,
+  );
 
   constructor() {
     this.appName = this.config.appName;

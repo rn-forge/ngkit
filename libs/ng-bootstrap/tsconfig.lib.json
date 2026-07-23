@@ -9,7 +9,6 @@
   },
   "include": [
     "src/**/*.ts",
-    "assets/src/**/*.ts",
     "auth/src/**/*.ts",
     "crud/src/**/*.ts",
     "form/src/**/*.ts",
@@ -18,8 +17,6 @@
   "exclude": [
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
-    "assets/src/**/*.spec.ts",
-    "assets/src/**/*.test.ts",
     "auth/src/**/*.spec.ts",
     "auth/src/**/*.test.ts",
     "crud/src/**/*.spec.ts",

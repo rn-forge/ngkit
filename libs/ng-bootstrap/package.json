@@ -1,6 +1,16 @@
 {
   "name": "@rn-forge/ng-bootstrap",
-  "version": "0.0.1",
+  "version": "0.1.1",
+  "description": "Bootstrap themed common components for the rn-forge toolkit.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rn-forge/ngkit",
+    "directory": "libs/ng-bootstrap"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "sideEffects": true,
   "devDependencies": {
     "@angular/cdk": "^22.0.4",

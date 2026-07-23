@@ -22,12 +22,10 @@
           }
         ],
         "styles": ["apps/ng-demo/src/styles.scss"],
-        "polyfills": [
-          "@angular/localize/init",
-          "@rn-forge/ng-bootstrap/assets"
-        ],
+        "polyfills": ["@angular/localize/init"],
         "scripts": [],
         "allowedCommonJsDependencies": [
+          "bootstrap/dist/js/bootstrap.bundle.js",
           "build-url-ts",
           "jquery",
           "jquery-treegrid",

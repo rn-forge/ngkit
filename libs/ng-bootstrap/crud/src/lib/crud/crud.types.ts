@@ -1,11 +1,12 @@
-import { AlertComponent } from '@rn-forge/ng-bootstrap';
-import { FormOptions } from '@rn-forge/ng-bootstrap/form';
-import { ModalOptions } from '@rn-forge/ng-bootstrap';
-import { ConfigOptions } from '@rn-forge/ng-bootstrap';
-import { TableOptions } from '@rn-forge/ng-bootstrap';
-import { FormComponent } from '@rn-forge/ng-bootstrap/form';
-import { ModalComponent } from '@rn-forge/ng-bootstrap';
-import { TableComponent } from '@rn-forge/ng-bootstrap';
+import {
+  AlertComponent,
+  ConfigOptions,
+  ModalComponent,
+  ModalOptions,
+  TableComponent,
+  TableOptions,
+} from '@rn-forge/ng-bootstrap';
+import { FormComponent, FormOptions } from '@rn-forge/ng-bootstrap/form';
 
 export type COMPONENT_MODES = 'list' | 'addupdate' | 'upload' | 'download';
 
