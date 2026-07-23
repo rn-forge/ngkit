@@ -1,6 +1,6 @@
 {
   "name": "@rn-forge/ng-bootstrap",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Bootstrap themed common components for the rn-forge toolkit.",
   "license": "MIT",
   "repository": {
