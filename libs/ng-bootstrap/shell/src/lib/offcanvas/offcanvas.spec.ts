@@ -37,4 +37,31 @@ describe('Offcanvas', () => {
   it('has configKey "offcanvas"', () => {
     expect(component.configKey).toBe('offcanvas');
   });
+
+  describe('getTogglerClass', () => {
+    function getTogglerClass(): string {
+      return (
+        component as unknown as { getTogglerClass: () => string }
+      ).getTogglerClass();
+    }
+
+    it('adds a start-margin class for direction "start"', () => {
+      component.updateOptions({ direction: 'start' });
+      fixture.detectChanges();
+      expect(getTogglerClass()).toContain('me-auto');
+    });
+
+    it('adds an end-margin class for direction "end"', () => {
+      component.updateOptions({ direction: 'end' });
+      fixture.detectChanges();
+      expect(getTogglerClass()).toContain('ms-auto');
+    });
+
+    it('adds no direction margin class for any other direction', () => {
+      component.updateOptions({ direction: 'top' });
+      fixture.detectChanges();
+      expect(getTogglerClass()).not.toContain('me-auto');
+      expect(getTogglerClass()).not.toContain('ms-auto');
+    });
+  });
 });

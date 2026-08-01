@@ -67,12 +67,7 @@
           "libs/ng/http/src/**",
           "libs/ng/http/crud/src/**"
         ],
-        "coverageExclude": [
-          "**/*.config.ts",
-          "**/*.types.ts",
-          "**/*.mixins.ts",
-          "libs/ng/http/crud/src/**"
-        ],
+        "coverageExclude": ["**/*.config.ts", "libs/ng/http/crud/src/**"],
         "coverageThresholds": {
           "statements": 80,
           "branches": 80,

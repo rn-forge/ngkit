@@ -39,6 +39,20 @@ describe('ErrorComponent', () => {
     );
   });
 
+  it('shows "Unauthorized" when code 401 is provided', () => {
+    fixture.componentRef.setInput('options', { code: 401 });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Unauthorized');
+  });
+
+  it('shows a generic message for an unrecognized code', () => {
+    fixture.componentRef.setInput('options', { code: 999 });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(
+      'An unknown error occurred',
+    );
+  });
+
   it('shows a custom message when provided', () => {
     fixture.componentRef.setInput('options', {
       code: 404,
