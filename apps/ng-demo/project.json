@@ -71,6 +71,18 @@
     "lint": {
       "executor": "@nx/eslint:lint"
     },
+    "test": {
+      "executor": "@nx/angular:unit-test",
+      "options": {
+        "setupFiles": ["apps/ng-demo/src/test-setup.ts"],
+        "watch": false,
+        "include": ["**/*.spec.ts"],
+        "coverage": true,
+        "coverageReporters": ["text-summary", "lcov"],
+        "coverageInclude": ["apps/ng-demo/src/**"],
+        "runnerConfig": true
+      }
+    },
     "serve-static": {
       "continuous": true,
       "executor": "@nx/web:file-server",

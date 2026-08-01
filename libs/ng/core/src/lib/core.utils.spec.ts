@@ -218,6 +218,14 @@ describe('ObjectUtil', () => {
       expect(nestedDiff).toHaveProperty('conflicts');
     });
 
+    it('does not report a conflict for equivalent nested objects', () => {
+      const result = ObjectUtil.diff(
+        { nested: { a: 1 } },
+        { nested: { a: 1 } },
+      );
+      expect(result).not.toHaveProperty('conflicts');
+    });
+
     it('returns missing_in_source for all keys when source is undefined', () => {
       const result = ObjectUtil.diff(undefined, { a: 1 });
       expect(result['missing_in_source']).toEqual({ a: 1 });

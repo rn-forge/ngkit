@@ -236,6 +236,36 @@ describe('AbstractCRUDManager (via TestManager)', () => {
         'AbstractCRUDManager.init() must be called before any operation',
       );
     });
+
+    describe('toRequestParams()', () => {
+      function toRequestParams(rawValue: Record<string, unknown>) {
+        return (
+          manager as unknown as {
+            toRequestParams<T>(rawValue: Record<string, unknown>): T;
+          }
+        ).toRequestParams(rawValue);
+      }
+
+      it('converts falsy values to null', () => {
+        expect(toRequestParams({ name: '', count: 0 })).toEqual({
+          name: null,
+          count: null,
+        });
+      });
+
+      it('reduces object values to their id', () => {
+        expect(toRequestParams({ owner: { id: 42, name: 'ignored' } })).toEqual(
+          { owner: 42 },
+        );
+      });
+
+      it('passes through other values unchanged', () => {
+        expect(toRequestParams({ name: 'Widget', count: 3 })).toEqual({
+          name: 'Widget',
+          count: 3,
+        });
+      });
+    });
   });
 
   describe('with RNF_PERMISSION (controlled permission checks)', () => {

@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormFieldComponent } from './form-field.component';
+import {
+  FormFieldComponent,
+  ParentFieldComponent,
+} from './form-field.component';
 
 describe('FormFieldComponent', () => {
   let component: FormFieldComponent;
@@ -27,5 +30,28 @@ describe('FormFieldComponent', () => {
 
   it('icon input defaults to empty string', () => {
     expect(component.icon()).toBe('');
+  });
+
+  describe('readonly', () => {
+    function setField(htmlAttributes: Record<string, string>) {
+      fixture.componentRef.setInput('field', {
+        htmlAttributes: () => htmlAttributes,
+      } as unknown as ParentFieldComponent);
+    }
+
+    it('is false when no readonly attribute is present', () => {
+      setField({});
+      expect(component.readonly()).toBe(false);
+    });
+
+    it('is true when the readonly attribute is "readonly"', () => {
+      setField({ readonly: 'readonly' });
+      expect(component.readonly()).toBe(true);
+    });
+
+    it('is true when the readonly attribute is "true"', () => {
+      setField({ readonly: 'true' });
+      expect(component.readonly()).toBe(true);
+    });
   });
 });
