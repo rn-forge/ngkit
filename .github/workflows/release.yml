@@ -89,6 +89,14 @@ jobs:
         if: ${{ !inputs.dry-run }}
         run: node tools/scripts/verify-dist-manifests.mjs
 
+      # On a dry-run the version step does not write files, so dist manifests
+      # still carry workspace:* references that pnpm publish rejects even in
+      # --dry-run mode.  Patch them with the current source versions so the
+      # publish dry-run can complete successfully.
+      - name: Resolve workspace protocols in dist (dry-run only)
+        if: ${{ inputs.dry-run }}
+        run: node tools/scripts/resolve-workspace-protocols.mjs
+
       # --excludeTaskDependencies to not invalidate cache and use already prepped version in dist/
       # step's preVersionCommand.
       - name: Publish
