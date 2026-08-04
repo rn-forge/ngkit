@@ -73,34 +73,49 @@ jobs:
       # done as a separate `nx release publish` step below, which resolves
       # the version from the tag/commit this step just created.
       - name: Version and changelog
+        if: ${{ !inputs.dry-run }}
         run: >
           pnpm exec nx release
           "${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}"
           --skip-publish
-          ${{ inputs.dry-run && '--dry-run' || '' }}
           ${{ inputs.first-release && '--first-release' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for createRelease: github
 
-      # Only meaningful after versioning has rewritten workspace:* peer deps
-      # to exact pins in the dist manifest roots - skipped on dry-run since
-      # nothing gets rewritten then.
+      # Dry runs deliberately do NOT use the combined `nx release` command
+      # as it does not write files when dry-run flag is present.
+      # so dist manifests still carry workspace:* references that pnpm publish rejects
+      - name: Version (dry-run simulation)
+        if: ${{ inputs.dry-run }}
+        run: >
+          pnpm exec nx release version
+          "${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}"
+          --git-commit=false
+          --git-tag=false
+          --stage-changes=false
+          ${{ inputs.first-release && '--first-release' || '' }}
+
+      # Both paths above rewrite workspace:* peer deps to exact pins in the dist
+      # manifest roots, so this guards the real release and the dry run alike.
       - name: Verify publishable dist manifests
-        if: ${{ !inputs.dry-run }}
         run: node tools/scripts/verify-dist-manifests.mjs
 
+      # --excludeTaskDependencies to not invalidate cache and use already prepped version in dist/
+      # step's preVersionCommand.
       - name: Publish
         run: >
           pnpm exec nx release publish
           --tag="$DIST_TAG"
+          --excludeTaskDependencies
           ${{ inputs.dry-run && '--dry-run' || '' }}
           ${{ inputs.first-release && '--first-release' || '' }}
         env:
           DIST_TAG: ${{ inputs.dist-tag }}
 
+      # Same reason as above - pack the dist/ that was versioned, don't rebuild it.
       - name: Pack publishable tarballs
         if: ${{ !inputs.dry-run }}
-        run: pnpm exec nx run-many -t pack --projects=ng,ng-bootstrap
+        run: pnpm exec nx run-many -t pack --projects=ng,ng-bootstrap --excludeTaskDependencies
 
       - name: Resolve release tag
         if: ${{ !inputs.dry-run }}
