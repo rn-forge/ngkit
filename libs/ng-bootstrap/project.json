@@ -51,7 +51,6 @@
       }
     },
     "nx-release-publish": {
-      "dependsOn": ["patch-package-exports"],
       "options": {
         "packageRoot": "dist/{projectRoot}",
         "dryRun": true

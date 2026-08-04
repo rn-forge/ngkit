@@ -89,18 +89,22 @@ jobs:
         if: ${{ !inputs.dry-run }}
         run: node tools/scripts/verify-dist-manifests.mjs
 
+      # --excludeTaskDependencies to not invalidate cache and use already prepped version in dist/
+      # step's preVersionCommand.
       - name: Publish
         run: >
           pnpm exec nx release publish
           --tag="$DIST_TAG"
+          --excludeTaskDependencies
           ${{ inputs.dry-run && '--dry-run' || '' }}
           ${{ inputs.first-release && '--first-release' || '' }}
         env:
           DIST_TAG: ${{ inputs.dist-tag }}
 
+      # Same reason as above - pack the dist/ that was versioned, don't rebuild it.
       - name: Pack publishable tarballs
         if: ${{ !inputs.dry-run }}
-        run: pnpm exec nx run-many -t pack --projects=ng,ng-bootstrap
+        run: pnpm exec nx run-many -t pack --projects=ng,ng-bootstrap --excludeTaskDependencies
 
       - name: Resolve release tag
         if: ${{ !inputs.dry-run }}

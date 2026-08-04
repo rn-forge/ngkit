@@ -82,8 +82,14 @@
     }
   },
   "release": {
+    "projects": ["ng", "ng-bootstrap"],
     "version": {
-      "preVersionCommand": "pnpm dlx nx run-many -t build"
+      "preVersionCommand": "pnpm exec nx run-many -t build patch-package-exports --projects=ng,ng-bootstrap"
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "createRelease": "github"
+      }
     }
   },
   "nxCloudId": "6a5cd18cc2961cf943b7bd52"
