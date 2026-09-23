@@ -242,7 +242,7 @@ Given those caveats, the honest recommendation: adopt `NUMBER({decimalPlaces})` 
 
 ## I-2. Phase 2 — `@rn-forge/ng/http`
 
-> **Superseded (2026-09-22, web-app-migration-plan H2R).** `@rn-forge/ng/http` and `/http/crud` are removed after 0.1.2. Phase 2 becomes: `InventoryData` injects `HttpClient` and an app-owned `CIMS_API_URL` token directly, and `downloadCsv` uses `AppUtil.saveBlob` from `@rn-forge/ng/core`. The Phase 3 CRUD half implements `CrudDataSource<$Q, $S, string>` from `@rn-forge/ng-bootstrap/crud` over `HttpClient` (same DRF `ListResponse`, string IDs built in) instead of subclassing `BackendService`. The code below describes the 0.1.2 API and is kept for reference.
+> **Superseded (2026-09-22, ngkit-roadmap H2R).** `@rn-forge/ng/http` and `/http/crud` are removed after 0.1.2. Phase 2 becomes: `InventoryData` injects `HttpClient` and an app-owned `CIMS_API_URL` token directly, and `downloadCsv` uses `AppUtil.saveBlob` from `@rn-forge/ng/core`. The Phase 3 CRUD half implements `CrudDataSource<$Q, $S, string>` from `@rn-forge/ng-bootstrap/crud` over `HttpClient` (same DRF `ListResponse`, string IDs built in) instead of subclassing `BackendService`. The code below describes the 0.1.2 API and is kept for reference.
 
 ### 2.1 `InventoryData` → `AbstractHTTPService`
 

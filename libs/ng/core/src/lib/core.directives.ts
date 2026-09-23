@@ -2,7 +2,7 @@ import {
   Directive,
   ElementRef,
   Input,
-  OnInit,
+  OnChanges,
   Renderer2,
   inject,
 } from '@angular/core';
@@ -23,19 +23,31 @@ import {
   selector: '[rnfHtmlAttributes]',
   standalone: true,
 })
-export class HtmlAttributesDirective implements OnInit {
+export class HtmlAttributesDirective implements OnChanges {
   private readonly host: ElementRef = inject(ElementRef);
   private readonly renderer: Renderer2 = inject(Renderer2);
 
-  /**
-   * Map of attribute name → value pairs to set on the host element.
-   * All entries are applied once on `ngOnInit`.
-   */
-  @Input() rnfHtmlAttributes!: Record<string, string>;
+  private applied = new Set<string>();
 
-  ngOnInit(): void {
-    Object.entries(this.rnfHtmlAttributes).forEach(([key, value]) => {
-      this.renderer.setAttribute(this.host.nativeElement, key, value);
+  /**
+   * Map of attribute name → value pairs to set on the host element. Re-applied
+   * whenever the bound map changes; attributes absent from the next map are removed.
+   */
+  @Input() rnfHtmlAttributes?: Record<string, string> | null;
+
+  ngOnChanges(): void {
+    const next = this.rnfHtmlAttributes ?? {};
+    const el = this.host.nativeElement;
+
+    this.applied.forEach((key) => {
+      if (!(key in next)) {
+        this.renderer.removeAttribute(el, key);
+      }
+    });
+
+    this.applied = new Set(Object.keys(next));
+    Object.entries(next).forEach(([key, value]) => {
+      this.renderer.setAttribute(el, key, value);
     });
   }
 }

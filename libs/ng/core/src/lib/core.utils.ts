@@ -1,36 +1,9 @@
 // external imports
 import { signal, WritableSignal } from '@angular/core';
-import {
-  AbstractControl,
-  FormGroup,
-  ValidationErrors,
-  ValidatorFn,
-} from '@angular/forms';
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 // internal imports
 import { GenericType } from './core.types';
-
-/**
- * Local stand-in for lodash's `isEmpty`, scoped to the value shapes
- * `ObjectUtil.diff` actually compares. Preserves lodash's existing semantics
- * (e.g. scalars other than non-empty strings are considered empty) rather than
- * fixing them here; that behavior change is tracked separately in the H3 backlog.
- */
-function isEmpty(value: unknown): boolean {
-  if (value == null) {
-    return true;
-  }
-  if (Array.isArray(value) || typeof value === 'string') {
-    return value.length === 0;
-  }
-  if (value instanceof Map || value instanceof Set) {
-    return value.size === 0;
-  }
-  if (typeof value === 'object') {
-    return Object.keys(value).length === 0;
-  }
-  return true;
-}
 
 /**
  * Global signal tracking whether debug mode is active.
@@ -229,30 +202,54 @@ export class ObjectUtil {
     }
 
     const sourceValue = (source as GenericType)[key];
-    if (isEmpty(sourceValue) && isEmpty(targetValue)) {
-      // both source and target are empty, do nothing
+    if (sourceValue == null && targetValue == null) {
+      // null and undefined are considered equivalent
       return;
     }
 
-    if (typeof sourceValue === 'object' && typeof targetValue === 'object') {
-      // Recursively diff nested objects
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const diff = ObjectUtil.diff(sourceValue as any, targetValue as any);
-      if (!isEmpty(diff)) {
+    if (typeof sourceValue === 'function') {
+      return;
+    }
+
+    if (
+      typeof sourceValue === 'object' &&
+      typeof targetValue === 'object' &&
+      sourceValue !== null &&
+      targetValue !== null &&
+      Array.isArray(sourceValue) === Array.isArray(targetValue)
+    ) {
+      if (sourceValue instanceof Date && targetValue instanceof Date) {
+        if (sourceValue.getTime() !== targetValue.getTime()) {
+          ObjectUtil._conflict(result, key, sourceValue, targetValue);
+        }
+        return;
+      }
+
+      // Recursively diff nested objects and arrays
+      const diff = ObjectUtil.diff(sourceValue, targetValue);
+      if (Object.keys(diff).length > 0) {
         ObjectUtil.setDefault<GenericType>(result, 'conflicts', {})[key] = diff;
       }
       return;
     }
 
-    if (sourceValue !== targetValue && typeof sourceValue !== 'function') {
-      // Overwrite value with override
-      ObjectUtil.setDefault<GenericType>(result, 'conflicts', {})[key] = [
-        typeof sourceValue,
-        sourceValue,
-        typeof targetValue,
-        targetValue,
-      ];
+    if (sourceValue !== targetValue) {
+      ObjectUtil._conflict(result, key, sourceValue, targetValue);
     }
+  }
+
+  private static _conflict(
+    result: GenericType<GenericType>,
+    key: string,
+    sourceValue: unknown,
+    targetValue: unknown,
+  ): void {
+    ObjectUtil.setDefault<GenericType>(result, 'conflicts', {})[key] = [
+      typeof sourceValue,
+      sourceValue,
+      typeof targetValue,
+      targetValue,
+    ];
   }
 
   // /**
@@ -324,14 +321,52 @@ export class DateUtil {
       .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
   }
 
-  /** Converts a Unix epoch timestamp (ms) to a `YYYY-MM-DD` string. */
+  /** Formats a `Date` object as `YYYY-MM-DD` using its UTC calendar date. */
+  static isoFormatUtc(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  /**
+   * Converts a Unix epoch timestamp (ms) to a `YYYY-MM-DD` string in the
+   * **local** time zone. Compare {@link fromTimestamp}, which uses UTC.
+   */
+  static fromTimestampLocal(timestamp: number): string {
+    return DateUtil.isoFormat(new Date(timestamp));
+  }
+
+  /**
+   * Returns the local calendar date `diff` days from today (positive = future,
+   * negative = past). Unlike {@link diffDate}, which adds 24h multiples to a UTC
+   * instant, this moves the local calendar day and is DST-safe.
+   */
+  static diffDateLocal(diff: string): string {
+    const date = new Date();
+    date.setDate(date.getDate() + Number.parseInt(diff));
+    return DateUtil.isoFormat(date);
+  }
+
+  /** Returns `true` if `date` is a real calendar date in `YYYY-MM-DD` form. */
+  static isValidDate(date: string): boolean {
+    if (!DATE_PATTERN.test(date)) {
+      return false;
+    }
+    const [y, m, d] = date.split('-').map(Number);
+    const parsed = new Date(Date.UTC(y, m - 1, d));
+    return DateUtil.isoFormatUtc(parsed) === date;
+  }
+
+  /**
+   * Converts a Unix epoch timestamp (ms) to a `YYYY-MM-DD` string in **UTC**.
+   * See {@link fromTimestampLocal} for the local-time equivalent.
+   */
   static fromTimestamp(timestamp: number): string {
     return new Date(timestamp).toISOString().split('T')[0];
   }
 
   /**
-   * Returns the date that is `diff` days from today, where `diff` is a string
-   * parseable as an integer (positive = future, negative = past).
+   * Returns the UTC date that is `diff` × 24h from now, where `diff` is a string
+   * parseable as an integer (positive = future, negative = past). Prefer
+   * {@link diffDateLocal} when comparing against local {@link today}.
    */
   static diffDate(diff: string): string {
     return new Date(Date.now() + Number.parseInt(diff) * DAY_IN_MILLIS)
@@ -371,10 +406,15 @@ export class DateUtil {
  *   age:  [null, FormUtil.VALIDATORS.NUMBER({ min: 0, max: 120 })],
  *   dob:  ['', FormUtil.VALIDATORS.DATE({ allowPast: true })],
  * });
- * FormUtil.VALIDATORS.DATE_RANGE(this.form, 'startDate', 'endDate');
+ * // group-level: new FormGroup({...}, { validators: FormUtil.VALIDATORS.DATE_RANGE() })
  * ```
  */
 export class FormUtil {
+  /** Empty values are skipped by validators; `required` is validated separately. */
+  private static _isBlank(value: unknown): boolean {
+    return value == null || value === '';
+  }
+
   private static _validateControl(
     control: AbstractControl,
     options: {
@@ -384,7 +424,7 @@ export class FormUtil {
       length?: number;
     },
   ): ValidationErrors | null {
-    if (!control.dirty || !control.value) {
+    if (FormUtil._isBlank(control.value)) {
       return null;
     }
 
@@ -422,7 +462,7 @@ export class FormUtil {
       // checkValue is a date
       compareDate = checkValue;
     } else {
-      compareDate = DateUtil.diffDate(checkValue);
+      compareDate = DateUtil.diffDateLocal(checkValue);
     }
 
     if (!compareDate) {
@@ -442,7 +482,7 @@ export class FormUtil {
   static readonly VALIDATORS = {
     /**
      * Validates a text control against optional `pattern`, `minLength`, `maxLength`,
-     * or exact `length` constraints. Only runs on dirty, non-empty controls.
+     * or exact `length` constraints. Skips empty values (pair with `Validators.required`).
      */
     TEXT(
       options: {
@@ -459,7 +499,7 @@ export class FormUtil {
 
     /**
      * Validates a numeric control. Inherits text constraints from `TEXT`, then additionally
-     * checks `min`, `max`, and `decimalPlaces`. Only runs on dirty, non-empty controls.
+     * checks `min`, `max`, and `decimalPlaces`. Skips empty values (pair with `Validators.required`).
      */
     NUMBER(
       options: {
@@ -478,23 +518,24 @@ export class FormUtil {
           return errors;
         }
 
-        if (!control.dirty || !control.value) {
+        if (FormUtil._isBlank(control.value)) {
           return null;
         }
 
-        if (Number.isNaN(Number(control.value))) {
+        const numeric = Number(control.value);
+        if (Number.isNaN(numeric)) {
           return { error: 'Value must be a number' };
         }
 
-        if (options.min && control.value < options.min) {
+        if (options.min !== undefined && numeric < options.min) {
           return { error: `Value cannot be less than ${options.min}` };
         }
 
-        if (options.max && control.value > options.max) {
+        if (options.max !== undefined && numeric > options.max) {
           return { error: `Value cannot be greater than ${options.max}` };
         }
 
-        if (options.decimalPlaces) {
+        if (options.decimalPlaces !== undefined) {
           const decimalPlaces =
             control.value.toString().split('.')[1]?.length || 0;
           if (decimalPlaces > options.decimalPlaces) {
@@ -524,19 +565,24 @@ export class FormUtil {
       } = {},
     ): ValidatorFn {
       return (control: AbstractControl): ValidationErrors | null => {
-        if (!control.dirty || !control.value) {
+        if (FormUtil._isBlank(control.value)) {
           return null;
         }
 
-        if (!control.value.match(DATE_PATTERN)) {
+        const value = String(control.value);
+        if (!DATE_PATTERN.test(value)) {
           return { error: 'Date does not match pattern "YYYY-MM-DD"' };
         }
 
-        if (!options.allowPast && DateUtil.isPast(control.value)) {
+        if (!DateUtil.isValidDate(value)) {
+          return { error: 'Date is not a valid calendar date' };
+        }
+
+        if (!options.allowPast && DateUtil.isPast(value)) {
           return { error: 'Date cannot be in the past' };
         }
 
-        if (options.disallowFuture && DateUtil.isFuture(control.value)) {
+        if (options.disallowFuture && DateUtil.isFuture(value)) {
           return { error: 'Date cannot be in the future' };
         }
 
@@ -567,40 +613,33 @@ export class FormUtil {
     },
 
     /**
-     * Wires cross-field validation onto a `FormGroup` so that start cannot be after end
-     * and end cannot be before start. Call once after the form is created — it subscribes
-     * to `valueChanges` on both controls and sets/clears errors reactively.
+     * Group-level validator: the start date cannot be after the end date. Attach it to
+     * the `FormGroup` (`new FormGroup({...}, { validators: DATE_RANGE() })`). It is pure,
+     * leaves other control/group errors untouched and reports under its own key,
+     * `dateRange`. Empty or invalid dates are ignored (validate them per control).
      *
-     * @param formGroup The reactive form containing both date controls.
      * @param startDateControl Control name for the start date (default: `'startDate'`).
      * @param endDateControl Control name for the end date (default: `'endDate'`).
      */
     DATE_RANGE(
-      formGroup: FormGroup,
       startDateControl = 'startDate',
       endDateControl = 'endDate',
-    ): void {
-      formGroup.controls[startDateControl].valueChanges.subscribe((value) => {
-        const endDate = formGroup.controls[endDateControl];
-        if (endDate.value && endDate.value < value) {
-          formGroup.controls[startDateControl].setErrors({
-            error: 'Start date cannot be after end date',
-          });
-        } else {
-          endDate.setErrors(null);
+    ): ValidatorFn {
+      return (group: AbstractControl): ValidationErrors | null => {
+        const start = group.get(startDateControl)?.value;
+        const end = group.get(endDateControl)?.value;
+        if (
+          typeof start !== 'string' ||
+          typeof end !== 'string' ||
+          !DateUtil.isValidDate(start) ||
+          !DateUtil.isValidDate(end)
+        ) {
+          return null;
         }
-      });
-
-      formGroup.controls[endDateControl].valueChanges.subscribe((value) => {
-        const startDate = formGroup.controls[startDateControl];
-        if (value && startDate.value > value) {
-          formGroup.controls[endDateControl].setErrors({
-            error: 'End date cannot be before start date',
-          });
-        } else {
-          startDate.setErrors(null);
-        }
-      });
+        return start > end
+          ? { dateRange: 'Start date cannot be after end date' }
+          : null;
+      };
     },
   };
 }

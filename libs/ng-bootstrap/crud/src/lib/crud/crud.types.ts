@@ -14,8 +14,8 @@ export type COMPONENT_MODES = 'list' | 'addupdate' | 'upload' | 'download';
 
 // ---------------------------------------------------------------------------
 // CrudDataSource — the screen's data contract, implemented over HttpClient
-// (or a generated client) by the application. See H2R.2a in
-// docs/plans/web-app-migration-plan.md.
+// (or a generated client) by the application. H4 in
+// docs/plans/ngkit-roadmap.md replaces it.
 // ---------------------------------------------------------------------------
 
 /** Write model (request payload). `$K` is the resource's ID type. */

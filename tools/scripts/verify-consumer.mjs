@@ -5,7 +5,7 @@
  * release supports. Exercises real `file:` tarball installation (no verdaccio,
  * no pnpm workspace membership) so a broken peer range, a leaked `workspace:*`
  * reference, or an undeclared runtime import surfaces before it reaches a
- * consumer. See docs/plans/web-app-migration-plan.md (H1) for the requirement.
+ * consumer. See docs/plans/ngkit-roadmap.md (H1) for the requirement.
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -78,7 +78,7 @@ function writeSmokeTest(dir, changeDetectionMode) {
 // RouteService) need the JIT compiler as a fallback.
 import '@angular/compiler';
 import { Injector } from '@angular/core';
-import { provideRnForgeCoreConfig, LocalStorageService } from '@rn-forge/ng/core';
+import { provideRnForgeCoreConfig, LocalStorageService, RNF_BROWSER_STORAGE } from '@rn-forge/ng/core';
 import * as rootEntry from '@rn-forge/ng';
 import * as coreEntry from '@rn-forge/ng/core';
 import * as authEntry from '@rn-forge/ng/auth';
@@ -114,8 +114,14 @@ if (typeof globalThis.localStorage === 'undefined') {
 const injector = Injector.create({
   // LocalStorageService is providedIn: 'root', which only auto-resolves inside an
   // actual application root injector. A plain Injector.create() is unscoped, so it
-  // must be listed explicitly here.
-  providers: [provideRnForgeCoreConfig({ appName: 'rnf-fixture' }), LocalStorageService],
+  // must be listed explicitly here. RNF_BROWSER_STORAGE's own factory injects
+  // DOCUMENT, which a plain injector has none of and doesn't run root-scoped
+  // factories for anyway, so it must be provided explicitly too.
+  providers: [
+    provideRnForgeCoreConfig({ appName: 'rnf-fixture' }),
+    LocalStorageService,
+    { provide: RNF_BROWSER_STORAGE, useValue: globalThis.localStorage },
+  ],
 });
 const storage = injector.get(LocalStorageService);
 storage.set('probe', 'ok');

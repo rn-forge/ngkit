@@ -204,7 +204,7 @@ Signatures live in Compodoc/Storybook/source (§0). This section is only about _
 
 Utility layer, no UI. Reach for it when you need:
 
-- **`LocalStorageService`** for any browser persistence — never raw `localStorage` (this namespaces keys per app).
+- **`LocalStorageService`** for any browser persistence — never raw `localStorage` (this namespaces keys per app). Prefer the never-throwing `tryGet`/`tryGetJSON`/`trySet`/`trySetJSON`/`tryRemove` methods over the strict `get`/`getJSON`/`set`/`setJSON`/`remove` when a storage failure shouldn't throw.
 - **`FormUtil.VALIDATORS`** (`TEXT`/`NUMBER`/`DATE`/`DATE_RANGE`) for text/number/date validation — **not** hand-rolled `Validators.pattern` or custom validator functions. ngkit's form fields read errors from a specific shape (`control.errors['error']`); these validators produce it, ad-hoc ones won't display.
 - **`DateUtil`** for ISO `YYYY-MM-DD` handling (incl. day-offset strings like `'-7'`, which several components accept).
 - **`RouteService`** as a `Router`+`Location` facade; **`PubSubService<T>`** as a base for simple reactive services; **`ObjectUtil.diff`** for deep comparison.
@@ -221,7 +221,7 @@ JWT auth. **Zero-config default is fully open** (all permission checks pass) —
 
 ### 5.3 HTTP — Angular `HttpClient`, no ngkit wrapper
 
-> Releases after 0.1.2 remove `@rn-forge/ng/http` and `/http/crud`. 0.1.2 still ships `AbstractHTTPService`/`BackendService`, but don't build new code on them. Rationale: `docs/plans/web-app-migration-plan.md` H2R.
+> Releases after 0.1.2 remove `@rn-forge/ng/http` and `/http/crud`. 0.1.2 still ships `AbstractHTTPService`/`BackendService`, but don't build new code on them. Rationale: `docs/plans/ngkit-roadmap.md` H2R.
 
 - **One app-owned `InjectionToken<string>` per backend** (`ORDERS_API_URL`, `INVENTORY_API_URL`), provided once in `app.config.ts`.
 - **API services inject `HttpClient` and their token directly**, one method per operation, calling native `get/post/put/patch/delete`. Prefer a client generated from the backend's OpenAPI document when one exists.

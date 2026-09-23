@@ -41,7 +41,7 @@ On #2, a wrapper follows these rules:
 - **Public symbols** are exported from the entry point's `src/index.ts`.
 - **The underlying Angular or library object stays reachable** as an escape hatch.
 
-On #4, surveys of existing apps (web-app, CIMS) are prior art that informs the design, not compatibility constraints. Where an app got something wrong, fix it here instead of copying it.
+On #4, surveys of existing apps (such as CIMS) are prior art that informs the design, not compatibility constraints. Where an app got something wrong, fix it here instead of copying it.
 
 `@nx/dependency-checks` (lint) and `ng:verify-consumer` (packed-tarball install) catch undeclared and leaked dependencies. Nothing lints the direction between entry points and packages yet (`@nx/enforce-module-boundaries` has no tag constraints), so review enforces it.
 

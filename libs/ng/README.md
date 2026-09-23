@@ -5,7 +5,7 @@ This library was generated with [Nx](https://nx.dev).
 ## HTTP
 
 `ng` has no HTTP entry point — use Angular's native `HttpClient` directly.
-`@rn-forge/ng/http` was retired (see `docs/plans/web-app-migration-plan.md`
+`@rn-forge/ng/http` was retired (see `docs/plans/ngkit-roadmap.md`
 H2R): a class that only injects `HttpClient` and concatenates a base URL adds
 DI/base-URL boilerplate removal without justifying a public surface, and every
 app already calls several backends.
@@ -28,6 +28,35 @@ The pattern:
   `CrudDataSource` from `@rn-forge/ng-bootstrap/crud` over the pattern above,
   and pair it with `AbstractCRUDManager` — see that package's README and
   `apps/ng-demo/src/app/products/` for the canonical example.
+
+## Storage
+
+`LocalStorageService` (`@rn-forge/ng/core`) namespaces every key with the
+configured `appName` and reads/writes through `RNF_BROWSER_STORAGE`, an
+`InjectionToken<Storage | null>` that resolves to `localStorage` and is `null`
+when storage is unavailable (SSR, a browser blocking storage, a throwing
+`SecurityError`).
+
+The strict methods (`get`/`getJSON`/`set`/`setJSON`/`remove`/`clearAll`) keep
+their original signatures and throw when storage is unavailable. The `try*`
+methods (`tryGet`/`tryGetJSON`/`trySet`/`trySetJSON`/`tryRemove`) never throw:
+they return a `StorageReadResult`/`StorageWriteResult` describing `found`,
+`missing`, or `failed` (with a `StorageFailureReason` such as `unavailable`,
+`security`, `quota`, `malformed`, `invalid`, or `unserializable`). Prefer the
+`try*` methods for anything read on a hot path (e.g. a pre-bootstrap theme
+read) where a storage failure shouldn't throw.
+
+```ts
+const result = storage.tryGetJSON('lastVisit', {
+  validate: isVisitRecord,
+  fallback: null,
+});
+// one-line common case:
+const lastVisit = storage.tryGetJSON('lastVisit', { validate: isVisitRecord, fallback: null }).value;
+```
+
+A test injector without an application root (e.g. `Injector.create`) must
+provide `RNF_BROWSER_STORAGE` explicitly — see `tools/scripts/verify-consumer.mjs`.
 
 ## Running unit tests
 

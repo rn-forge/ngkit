@@ -99,7 +99,7 @@ Without R1, `@rn-forge/ng-material` either duplicates the machinery or depends o
 
 ### R2 — generalise resource id types
 
-> **Folded into web-app-migration-plan H2R.2a (2026-09-22).** `ng/http/crud` is removed. The `$K` key generic lands on `CrudDataSource`, `ReadModel` and `WriteModel` as they move into `@rn-forge/ng-bootstrap/crud`. The paths and `BackendService` signature below are the 0.1.2 state.
+> **Folded into `@rn-forge/ng-bootstrap/crud` (2026-09-22; ngkit-roadmap H4 replaces the contract).** `ng/http/crud` is removed. The `$K` key generic lands on `CrudDataSource`, `ReadModel` and `WriteModel` as they move into `@rn-forge/ng-bootstrap/crud`. The paths and `BackendService` signature below are the 0.1.2 state.
 
 [libs/ng/http/crud/src/lib/crud.types.ts](../../libs/ng/http/crud/src/lib/crud.types.ts) hardcodes `id: number`, and [crud.services.ts](../../libs/ng/http/crud/src/lib/crud.services.ts) takes `read(id: number)` / `update(id: number, …)` / `delete(id: number)` / `bulkDelete(ids: number[])`.
 
@@ -210,7 +210,7 @@ export class CsvUtil {
 **Steps**
 
 1. Port `toCsv` as-is (the escaping is correct — `/[",\r\n]/` test, `"` doubling, CRLF joins). Add the optional per-column `format` hook, applied before escaping.
-2. **Do not** port `downloadCsv`'s anchor dance. Delegate to `AppUtil.saveBlob(blob, fileName)` in `core.utils.ts`, which H2R.2a adds in place of the removed `HttpUtil.downloadFile`. If this item lands first, add `saveBlob` here instead; there is no `HttpUtil` re-export to keep.
+2. **Do not** port `downloadCsv`'s anchor dance. Delegate to `AppUtil.saveBlob(blob, fileName)` in `core.utils.ts` (added with H2R in place of the removed `HttpUtil.downloadFile`); there is no `HttpUtil` re-export to keep.
 3. Export from `libs/ng/core/src/index.ts` (already `export * from './lib/core.utils'` — nothing to add).
 
 **Tests** (`libs/ng/core/src/lib/core.utils.spec.ts`, extend the existing file): header row emitted from `label`; field containing `,` is quoted; embedded `"` doubled; embedded newline quoted; `null`/`undefined` → empty string; rows joined with `\r\n`; `format` hook applied; `download` creates and revokes an object URL (spy on `URL.createObjectURL`/`revokeObjectURL`).
