@@ -1,4 +1,5 @@
 // external imports
+import { HttpClient } from '@angular/common/http';
 import {
   Injectable,
   Signal,
@@ -11,13 +12,7 @@ import { map, union } from 'lodash-es';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 
 // internal imports
-import {
-  GenericType,
-  LocalStorageService,
-  RouteService,
-  isDebugMode,
-} from '@rn-forge/ng/core';
-import { AbstractHTTPService } from '@rn-forge/ng/http';
+import { LocalStorageService, RouteService, isDebugMode } from '@rn-forge/ng/core';
 import { RNF_AUTH_CONFIG_TOKEN, RnForgeAuthConfig } from './auth.config';
 import {
   AnonymousCredentials,
@@ -200,32 +195,59 @@ export class AuthService {
 /**
  * Interacts with the backend authentication API.
  * Used by AuthComponent for login/logout HTTP operations.
+ *
+ * `baseUrl`/`authApiRoot`/`loginPath`/`logoutPath` are application-owned
+ * configuration from `RnForgeAuthConfig.backend`, not OpenAPI plumbing — this
+ * class builds the documented request itself with native `HttpClient`.
  */
 @Injectable({ providedIn: 'root' })
-export class AuthBackendService extends AbstractHTTPService {
+export class AuthBackendService {
+  protected readonly http: HttpClient = inject(HttpClient);
   protected authConfig: Partial<RnForgeAuthConfig> = inject(
     RNF_AUTH_CONFIG_TOKEN,
   );
 
-  constructor() {
-    super('auth');
+  private readonly baseUrl: string = requireAuthBackendBaseUrl(
+    this.authConfig,
+  );
+
+  login(user: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.baseUrl}${this.loginPath}`, {
+      user: user,
+    });
   }
 
-  login(user: string, options?: GenericType): Observable<LoginResponse> {
-    return this.POST<LoginResponse>(
-      'login',
-      this.authConfig.backend?.loginPath ?? '',
-      { user: user },
-      options,
-    );
+  logout(): Observable<string> {
+    return this.http.post<string>(`${this.baseUrl}${this.logoutPath}`, {});
   }
 
-  logout(options?: GenericType): Observable<string> {
-    return this.POST<string>(
-      'logout',
-      this.authConfig.backend?.logoutPath ?? '',
-      {},
-      options,
+  private get loginPath(): `/${string}` {
+    const path = `${this.authConfig.backend?.authApiRoot ?? '/auth'}${
+      this.authConfig.backend?.loginPath ?? '/login'
+    }`;
+    return path as `/${string}`;
+  }
+
+  private get logoutPath(): `/${string}` {
+    const path = `${this.authConfig.backend?.authApiRoot ?? '/auth'}${
+      this.authConfig.backend?.logoutPath ?? '/logout'
+    }`;
+    return path as `/${string}`;
+  }
+}
+
+/**
+ * `backend.baseUrl` is optional on `RnForgeAuthConfig` because most of the
+ * config works without it, but `AuthBackendService` needs an unambiguous
+ * value — `''` for the current origin is valid, `undefined` is not.
+ */
+function requireAuthBackendBaseUrl(config: Partial<RnForgeAuthConfig>): string {
+  const baseUrl = config.backend?.baseUrl;
+  if (baseUrl === undefined) {
+    throw new Error(
+      '[rn-forge.ng.auth] RnForgeAuthConfig.backend.baseUrl is not configured. ' +
+        "Pass provideRnForgeAuthConfig({ backend: { baseUrl: '...' } }) in your application bootstrap.",
     );
   }
+  return baseUrl;
 }

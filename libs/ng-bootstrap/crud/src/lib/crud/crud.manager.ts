@@ -8,16 +8,7 @@ import { BootstrapAjaxParams } from 'bootstrap-table';
 import { merge } from 'lodash-es';
 
 // internal imports
-import { GenericType, isDebugMode } from '@rn-forge/ng/core';
-import { DownloadResponse, HttpUtil } from '@rn-forge/ng/http';
-import {
-  BackendService,
-  BulkDeleteResponse,
-  ListResponse,
-  ReadModel,
-  UploadResponse,
-  WriteModel,
-} from '@rn-forge/ng/http/crud';
+import { GenericType, AppUtil, isDebugMode } from '@rn-forge/ng/core';
 import { FormOptions } from '@rn-forge/ng-bootstrap/form';
 import {
   ColumnOptions,
@@ -25,10 +16,21 @@ import {
   TableOptions,
   ToolbarHelper,
 } from '@rn-forge/ng-bootstrap';
-import { COMPONENT_MODES, CRUDContext, CRUDOptions } from './crud.types';
+import {
+  BulkDeleteResponse,
+  COMPONENT_MODES,
+  CRUDContext,
+  CRUDOptions,
+  CrudDataSource,
+  CrudFileDownload,
+  ListResponse,
+  ReadModel,
+  UploadResponse,
+  WriteModel,
+} from './crud.types';
 
 /**
- * Abstract base class that wires a `BackendService` to a `CRUDComponent`, implementing
+ * Abstract base class that wires a `CrudDataSource` to a `CRUDComponent`, implementing
  * the full list / add / update / delete / upload / download lifecycle.
  *
  * Extend this class per domain resource, provide it in your feature module/component, and
@@ -40,7 +42,8 @@ import { COMPONENT_MODES, CRUDContext, CRUDOptions } from './crud.types';
  *   readonly name = 'Product';
  *   permissionKey = 'products';
  *
- *   constructor(readonly domainService: ProductsService) { super(); }
+ *   private readonly productsService = inject(ProductsService);
+ *   override get dataSource() { return this.productsService; }
  *
  *   tableColumns(): ColumnOptions[] {
  *     return [
@@ -65,11 +68,13 @@ import { COMPONENT_MODES, CRUDContext, CRUDOptions } from './crud.types';
  *
  * @template $Q Write model (request payload), extends {@link WriteModel}.
  * @template $S Read model (response payload), extends {@link ReadModel}.
+ * @template $K Resource ID type, `number` or `string`.
  */
 @Injectable()
 export abstract class AbstractCRUDManager<
-  $Q extends WriteModel,
-  $S extends ReadModel,
+  $Q extends WriteModel<$K>,
+  $S extends ReadModel<$K>,
+  $K extends string | number = number,
 > {
   private readonly permissionService = inject(RNF_PERMISSION);
   private readonly destroyRef = inject(DestroyRef);
@@ -86,8 +91,8 @@ export abstract class AbstractCRUDManager<
   /** Dot-notation permission key prefix (e.g. `'products'` → checks `products.list`, `products.create`, etc.). Set to `''` to bypass all permission checks. */
   abstract permissionKey: string;
 
-  /** The `BackendService` instance for this resource. */
-  abstract get domainService(): BackendService<$Q, $S>;
+  /** The `CrudDataSource` instance for this resource. */
+  abstract get dataSource(): CrudDataSource<$Q, $S, $K>;
   /** Returns the `ColumnOptions[]` for the list table. */
   abstract tableColumns(): ColumnOptions[];
   /** Returns the reactive-form controls map for the add/update form. */
@@ -181,7 +186,16 @@ export abstract class AbstractCRUDManager<
   }
 
   handleErrorResponse(response: HttpErrorResponse, message?: string): void {
-    this.alert.error(HttpUtil.formatError(response, message));
+    this.alert.error(message ?? this.errorMessage(response));
+  }
+
+  /**
+   * Renders an `HttpErrorResponse` as a user-facing message. Defaults to
+   * `response.message`; override to read an application-specific error body
+   * (e.g. a documented OpenAPI problem shape).
+   */
+  protected errorMessage(response: HttpErrorResponse): string {
+    return response.message;
   }
 
   protected updateCurrentMode(mode: COMPONENT_MODES): void {
@@ -245,7 +259,7 @@ export abstract class AbstractCRUDManager<
   }
 
   protected tableDataSource(params: BootstrapAjaxParams): void {
-    this.domainService
+    this.dataSource
       .list(params.data)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -259,7 +273,7 @@ export abstract class AbstractCRUDManager<
         },
         error: (err: HttpErrorResponse) => {
           params.error({ status: err.status } as JQueryXHR);
-          this.ctx?.alert.error(HttpUtil.formatError(err));
+          this.ctx?.alert.error(this.errorMessage(err));
         },
       });
   }
@@ -307,7 +321,7 @@ export abstract class AbstractCRUDManager<
 
     if (this._addUpdateMode === 'add') {
       this.alert.start(`Adding ${this.name} ...`);
-      this.domainService
+      this.dataSource
         .create(writeObject)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
@@ -319,8 +333,8 @@ export abstract class AbstractCRUDManager<
         });
     } else {
       this.alert.start(`Updating ${this.name} ...`);
-      this.domainService
-        .update(writeObject['id'] ?? -1, writeObject)
+      this.dataSource
+        .update(writeObject.id as $K, writeObject)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (response: $S) => this.handleAddUpdateResponse(response),
@@ -416,7 +430,7 @@ export abstract class AbstractCRUDManager<
     this.alert.start(`Deleting ${this.pluralName} ...`);
     const ids = this.listTable.getSelectedRows<$S>().map((row: $S) => row.id);
     if (isDebugMode()) console.info('%s.delete:', this.name, ids);
-    this.domainService
+    this.dataSource
       .bulkDelete(ids)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -429,11 +443,12 @@ export abstract class AbstractCRUDManager<
   }
 
   downloadTemplate(includeData: boolean): void {
-    this.domainService
+    this.dataSource
       .uploadTemplate({ prefill: includeData })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response: DownloadResponse) => HttpUtil.downloadFile(response),
+        next: (response: CrudFileDownload) =>
+          AppUtil.saveBlob(response.blob, response.fileName),
         error: (err: HttpErrorResponse) => this.handleErrorResponse(err),
       });
   }
@@ -459,7 +474,7 @@ export abstract class AbstractCRUDManager<
       console.info('%s.upload: field=%s', this.name, this.uploadFieldName);
     this.alert.start(`Uploading ${this.pluralName} ...`);
     this.updateCurrentMode('list');
-    this.domainService
+    this.dataSource
       .upload(this.uploadFieldName)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -505,13 +520,13 @@ export abstract class AbstractCRUDManager<
   submitDownload(): void {
     const params = this.toRequestParams<$Q>(this.downloadForm.rawValue);
     if (isDebugMode()) console.info('%s.download:', this.name, params);
-    this.domainService
+    this.dataSource
       .download(params)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response: DownloadResponse) => {
+        next: (response: CrudFileDownload) => {
           this.updateCurrentMode('list');
-          HttpUtil.downloadFile(response);
+          AppUtil.saveBlob(response.blob, response.fileName);
         },
         error: (err: HttpErrorResponse) => {
           this.updateCurrentMode('list');

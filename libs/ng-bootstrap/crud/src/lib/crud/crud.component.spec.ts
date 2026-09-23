@@ -1,10 +1,9 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { ReadModel, WriteModel } from '@rn-forge/ng/http/crud';
 import { AbstractCRUDManager } from './crud.manager';
 import { CRUDComponent } from './crud.component';
-import { CRUDContext } from './crud.types';
+import { CRUDContext, ReadModel, WriteModel } from './crud.types';
 
 function makeMockManager() {
   const initSpy = vi.fn();

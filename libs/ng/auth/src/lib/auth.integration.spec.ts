@@ -1,5 +1,6 @@
 import {
   HttpClient,
+  HttpInterceptorFn,
   provideHttpClient,
   withInterceptors,
 } from '@angular/common/http';
@@ -14,7 +15,6 @@ import {
   provideRouter,
 } from '@angular/router';
 import { RN_FORGE_APP_CONFIG_TOKEN, RouteService } from '@rn-forge/ng/core';
-import { basicHttpInterceptor } from '@rn-forge/ng/http';
 import {
   RNF_AUTH_CONFIG_TOKEN,
   RNF_CREDENTIALS,
@@ -204,26 +204,26 @@ describe('authRouteGuard + AuthService (integration)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 3. basicHttpInterceptor + authHttpInterceptor in series
+// 3. an application-owned functional interceptor + authHttpInterceptor in series
 // ---------------------------------------------------------------------------
 
-describe('basicHttpInterceptor + authHttpInterceptor in series (integration)', () => {
+/** Fixture standing in for an application's own functional interceptor. */
+const appHeaderInterceptor: HttpInterceptorFn = (req, next) => {
+  return next(req.clone({ setHeaders: { 'X-App-Id': 'my-app' } }));
+};
+
+describe('an application interceptor + authHttpInterceptor in series (integration)', () => {
   let http: HttpClient;
   let controller: HttpTestingController;
   let authService: AuthService;
   let routeService: RouteService;
-
-  const APP_HEADERS = { 'X-App-Id': 'my-app' };
 
   beforeEach(async () => {
     localStorage.clear();
     await TestBed.configureTestingModule({
       providers: [
         provideHttpClient(
-          withInterceptors([
-            basicHttpInterceptor([], APP_HEADERS),
-            authHttpInterceptor(),
-          ]),
+          withInterceptors([appHeaderInterceptor, authHttpInterceptor()]),
         ),
         provideHttpClientTesting(),
         provideRouter([]),
@@ -275,7 +275,7 @@ describe('basicHttpInterceptor + authHttpInterceptor in series (integration)', (
     authService.login(VALID_JWT);
     http.get('/public/health').subscribe();
     const req = controller.expectOne('/public/health');
-    // basicHttpInterceptor adds X-App-Id even for ignored-by-auth URLs
+    // appHeaderInterceptor adds X-App-Id even for ignored-by-auth URLs
     expect(req.request.headers.get('X-App-Id')).toBe('my-app');
     // authHttpInterceptor skips this URL — no Authorization
     expect(req.request.headers.has('Authorization')).toBe(false);

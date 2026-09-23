@@ -8,7 +8,7 @@ import { AuthComponent } from './auth.component';
 
 const AUTH_CONFIG = {
   frontend: { disableAuth: true, loginPath: '/auth', ignoreAppRoutes: [] },
-  backend: { ignoreBackendURLs: [] },
+  backend: { baseUrl: '', ignoreBackendURLs: [] },
 };
 
 describe('AuthComponent', () => {

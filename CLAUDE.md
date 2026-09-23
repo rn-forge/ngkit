@@ -24,7 +24,7 @@
 
 ## Project Guidelines
 
-See [README.md](README.md) for the project list, common `pnpm nx` commands, and the packing/tarball workflow.
+See [README.md](README.md) for the project list, common `pnpm nx` commands, and the packing/tarball workflow. Its **Design principles** section binds every change and plan. Record any deviation, with its reason, in the plan or the doc comment.
 
 ### Publishing & release
 

@@ -6,10 +6,31 @@ import {
   ValidationErrors,
   ValidatorFn,
 } from '@angular/forms';
-import { isEmpty } from 'lodash-es';
 
 // internal imports
 import { GenericType } from './core.types';
+
+/**
+ * Local stand-in for lodash's `isEmpty`, scoped to the value shapes
+ * `ObjectUtil.diff` actually compares. Preserves lodash's existing semantics
+ * (e.g. scalars other than non-empty strings are considered empty) rather than
+ * fixing them here; that behavior change is tracked separately in the H3 backlog.
+ */
+function isEmpty(value: unknown): boolean {
+  if (value == null) {
+    return true;
+  }
+  if (Array.isArray(value) || typeof value === 'string') {
+    return value.length === 0;
+  }
+  if (value instanceof Map || value instanceof Set) {
+    return value.size === 0;
+  }
+  if (typeof value === 'object') {
+    return Object.keys(value).length === 0;
+  }
+  return true;
+}
 
 /**
  * Global signal tracking whether debug mode is active.
@@ -73,6 +94,21 @@ export class AppUtil {
     reader.onload = (e) => {
       handler(e.target?.result as string);
     };
+  }
+
+  /**
+   * Triggers a browser download for an in-memory `Blob` by creating a
+   * transient object URL, clicking a detached anchor and revoking the URL.
+   * DOM glue only: callers decide the blob's content type and filename (for
+   * example from a documented file response's `Content-Disposition` header).
+   */
+  static saveBlob(blob: Blob, fileName: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   }
 }
 

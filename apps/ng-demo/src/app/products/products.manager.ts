@@ -1,9 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { AbstractCRUDManager } from '@rn-forge/ng-bootstrap/crud';
+import { AbstractCRUDManager, CrudDataSource } from '@rn-forge/ng-bootstrap/crud';
 import { ColumnOptions } from '@rn-forge/ng-bootstrap';
 import { GenericType } from '@rn-forge/ng/core';
-import { BackendService } from '@rn-forge/ng/http/crud';
 import { ProductsService } from './products.service';
 import { ProductRead, ProductWrite } from './products.types';
 
@@ -21,12 +20,12 @@ export class ProductsManager extends AbstractCRUDManager<
   override readonly name = 'Product';
   override permissionKey = 'demo.products';
 
-  private readonly productsService = new ProductsService();
+  private readonly productsService = inject(ProductsService);
 
   readonly categories = CATEGORIES;
   readonly activeOptions = ACTIVE_OPTIONS;
 
-  override get domainService(): BackendService<ProductWrite, ProductRead> {
+  override get dataSource(): CrudDataSource<ProductWrite, ProductRead> {
     return this.productsService;
   }
 

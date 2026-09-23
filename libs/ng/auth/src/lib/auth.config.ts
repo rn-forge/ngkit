@@ -28,6 +28,14 @@ export interface AuthFrontendConfig {
 
 /** Backend (HTTP interceptor / API) auth configuration. */
 export interface AuthBackendConfig {
+  /**
+   * Base URL `AuthBackendService` prepends to its login/logout requests
+   * (e.g. `'https://api.example.test'`, or `''` for the current origin).
+   * Optional here because most of `RnForgeAuthConfig` works without it, but
+   * `AuthBackendService` requires it and throws a clear error if it is
+   * `undefined` when constructed.
+   */
+  baseUrl?: string;
   /** API root prefix for auth endpoints (e.g. `'/auth'`). */
   authApiRoot?: string;
   /** Login endpoint path relative to `authApiRoot`. Default: `'/login'`. */

@@ -15,6 +15,36 @@ This workspace uses **pnpm**, not npm/npx. Install it via [Corepack](https://nod
 
 Run `pnpm nx show project <name> --web` to see a project's full, resolved target list.
 
+## Design principles
+
+**Goal:** easy-to-use wrappers and plumbing to stand up an Angular web app quickly, with best practices and industry standards built in, so the developer writes only functional code. These are the same principles as [pykit](https://github.com/rn-forge/pykit#design-principles), applied to Angular.
+
+1. **Don't reimplement a proven library.** Use Angular first (`HttpClient`, `Router`, CDK, signals, `httpResource`), then a maintained, widely used npm package. Zero dependencies is not a goal. A small, deliberate dependency set is. Follow published standards (OpenAPI, RFC 9457, W3C Trace Context and so on) directly. Order of preference: the published standard, then the framework's own mechanism, then an ngkit wrapper.
+2. **Wrap for one design language.** When a library's setup or call syntax is verbose or doesn't match the rest of the kit, ship a thin wrapper. The wrapper standardizes; it doesn't extend, fork or vendor.
+3. **Package boundaries are non-negotiable.** `ng` has no UI and no presentation dependencies. `ng-bootstrap` depends on `ng`, never the reverse. A future `ng-tailwind` must not import `ng-bootstrap`. State and behavior shared between presentation libraries live in `ng`. Angular and RxJS are peers. Implementation libraries are `dependencies`, declared in `allowedNonPeerDependencies`. Secondary entry points can't declare their own peers, so a heavy, situational dependency goes behind an optional peer.
+4. **ngkit is upstream.** Apps build on these libraries instead of re-deriving them, so apps that share ngkit share logic and read alike.
+
+These principles apply to every current and future entry point and package. When a plan or a change conflicts with one of them, the principle wins, unless the plan or change records the deviation and its reason.
+
+On #1, hand-roll only in one of these cases, and say which one in the class or file doc comment:
+
+- Nothing maintained covers the concern. Check npm before deciding this; don't rely on memory.
+- The candidate library would break a package boundary.
+- The needed slice really is a few lines, and the candidate is unmaintained or much heavier.
+
+On #2, a wrapper follows these rules:
+
+- **Configuration** is a readonly typed interface, registered once through `provideRnForge<Area>Config(config)` and an `InjectionToken`. Don't use long positional argument lists or loose option bags.
+- **Missing required configuration** fails at injection with an `Error` whose message is prefixed `[rn-forge.ng.<area>]` and names the provider to call.
+- **Errors from the underlying library pass through unchanged.** For example, `HttpErrorResponse` stays an `HttpErrorResponse`.
+- **Logging** happens only through `isDebugMode()` (`?__DEBUG`). Never write to the console unconditionally.
+- **Public symbols** are exported from the entry point's `src/index.ts`.
+- **The underlying Angular or library object stays reachable** as an escape hatch.
+
+On #4, surveys of existing apps (web-app, CIMS) are prior art that informs the design, not compatibility constraints. Where an app got something wrong, fix it here instead of copying it.
+
+`@nx/dependency-checks` (lint) and `ng:verify-consumer` (packed-tarball install) catch undeclared and leaked dependencies. Nothing lints the direction between entry points and packages yet (`@nx/enforce-module-boundaries` has no tag constraints), so review enforces it.
+
 ## Getting started
 
 ```sh

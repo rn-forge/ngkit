@@ -11,7 +11,6 @@ import {
 import { ReactiveFormsModule } from '@angular/forms';
 
 // internal imports
-import { ReadModel, WriteModel } from '@rn-forge/ng/http/crud';
 import {
   AlertComponent,
   ButtonComponent,
@@ -24,7 +23,7 @@ import {
   InputFieldComponent,
 } from '@rn-forge/ng-bootstrap/form';
 import { AbstractCRUDManager } from './crud.manager';
-import { CRUDContext, CRUDOptions } from './crud.types';
+import { CRUDContext, CRUDOptions, ReadModel, WriteModel } from './crud.types';
 
 export type { CRUDOptions } from './crud.types';
 

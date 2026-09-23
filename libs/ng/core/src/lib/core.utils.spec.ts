@@ -1,5 +1,5 @@
 import { FormControl, FormGroup } from '@angular/forms';
-import { DateUtil, FormUtil, ObjectUtil } from './core.utils';
+import { AppUtil, DateUtil, FormUtil, ObjectUtil } from './core.utils';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -14,6 +14,41 @@ function dirtyControl(value: string): FormControl<string> {
   c.markAsDirty();
   return c;
 }
+
+// ---------------------------------------------------------------------------
+// AppUtil
+// ---------------------------------------------------------------------------
+
+describe('AppUtil.saveBlob()', () => {
+  it('creates an object URL, clicks a download anchor, then revokes the URL', () => {
+    vi.useFakeTimers();
+    const url = 'blob:fixture';
+    const createObjectURL = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValue(url);
+    const revokeObjectURL = vi
+      .spyOn(URL, 'revokeObjectURL')
+      .mockImplementation(() => undefined);
+    const anchor = document.createElement('a');
+    const clickSpy = vi.spyOn(anchor, 'click').mockImplementation(() => undefined);
+    vi.spyOn(document, 'createElement').mockReturnValue(anchor);
+
+    const blob = new Blob(['id,name\n'], { type: 'text/csv' });
+    AppUtil.saveBlob(blob, 'export.csv');
+
+    expect(createObjectURL).toHaveBeenCalledWith(blob);
+    expect(anchor.href).toBe(url);
+    expect(anchor.download).toBe('export.csv');
+    expect(clickSpy).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(100);
+    expect(revokeObjectURL).toHaveBeenCalledWith(url);
+
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+});
 
 // ---------------------------------------------------------------------------
 // DateUtil

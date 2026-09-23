@@ -1,4 +1,4 @@
-import { ReadModel, WriteModel } from '@rn-forge/ng/http/crud';
+import { ReadModel, WriteModel } from '@rn-forge/ng-bootstrap/crud';
 
 export interface ProductWrite extends WriteModel {
   id?: number | null;

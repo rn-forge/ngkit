@@ -47,7 +47,7 @@
       "dependsOn": ["patch-package-exports"],
       "options": {
         "cwd": "{workspaceRoot}",
-        "command": "mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
+        "command": "node tools/scripts/resolve-dist-workspace-deps.mjs dist/{projectRoot}/package.json && mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
       }
     },
     "nx-release-publish": {

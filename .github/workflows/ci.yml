@@ -166,6 +166,15 @@ jobs:
       - name: Pack publishable tarballs
         run: pnpm exec nx run-many -t pack --projects=ng,ng-bootstrap
 
+      # Plain `nx pack` (unlike the release path) never stamps workspace:*
+      # peers to exact pins, so ng-bootstrap's peer on @rn-forge/ng would
+      # otherwise ship the raw workspace: protocol in this CI tarball.
+      - name: Verify publishable dist manifests
+        run: node tools/scripts/verify-dist-manifests.mjs
+
+      - name: Verify consumer installs
+        run: pnpm exec nx run ng:verify-consumer
+
       - name: Upload package tarballs
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

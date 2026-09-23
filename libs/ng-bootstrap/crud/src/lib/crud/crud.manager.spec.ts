@@ -2,14 +2,18 @@ import { Injectable } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { RNF_PERMISSION } from '@rn-forge/ng/auth';
 import { RN_FORGE_APP_CONFIG_TOKEN } from '@rn-forge/ng/core';
-import { BackendService } from '@rn-forge/ng/http/crud';
-import { ReadModel, WriteModel } from '@rn-forge/ng/http/crud';
 import { AlertComponent } from '@rn-forge/ng-bootstrap';
 import { FormComponent } from '@rn-forge/ng-bootstrap/form';
 import { ModalComponent } from '@rn-forge/ng-bootstrap';
 import { TableComponent } from '@rn-forge/ng-bootstrap';
 import { AbstractCRUDManager } from './crud.manager';
-import { CRUDContext, CRUDOptions } from './crud.types';
+import {
+  CRUDContext,
+  CRUDOptions,
+  CrudDataSource,
+  ReadModel,
+  WriteModel,
+} from './crud.types';
 
 interface TestWrite extends WriteModel {
   name?: string;
@@ -22,8 +26,8 @@ interface TestRead extends ReadModel {
 class TestManager extends AbstractCRUDManager<TestWrite, TestRead> {
   override name = 'Widget';
   override permissionKey = 'demo.widgets';
-  readonly mockService = {} as unknown as BackendService<TestWrite, TestRead>;
-  override get domainService() {
+  readonly mockService = {} as unknown as CrudDataSource<TestWrite, TestRead>;
+  override get dataSource() {
     return this.mockService;
   }
   override tableColumns() {
@@ -208,24 +212,26 @@ describe('AbstractCRUDManager (via TestManager)', () => {
       expect(manager.currentMode()).toBe('list');
     });
 
-    it('handleErrorResponse() calls alert.error() with formatted message', () => {
+    it('handleErrorResponse() calls alert.error() with response.message by default', () => {
       const ctx = makeContext();
       manager.init(ctx);
       const err = {
-        error: { message: 'fail', error: 'ERR' },
+        message: 'Http failure response for /api/widgets: 500 Internal Server Error',
       } as unknown as import('@angular/common/http').HttpErrorResponse;
       manager.handleErrorResponse(err);
-      expect(ctx.alert.error).toHaveBeenCalledWith('fail [ERR]');
+      expect(ctx.alert.error).toHaveBeenCalledWith(
+        'Http failure response for /api/widgets: 500 Internal Server Error',
+      );
     });
 
     it('handleErrorResponse() with custom message overrides response message', () => {
       const ctx = makeContext();
       manager.init(ctx);
       const err = {
-        error: { message: 'fail', error: 'ERR' },
+        message: 'fail',
       } as unknown as import('@angular/common/http').HttpErrorResponse;
       manager.handleErrorResponse(err, 'Custom msg');
-      expect(ctx.alert.error).toHaveBeenCalledWith('Custom msg [ERR]');
+      expect(ctx.alert.error).toHaveBeenCalledWith('Custom msg');
     });
 
     it('handleErrorResponse() throws before init()', () => {

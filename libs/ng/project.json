@@ -42,6 +42,15 @@
         "command": "mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
       }
     },
+    "verify-consumer": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["pack"],
+      "cache": false,
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node tools/scripts/verify-consumer.mjs"
+      }
+    },
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}",
@@ -55,19 +64,15 @@
         "watch": false,
         "include": [
           "../core/src/**/*.spec.ts",
-          "../auth/src/**/*.spec.ts",
-          "../http/src/**/*.spec.ts",
-          "../http/crud/src/**/*.spec.ts"
+          "../auth/src/**/*.spec.ts"
         ],
         "coverage": true,
         "coverageReporters": ["text-summary", "lcov"],
         "coverageInclude": [
           "libs/ng/core/src/**",
-          "libs/ng/auth/src/**",
-          "libs/ng/http/src/**",
-          "libs/ng/http/crud/src/**"
+          "libs/ng/auth/src/**"
         ],
-        "coverageExclude": ["**/*.config.ts", "libs/ng/http/crud/src/**"],
+        "coverageExclude": ["**/*.config.ts"],
         "coverageThresholds": {
           "statements": 80,
           "branches": 80,
