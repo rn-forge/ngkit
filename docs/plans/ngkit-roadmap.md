@@ -1,8 +1,8 @@
 # ngkit roadmap
 
-Reviewed 2026-09-23. H1, H2R, H3.1 (storage) and H3.2 (core items) are complete
-(see the completion record). **H4 (standard resource screen) is next**,
-implemented in the H4.5 steps; stop after step 7 and review before H4.6. H5 (OIDC
+Reviewed 2026-09-23. H1, H2R, H3.1 (storage), H3.2 (core items) and H4.5 steps
+1–7 are complete (see the completion record). **H4 is awaiting owner review**
+before H4.6. H5 (OIDC
 client auth) is planned. E1, E2 and T1–T3 are proposals; the APIs they describe don't
 exist yet.
 
@@ -624,7 +624,7 @@ One step per change, each green on its own checks before the next begins. Read
    `Idempotency-Key` only when given; optional methods absent unless enabled;
    a 412/422 `HttpErrorResponse` reaching the subscriber unchanged; the missing
    config error.
-6. **`ng-bootstrap/crud` renderer.** Rewrite `AbstractCRUDManager` and
+6. **`ng-bootstrap/crud` renderer.** Rewrite `AbstractCrudManager` and
    `CrudComponent` over the controller: token paging (H4.4, no numbered pages),
    sortable columns writing `orderBy`, declared filters, create/update/delete
    with `problemToFormErrors`, the 412 reload offer, batch delete when present.
@@ -974,7 +974,7 @@ is not configured` when it is `undefined`, and `''` is accepted as the
   that don't render `AuthComponent` don't need it.
 - `@rn-forge/ng-bootstrap/crud` exports `CrudDataSource<$Q, $S, $K>`,
   `WriteModel<$K>`, `ReadModel<$K>`, `ListResponse`, `BulkDeleteResponse`,
-  `UploadResponse` and `CrudFileDownload`. `AbstractCRUDManager` takes
+  `UploadResponse` and `CrudFileDownload`. `AbstractCrudManager` takes
   `abstract get dataSource()` and a protected `errorMessage(err)` hook.
   **Deviation:** `CrudDataSource` has only the seven methods the manager calls:
   `list`, `create`, `update`, `bulkDelete`, `upload`, `uploadTemplate` and
@@ -1001,3 +1001,42 @@ is not configured` when it is `undefined`, and `''` is accepted as the
   - `node tools/scripts/verify-dist-manifests.mjs` passes for both packages.
   - `pnpm nx run ng:verify-consumer` passes all four Angular 22.0.6/22.1.7 ×
     zone/zoneless cells.
+
+H4.5 steps 1–7 are complete (2026-09-23), uncommitted, for owner review before
+H4.6. Notes, deviations and evidence:
+
+- **`@rn-forge/ng/crud`** (`libs/ng/crud`): contract and types, `createCrudList()`
+  (a function on `rxResource`, not an injectable: the data source belongs to one
+  screen, so nothing is shared through DI), `problemToFormErrors()` +
+  `crudErrorKind()`, `fileNameFrom()` (over `content-disposition` 3.0.0, added to
+  `ng` `dependencies`, `allowedNonPeerDependencies` and the root `package.json`
+  like the other implementation libraries), `IdempotencyKey`, `crudFeatures()`,
+  `standardDataSource()`.
+- **`problemToFormErrors` is hand-rolled** under README exemption 1: npm searched
+  2026-09-23, no maintained package maps RFC 9457 pointers onto Angular forms.
+  The pointer parse is a few lines, so it takes no JSON Pointer dependency.
+  Errors are set as `{ server: string[] }` on controls and the form.
+- **`saveBlob`** stays hand-rolled; the doc comment records README exemption 3.
+- **Deviations and additions the plan didn't spell out:**
+  - `standardDataSource()` drops `null` filter values as well as `undefined`;
+    `features.importTemplate` is a boolean and `features.export` a non-empty
+    format list.
+  - `ImportReport` gained an optional `errors` list to carry the R7 Q1
+    partial-save variant.
+  - The 412 flow is `manager.conflict` + `reloadConflict()`: it re-reads the row
+    for its new `ETag` and keeps the user's edits. Update reads the row fresh
+    (`get`) before opening the form, for its `ETag`.
+  - `ng-bootstrap/crud` mode `'upload'` became `'import'`, the `'download'` mode
+    is gone (export is a direct `GET`), and permission keys `.upload`/`.download`
+    are now `.import`/`.export`. Breaking; include in the release note (H4.6).
+  - The table now renders one server page (`sidePagination: 'server'`,
+    `pagination: false`); table refresh is off because it has no `ajax`.
+  - Steps 6 and 7 were written together in `ng-bootstrap/crud`, then verified as a
+    whole (the old upload/download views could not stand alone on the new
+    contract).
+  - The demo's mock `/api` is now stateful and speaks the H4.1 wire table
+    (`ETag`/`If-Match` 412, `Idempotency-Key` replay, `orderBy` allow-list, a
+    `bad*.csv` import returns 422 row errors); the e2e spec covers sort, filter,
+    two-step import and row errors.
+- **Not done:** H4.6 wire acceptance against a pykit fixture, and the release
+  note; both wait for the owner review and pykit R7/R8.

@@ -8,7 +8,68 @@
     <h4 class="text-center mt-2 mb-0 list-table-header">
       {{ manager().pluralName }}
     </h4>
+    @if (manager().filterFields().length) {
+      <div class="d-flex flex-wrap gap-2 my-2" aria-label="Filters">
+        @for (field of manager().filterFields(); track field.name) {
+          <div class="d-flex align-items-center gap-1">
+            <span>{{ field.label }}</span>
+            @if (field.options) {
+              <select
+                class="form-select form-select-sm"
+                [attr.aria-label]="field.label"
+                (change)="
+                  manager().setFilterValue(
+                    field.name,
+                    $any($event.target).value
+                  )
+                ">
+                <option value="">All</option>
+                @for (option of field.options; track option.code) {
+                  <option [value]="option.code">{{ option.name }}</option>
+                }
+              </select>
+            } @else {
+              <input
+                class="form-control form-control-sm"
+                [attr.aria-label]="field.label"
+                (change)="
+                  manager().setFilterValue(
+                    field.name,
+                    $any($event.target).value
+                  )
+                " />
+            }
+          </div>
+        }
+      </div>
+    }
     <rnf-table #listTable [options]="manager().tableOptions()" />
+    @if (manager().hasList()) {
+      <nav
+        class="d-flex justify-content-end align-items-center gap-2 my-2"
+        aria-label="Pagination">
+        <span class="text-muted small">
+          Page {{ manager().list.pageIndex() + 1 }}
+          @if (manager().list.totalSize() !== undefined) {
+            ({{ manager().list.totalSize() }} total)
+          }
+        </span>
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm"
+          [disabled]="!manager().list.hasPrevious()"
+          (click)="manager().list.previous()">
+          Previous
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm"
+          [disabled]="!manager().list.hasNext()"
+          (click)="manager().list.next()">
+          Next
+        </button>
+      </nav>
+    }
   </div>
 }
 
@@ -17,6 +78,19 @@
   <div
     aria-label="Add/Update View"
     [ngClass]="manager().currentMode() === 'addupdate' ? '' : 'd-none'">
+    @if (manager().conflict()) {
+      <div
+        class="alert alert-warning d-flex align-items-center gap-2"
+        role="alert">
+        <span>This record was changed by someone else.</span>
+        <button
+          type="button"
+          class="btn btn-warning btn-sm"
+          (click)="manager().reloadConflict()">
+          Reload latest
+        </button>
+      </div>
+    }
     <rnf-form
       #addUpdateForm
       [template]="addUpdateFormTemplate()"
@@ -43,52 +117,74 @@
   </div>
 }
 
-<!-- Upload View -->
-@if (manager().enableUpload()) {
+<!-- Import View -->
+@if (manager().enableImport()) {
   <div
-    aria-label="Upload View"
-    [ngClass]="manager().currentMode() === 'upload' ? '' : 'd-none'"
+    aria-label="Import View"
+    [ngClass]="manager().currentMode() === 'import' ? '' : 'd-none'"
     class="text-center">
-    <rnf-form
-      #uploadForm
-      [template]="uploadFormTemplate"
-      [options]="manager().uploadFormOptions()"
-      (formSubmit)="manager().submitUpload()"
-      (formCancel)="manager().cancelUpload()" />
-    <ng-template #uploadFormTemplate let-context>
-      <rnf-input-field
-        type="file"
-        name="uploadFile"
-        label=""
-        [htmlAttributes]="{ accept: '.xlsx' }"
-        [formGroup]="context.formGroup" />
-    </ng-template>
+    <h5 class="mt-2">Import {{ manager().pluralName }}</h5>
+    <input
+      type="file"
+      class="form-control my-2"
+      accept=".csv,.xlsx"
+      aria-label="Import file"
+      (change)="manager().setImportFile($any($event.target).files?.[0])" />
     <rnf-button
       type="button"
-      class="info"
-      icon="file-arrow-down"
-      label="Template"
-      (buttonClick)="manager().downloadTemplate(false)" />
+      class="primary"
+      icon="check2-circle"
+      label="Validate"
+      [disabled]="!manager().importFile()"
+      (buttonClick)="manager().validateImport()" />
     <rnf-button
       type="button"
       class="success"
-      icon="file-arrow-down"
-      label="Template (With Data)"
-      [additionalClasses]="'ms-2'"
-      (buttonClick)="manager().downloadTemplate(true)" />
-  </div>
-}
-
-<!-- Download View -->
-@if (manager().enableDownload() && downloadFormTemplate()) {
-  <div
-    aria-label="Download View"
-    [ngClass]="manager().currentMode() === 'download' ? '' : 'd-none'">
-    <rnf-form
-      #downloadForm
-      [template]="downloadFormTemplate()"
-      [options]="manager().downloadFormOptions()"
-      (formSubmit)="manager().submitDownload()"
-      (formCancel)="manager().cancelDownload()" />
+      icon="upload"
+      label="Import"
+      additionalClasses="ms-2"
+      [disabled]="!manager().importOutcome()?.canCommit"
+      (buttonClick)="manager().commitImport()" />
+    <rnf-button
+      type="button"
+      class="secondary"
+      label="Cancel"
+      additionalClasses="ms-2"
+      (buttonClick)="manager().cancelImport()" />
+    @if (manager().enableImportTemplate()) {
+      <div class="mt-2">
+        <rnf-button
+          type="button"
+          class="info"
+          icon="file-arrow-down"
+          label="Template"
+          (buttonClick)="manager().downloadTemplate(false)" />
+        <rnf-button
+          type="button"
+          class="success"
+          icon="file-arrow-down"
+          label="Template (With Data)"
+          additionalClasses="ms-2"
+          (buttonClick)="manager().downloadTemplate(true)" />
+      </div>
+    }
+    @if (manager().importOutcome(); as outcome) {
+      <div class="mt-3 text-start" aria-label="Import report">
+        @if (outcome.report) {
+          <p class="mb-1">
+            {{ outcome.report.validateOnly ? 'Validated' : 'Imported' }}:
+            {{ outcome.report.created }} to add, {{ outcome.report.updated }} to
+            update, {{ outcome.report.skipped }} skipped.
+          </p>
+        }
+        @if (outcome.errors.length) {
+          <ul class="text-danger">
+            @for (error of outcome.errors; track $index) {
+              <li>{{ error }}</li>
+            }
+          </ul>
+        }
+      </div>
+    }
   </div>
 }

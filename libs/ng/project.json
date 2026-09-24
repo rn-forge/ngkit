@@ -64,13 +64,15 @@
         "watch": false,
         "include": [
           "../core/src/**/*.spec.ts",
-          "../auth/src/**/*.spec.ts"
+          "../auth/src/**/*.spec.ts",
+          "../crud/src/**/*.spec.ts"
         ],
         "coverage": true,
         "coverageReporters": ["text-summary", "lcov"],
         "coverageInclude": [
           "libs/ng/core/src/**",
-          "libs/ng/auth/src/**"
+          "libs/ng/auth/src/**",
+          "libs/ng/crud/src/**"
         ],
         "coverageExclude": ["**/*.config.ts"],
         "coverageThresholds": {

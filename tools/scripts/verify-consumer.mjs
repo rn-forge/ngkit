@@ -82,6 +82,7 @@ import { provideRnForgeCoreConfig, LocalStorageService, RNF_BROWSER_STORAGE } fr
 import * as rootEntry from '@rn-forge/ng';
 import * as coreEntry from '@rn-forge/ng/core';
 import * as authEntry from '@rn-forge/ng/auth';
+import * as crudEntry from '@rn-forge/ng/crud';
 
 // "zone" mode loads zone.js like a classic Angular app would; "zoneless" mode
 // deliberately omits it, matching provideZonelessChangeDetection() consumers.
@@ -92,7 +93,7 @@ if ('${changeDetectionMode}' === 'zone') {
   await import('zone.js');
 }
 
-const entryPoints = { root: rootEntry, core: coreEntry, auth: authEntry };
+const entryPoints = { root: rootEntry, core: coreEntry, auth: authEntry, crud: crudEntry };
 for (const [name, mod] of Object.entries(entryPoints)) {
   if (!mod || Object.keys(mod).length === 0) {
     throw new Error(\`Entry point "\${name}" resolved but exported nothing\`);

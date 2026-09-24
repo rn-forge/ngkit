@@ -2,31 +2,37 @@
 
 Secondary entry point of `@rn-forge/ng-bootstrap`. It can be used by importing from `@rn-forge/ng-bootstrap/crud`.
 
-`AbstractCRUDManager` implements the list / add / update / delete / upload /
-download lifecycle for `CRUDComponent`; it needs a data contract for the
-resource, which the application implements over native `HttpClient` (or a
-generated OpenAPI client) — no ngkit transport base class is involved.
+`AbstractCrudManager` renders a `CrudDataSource` (from `@rn-forge/ng/crud`) in
+`CrudComponent`: list, add/update, delete, import and export. It holds no data
+logic. Paging, `orderBy`, filters and selection come from `createCrudList()`;
+server validation, 412 conflicts, `Idempotency-Key` and file names come from the
+same entry point. See [`libs/ng/crud/README.md`](../../ng/crud/README.md).
 
-```ts
-export interface CrudDataSource<$Q extends WriteModel<$K>, $S extends ReadModel<$K>, $K extends string | number = number> {
-  list(params?: GenericType): Observable<ListResponse<$S>>;
-  create(payload: $Q): Observable<$S>;
-  update(id: $K, payload: $Q): Observable<$S>;
-  bulkDelete(ids: $K[]): Observable<BulkDeleteResponse>;
-  upload(fieldName: string): Observable<UploadResponse>;
-  uploadTemplate(params?: GenericType): Observable<CrudFileDownload>;
-  download(params?: GenericType): Observable<CrudFileDownload>;
-}
-```
+What the screen does:
 
-`$K` (default `number`) is the resource's ID type — pass `string` for
-resources with string IDs. `CrudFileDownload` is `{ blob, fileName }`; save it
-with `AppUtil.saveBlob(blob, fileName)` from `@rn-forge/ng/core` (the manager
-already does this for `downloadTemplate()`/`submitDownload()`).
+- **Token paging, no numbered pages.** Previous/Next; the total shows only when
+  the backend sends `totalSize`.
+- **Sort** writes `orderBy`, only for columns marked `sortable`.
+- **Filters** are named query parameters returned by `filterFields()`.
+- **Server validation** lands on the form controls (`problemToFormErrors`).
+- **412 on save** shows "Reload latest": the row is re-read for its new `ETag`
+  and the user's edits are kept, never silently overwritten.
+- **Create** sends an `Idempotency-Key`, reused on retry, renewed when the body
+  changes.
+- **Delete** uses `batchDelete` when the data source has it, else one `DELETE`
+  per id.
+- **Import is two steps**: *Validate* uploads with `validateOnly=true` and shows
+  the report or the 422 row errors; *Import* commits. A 200 that lists errors is
+  shown as a partial save.
+- **Export** is a `GET` download with the current filters.
 
-`AbstractCRUDManager` exposes an abstract `get dataSource(): CrudDataSource<$Q, $S, $K>`
-and a protected `errorMessage(response: HttpErrorResponse): string` hook
-(default: `response.message`) — override it to read an application-specific
-error body. See `apps/ng-demo/src/app/products/` for the canonical
-implementation: `products.types.ts`, `products.service.ts` (the
-`CrudDataSource`), `products.manager.ts` and `products.page.ts`.
+Import, export, template and batch actions are hidden when the data source has
+no such method. Permission keys are `<permissionKey>.list|create|update|delete|import|export`
+(the earlier `upload`/`download` keys are now `import`/`export`).
+
+`AbstractCrudManager` exposes an abstract `dataSource`, an optional
+`filterFields()`, and a protected `errorMessage(error)` hook (default: the
+problem's `detail`/`title`, else the error's `message`). See
+`apps/ng-demo/src/app/products/` for the canonical implementation
+(`products.types.ts`, `products.manager.ts`, `products.page.*`) over
+`standardDataSource()`.

@@ -36,6 +36,7 @@ libs/ng-bootstrap/src/lib/     bootstrap.component.ts (ConfigurableComponent —
 libs/ng-bootstrap/shell/src/   header/, footer/, navbar/, offcanvas/, color-mode/, shell.config.ts
 libs/ng-bootstrap/form/src/    form/form.component.ts, form/fields/*/, form.config.ts
 libs/ng-bootstrap/auth/src/    auth/, user/, abstract-auth-page.ts, auth-ui.config.ts
+libs/ng/crud/src/    crud.types.ts, crud.list.ts, crud.errors.ts, crud.files.ts, crud.standard.ts
 libs/ng-bootstrap/crud/src/    crud/crud.component.ts, crud/crud.manager.ts, crud.types.ts
 libs/ng-bootstrap/assets/      theme.scss + README.md (styling setup, Sass @forward rationale)
 apps/ng-demo/src/app/          ← THE reference implementation. Read this before writing anything.
@@ -53,7 +54,7 @@ An Nx monorepo publishing two Angular libraries — standalone components, signa
 
 | Package                  | Secondary entry points                                 | What it gives you                                                                                                                                                                                                           |
 | ------------------------ | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@rn-forge/ng`           | `/core`, `/auth`                                       | No UI. Base component class, config/DI helpers, JWT auth (service + guards + interceptors + permission directives). No HTTP wrapper — use Angular `HttpClient` (§5.3).                                                      |
+| `@rn-forge/ng`           | `/core`, `/auth`, `/crud`                              | No UI. Base component class, config/DI helpers, JWT auth (service + guards + interceptors + permission directives). No HTTP wrapper — use Angular `HttpClient` (§5.3).                                                      |
 | `@rn-forge/ng-bootstrap` | (root), `/shell`, `/form`, `/auth`, `/crud`, `/assets` | Bootstrap 5 UI: alert, button, error page, modal, data table (bootstrap-table + treegrid), app shell (header/footer/navbar/offcanvas/dark-mode), reactive-form fields, login/profile/settings screens, generic CRUD screen. |
 
 `ng-bootstrap` depends on `ng`. Both are pre-1.0 and fixed/grouped-versioned together — they always release as a matched pair, so never mix versions between them.
@@ -227,7 +228,7 @@ JWT auth. **Zero-config default is fully open** (all permission checks pass) —
 - **API services inject `HttpClient` and their token directly**, one method per operation, calling native `get/post/put/patch/delete`. Prefer a client generated from the backend's OpenAPI document when one exists.
 - **Query params:** pass `{ params: {...} }` — Angular encodes them. **Downloads:** `{ responseType: 'blob', observe: 'response' }`, then `AppUtil.saveBlob(blob, fileName)` from `/core`.
 - **Errors:** one functional interceptor in `provideHttpClient(withInterceptors([...]))` for reporting/telemetry; rethrow the original `HttpErrorResponse`. Per-call `catchError` only where the caller recovers. OpenTelemetry setup: plan H2R.4.
-- **CRUD screens** take a `CrudDataSource` (§5.8), which you implement with the above.
+- **CRUD screens** take a `CrudDataSource` (§5.8): `standardDataSource()` for a standards-following backend, or your own implementation of the above.
 
 ### 5.4 `@rn-forge/ng-bootstrap` (root)
 
@@ -287,11 +288,11 @@ UI layer over `@rn-forge/ng/auth` (configured separately — most apps call both
 - **`UserComponent`** — profile and settings screens; route _both_ `/user/profile` and `/user/settings` to this one component.
 - **`UserSettingsService`** — per-user persisted settings (theme, color mode, custom keys).
 
-### 5.8 `@rn-forge/ng-bootstrap/crud`
+### 5.8 `@rn-forge/ng-bootstrap/crud` (with `@rn-forge/ng/crud`)
 
-**The fastest path to a full CRUD screen** — list, add/update, delete-with-confirm, upload, download. Use it for any "manage a list of X" page instead of assembling `rnf-table` + `rnf-form` + `rnf-modal` by hand.
+**The fastest path to a full CRUD screen** — list, add/update, delete-with-confirm, import, export. Use it for any "manage a list of X" page instead of assembling `rnf-table` + `rnf-form` + `rnf-modal` by hand.
 
-**Exactly 4 files per resource.** Copy `apps/ng-demo/src/app/products/` — it is the canonical implementation and more reliable than this sketch. From the release after 0.1.2, `CrudDataSource`, `ReadModel`, `WriteModel` and `ListResponse` import from `@rn-forge/ng-bootstrap/crud`, and IDs can be strings via the `$K` generic. In 0.1.2 they live in `@rn-forge/ng/http/crud`, and the manager exposes `domainService` instead of `dataSource`:
+**Three files per resource.** Copy `apps/ng-demo/src/app/products/` — it is the canonical implementation and more reliable than this sketch. `CrudDataSource`, `standardDataSource()`, `ReadModel`, `WriteModel` and `ListResponse` import from `@rn-forge/ng/crud` (not `ng-bootstrap`); IDs can be strings via the `$K` generic. `ListResponse` is AIP-158 (`{ items, nextPageToken, totalSize? }`), not the old DRF envelope. Releases up to 0.1.2 differ; this is the shape from the next release.
 
 ```ts
 // foo.types.ts
@@ -304,34 +305,27 @@ export interface FooRead extends ReadModel {
   readonly name: string;
 }
 
-// foo.service.ts — implements the screen's data contract with native HttpClient
-@Injectable({ providedIn: 'root' })
-export class FooService implements CrudDataSource<FooWrite, FooRead> {
-  private readonly http = inject(HttpClient);
-  private readonly url = `${inject(API_URL)}/foo`;
-  list(params?: GenericType) {
-    return this.http.get<ListResponse<FooRead>>(`${this.url}/`, { params });
-  }
-  // create/update/bulkDelete/upload/uploadTemplate/download — exactly the methods CrudDataSource declares
-}
-
 // foo.manager.ts — component-scoped, NOT providedIn:'root'
 @Injectable()
-export class FooManager extends AbstractCRUDManager<FooWrite, FooRead> {
+export class FooManager extends AbstractCrudManager<FooWrite, FooRead> {
   override readonly name = 'Foo';
   override permissionKey = 'app.foo'; // '' skips permission checks
-  private readonly fooService = inject(FooService);
-  override get dataSource() {
-    return this.fooService;
-  }
+  override readonly dataSource = standardDataSource<FooWrite, FooRead>({
+    baseUrl: inject(API_URL), // one app-owned token per backend
+    collection: '/foo',
+    features: { batchDelete: true, import: true, export: ['text/csv'] },
+  });
   override tableColumns(): ColumnOptions[] {
-    /* ... */
+    /* mark sortable columns `sortable: true`; they write orderBy */
   }
   override addUpdateFormControls(): GenericType {
     /* ... */
   }
   override toAddUpdateFormValue(data: FooRead): FooWrite {
     return data;
+  }
+  override filterFields() {
+    return [{ name: 'name', label: 'Name' }]; // named query parameters
   }
 }
 
@@ -349,7 +343,9 @@ export class FooPageComponent {
 </ng-template>
 ```
 
-The manager owns all behaviour; `CRUDComponent` is a dumb view shell. **Don't reimplement list-fetching, selection, pagination, or delete confirmation** — override the manager's hooks instead. Read `crud.manager.ts` for the full set of overridable hooks (type coercion between read/write models is the most common need — see how `products.manager.ts` round-trips a boolean through a dropdown).
+The backend must follow the wire standards in `libs/ng/crud/README.md` (AIP-158 paging, `orderBy`, RFC 9457, merge patch with `ETag`, `:import`, `:batchDelete`, export by `Accept`). **A backend with its own shape** (a DRF envelope, a pre-standard API) implements `CrudDataSource` in the app and maps to the contract there; ngkit ships no adapter. Optional methods (`batchDelete`, `import`, `importTemplate`, `export`) hide their action when absent. Permission keys: `<key>.list|create|update|delete|import|export`.
+
+The manager owns behaviour; `CrudComponent` is a dumb view shell. **Don't reimplement list-fetching, selection, paging, server-validation mapping, conflict handling or delete confirmation** — they come from `createCrudList()`, `problemToFormErrors()` and the manager. Override the manager's hooks instead; read `crud.manager.ts` for them (type coercion between read/write models is the most common need — see how `products.manager.ts` round-trips a boolean through a dropdown). The screen shows token paging (Previous/Next, `totalSize` only if the backend sends it), never numbered pages.
 
 Note the manager is **component-scoped** (`providers: [FooManager]` on the page), not root-provided.
 
@@ -360,7 +356,7 @@ Note the manager is **component-scoped** (`providers: [FooManager]` on the page)
 - **Prefer ngkit components over raw HTML/Bootstrap markup** for: data tables, forms, modals, alerts, app chrome, dark-mode, auth screens, and any list/create/edit/delete screen.
 - **Don't duplicate global config.** Same setting on every table → set it once in `provideRnForgeBootstrapConfig`, not on every `[options]`.
 - **Don't write custom auth guards, interceptors, or permission checks** — `authRouteGuard`, `authHttpInterceptor()`, `*rnfHasPermission` cover route gating, token attachment, and conditional rendering.
-- **API services use `HttpClient` directly** (§5.3) — don't write a generic HTTP wrapper class; if the screen is standard CRUD, implement `CrudDataSource` and extend `AbstractCRUDManager`.
+- **API services use `HttpClient` directly** (§5.3) — don't write a generic HTTP wrapper class; if the screen is standard CRUD, use `standardDataSource()` (or implement `CrudDataSource`) and extend `AbstractCrudManager`.
 - **Use `FormUtil.VALIDATORS`** for text/number/date validation so errors render in ngkit's form fields.
 - **All page components extend `AbstractPage`/`AbstractAuthPage`**, not bare `@Component` — that's what provides `this.alert` and `handleErrorResponse()`.
 - **Icons are Bootstrap Icons names without the `bi-` prefix** (`icon="trash3"`); requires the theme `@use` in §3.1 or they render as empty boxes.
@@ -377,7 +373,7 @@ Resolve before writing an implementation plan:
 2. **What are the CRUD resources?** Each is a 4-file quartet (§5.8). Enumerate them up front — one plan work-item per resource, not a generic "build the tables" task.
 3. **Nav structure** — feeds header/footer navbar `items`; decide top-level sections now so shell composition isn't revisited per page.
 4. **Theming** — any Bootstrap variable overrides (brand colors, fonts) for the `@use ... with (...)` clause.
-5. **API shape** — one base-URL token per backend. Is there an OpenAPI document to generate clients from? For CRUD screens, does the backend list as `ListResponse<T>` (`{count, next, previous, results}`), and is `id` a number or a string (`$K`)? If not, map it inside your `CrudDataSource` implementation.
+5. **API shape** — one base-URL token per backend. Is there an OpenAPI document to generate clients from? For CRUD screens, does the backend follow the wire standards in §5.8 (AIP-158 `{items, nextPageToken}` lists, RFC 9457 errors, `ETag`), and is `id` a number or a string (`$K`)? If not, map it inside your own `CrudDataSource` implementation.
 6. **Tree-grid needed?** Only enable `table: { treegrid: true }` if a resource genuinely has hierarchical rows — it costs an extra script load.
 7. **Which entry points are actually needed?** Don't wire providers or peer deps for `/form`, `/crud`, `/auth`, `/shell` if unused — e.g. a public marketing site needs none of the auth/CRUD stack.
 8. **Confirm the install path** (§2) — is there a published Release, or do tarballs need building/vendoring first? This blocks everything else.

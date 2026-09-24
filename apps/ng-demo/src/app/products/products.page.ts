@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CRUDComponent } from '@rn-forge/ng-bootstrap/crud';
+import { CrudComponent } from '@rn-forge/ng-bootstrap/crud';
 import {
   DropdownFieldComponent,
   InputFieldComponent,
@@ -9,7 +9,7 @@ import { ProductsManager } from './products.manager';
 @Component({
   selector: 'app-products-page',
   standalone: true,
-  imports: [CRUDComponent, DropdownFieldComponent, InputFieldComponent],
+  imports: [CrudComponent, DropdownFieldComponent, InputFieldComponent],
   providers: [ProductsManager],
   templateUrl: './products.page.html',
 })

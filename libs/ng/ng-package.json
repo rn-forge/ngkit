@@ -4,6 +4,7 @@
   "allowedNonPeerDependencies": [
     "^lodash-es$",
     "^build-url-ts$",
+    "^content-disposition$",
     "^jwt-decode$"
   ],
   "lib": {

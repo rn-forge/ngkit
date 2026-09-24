@@ -111,7 +111,7 @@ export interface WriteModel<$K extends string | number = number> extends BaseReq
 export abstract class BackendService<$Q extends WriteModel<$K>, $S extends ReadModel<$K>, $K extends string | number = number> extends AbstractHTTPService { … }
 ```
 
-`AbstractCRUDManager` ([libs/ng-bootstrap/crud/src/lib/crud/crud.manager.ts](../../libs/ng-bootstrap/crud/src/lib/crud/crud.manager.ts)) has to thread the same parameter through.
+`AbstractCrudManager` ([libs/ng-bootstrap/crud/src/lib/crud/crud.manager.ts](../../libs/ng-bootstrap/crud/src/lib/crud/crud.manager.ts)) has to thread the same parameter through.
 
 ### R3 — decouple color mode from the auth entry point
 

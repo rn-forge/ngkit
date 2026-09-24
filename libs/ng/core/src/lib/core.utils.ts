@@ -74,6 +74,11 @@ export class AppUtil {
    * transient object URL, clicking a detached anchor and revoking the URL.
    * DOM glue only: callers decide the blob's content type and filename (for
    * example from a documented file response's `Content-Disposition` header).
+   *
+   * Hand-rolled, not wrapped around `file-saver`: checked on npm 2026-09-23,
+   * `file-saver` 2.0.5 was last released 2020-11 and its repository last
+   * pushed 2023-03, and the needed slice is a few lines of anchor and
+   * object-URL glue (README exemption 3).
    */
   static saveBlob(blob: Blob, fileName: string): void {
     const url = URL.createObjectURL(blob);

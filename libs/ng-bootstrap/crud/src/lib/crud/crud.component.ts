@@ -18,14 +18,12 @@ import {
   ModalComponent,
   TableComponent,
 } from '@rn-forge/ng-bootstrap';
-import {
-  FormComponent,
-  InputFieldComponent,
-} from '@rn-forge/ng-bootstrap/form';
-import { AbstractCRUDManager } from './crud.manager';
-import { CRUDContext, CRUDOptions, ReadModel, WriteModel } from './crud.types';
+import { FormComponent } from '@rn-forge/ng-bootstrap/form';
+import { AbstractCrudManager } from './crud.manager';
+import { ReadModel, WriteModel } from '@rn-forge/ng/crud';
+import { CrudContext, CrudOptions } from './crud.types';
 
-export type { CRUDOptions } from './crud.types';
+export type { CrudOptions } from './crud.types';
 
 @Component({
   selector: 'rnf-crud',
@@ -36,24 +34,20 @@ export type { CRUDOptions } from './crud.types';
     AlertComponent,
     ButtonComponent,
     FormComponent,
-    InputFieldComponent,
     ModalComponent,
     TableComponent,
   ],
   templateUrl: './crud.component.html',
 })
-export class CRUDComponent
-  extends ConfigurableComponent<CRUDOptions>
+export class CrudComponent
+  extends ConfigurableComponent<CrudOptions>
   implements AfterViewInit
 {
   override configKey = 'crud';
 
-  manager: InputSignal<AbstractCRUDManager<WriteModel, ReadModel>> =
+  manager: InputSignal<AbstractCrudManager<WriteModel, ReadModel>> =
     input.required();
   addUpdateFormTemplate: InputSignal<TemplateRef<unknown> | undefined> = input<
-    TemplateRef<unknown> | undefined
-  >();
-  downloadFormTemplate: InputSignal<TemplateRef<unknown> | undefined> = input<
     TemplateRef<unknown> | undefined
   >();
 
@@ -61,27 +55,21 @@ export class CRUDComponent
   @ViewChild('listTable') private readonly listTable!: TableComponent;
   @ViewChild('addUpdateForm') private readonly addUpdateForm!: FormComponent;
   @ViewChild('deleteModal') private readonly deleteModal!: ModalComponent;
-  @ViewChild('uploadForm') private readonly uploadForm!: FormComponent;
-  @ViewChild('downloadForm') private readonly downloadForm!: FormComponent;
 
-  override defaultOptions(): Partial<CRUDOptions> {
+  override defaultOptions(): Partial<CrudOptions> {
     return {
       list: {},
       addUpdate: {},
       delete: {},
-      upload: {},
-      download: {},
     };
   }
 
   override ngAfterViewInit(): void {
     super.ngAfterViewInit();
-    const context: CRUDContext = {
+    const context: CrudContext = {
       listTable: this.listTable,
       addUpdateForm: this.addUpdateForm,
       deleteModal: this.deleteModal,
-      uploadForm: this.uploadForm,
-      downloadForm: this.downloadForm,
       alert: this.alertComponent,
       config: () => this.config,
     };

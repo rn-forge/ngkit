@@ -1,14 +1,37 @@
 // external imports
 import { HttpErrorResponse } from '@angular/common/http';
-import { DestroyRef, Injectable, inject, signal } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable,
+  Injector,
+  effect,
+  inject,
+  runInInjectionContext,
+  signal,
+  untracked,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Validators } from '@angular/forms';
 import { RNF_PERMISSION } from '@rn-forge/ng/auth';
-import { BootstrapAjaxParams } from 'bootstrap-table';
 import { merge } from 'lodash-es';
+import { Observable, forkJoin, map } from 'rxjs';
 
 // internal imports
 import { GenericType, AppUtil, isDebugMode } from '@rn-forge/ng/core';
+import {
+  CrudDataSource,
+  CrudFileDownload,
+  CrudFilter,
+  CrudList,
+  IdempotencyKey,
+  ImportReport,
+  ReadModel,
+  WriteModel,
+  createCrudList,
+  crudErrorKind,
+  crudFeatures,
+  problemOf,
+  problemToFormErrors,
+} from '@rn-forge/ng/crud';
 import { FormOptions } from '@rn-forge/ng-bootstrap/form';
 import {
   ColumnOptions,
@@ -17,33 +40,42 @@ import {
   ToolbarHelper,
 } from '@rn-forge/ng-bootstrap';
 import {
-  BulkDeleteResponse,
-  COMPONENT_MODES,
-  CRUDContext,
-  CRUDOptions,
-  CrudDataSource,
-  CrudFileDownload,
-  ListResponse,
-  ReadModel,
-  UploadResponse,
-  WriteModel,
+  CrudComponentMode,
+  CrudContext,
+  CrudOptions,
+  CrudFilterField,
 } from './crud.types';
 
+/** Outcome of an import step, shown in the import view. */
+export interface ImportOutcome {
+  readonly report?: ImportReport;
+  /** Row errors from a 422 (or the partial-save 200), one line each. */
+  readonly errors: string[];
+  /** `true` when a `validateOnly` pass succeeded, so the import can be committed. */
+  readonly canCommit: boolean;
+}
+
 /**
- * Abstract base class that wires a `CrudDataSource` to a `CRUDComponent`, implementing
- * the full list / add / update / delete / upload / download lifecycle.
+ * Abstract base class that renders a `CrudDataSource` in a `CrudComponent`. It
+ * holds no data logic: paging, ordering, filtering and selection come from the
+ * `@rn-forge/ng/crud` list controller ({@link AbstractCrudManager.list}),
+ * and RFC 9457 problems, 412 conflicts, idempotency keys and file names from
+ * the same entry point. This class wires those to the table, forms and dialogs.
  *
- * Extend this class per domain resource, provide it in your feature module/component, and
- * inject it into `<rnf-crud [manager]="manager" />`:
+ * Extend it per resource, provide it in the page component and pass it to
+ * `<rnf-crud [manager]="manager" />`:
  *
  * ```ts
  * @Injectable()
- * export class ProductsManager extends AbstractCRUDManager<ProductWrite, ProductRead> {
+ * export class ProductsManager extends AbstractCrudManager<ProductWrite, ProductRead> {
  *   readonly name = 'Product';
  *   permissionKey = 'products';
  *
- *   private readonly productsService = inject(ProductsService);
- *   override get dataSource() { return this.productsService; }
+ *   override readonly dataSource = standardDataSource<ProductWrite, ProductRead>({
+ *     baseUrl: inject(API_URL),
+ *     collection: '/products',
+ *     features: { batchDelete: true, import: true, export: ['text/csv'] },
+ *   });
  *
  *   tableColumns(): ColumnOptions[] {
  *     return [
@@ -51,100 +83,165 @@ import {
  *       { field: 'name', title: 'Name', sortable: true },
  *     ];
  *   }
- *
- *   addUpdateFormControls() {
- *     return { name: ['', Validators.required] };
- *   }
- *
- *   toAddUpdateFormValue(data: ProductRead): ProductWrite {
- *     return { id: data.id, name: data.name };
- *   }
+ *   addUpdateFormControls() { return { name: ['', Validators.required] }; }
+ *   toAddUpdateFormValue(data: ProductRead): ProductWrite { return { id: data.id, name: data.name }; }
  * }
  * ```
  *
- * Permission checks use `RNF_PERMISSION` with keys `<permissionKey>.list`, `.create`,
- * `.update`, `.delete`, `.upload`, `.download`. Return `true` from the check to enable
- * the corresponding toolbar button and/or view.
+ * Only columns marked `sortable` write `orderBy`, and only filters returned by
+ * {@link filterFields} are sent. Optional data-source methods (`batchDelete`,
+ * `import`, `importTemplate`, `export`) hide their action when absent.
+ *
+ * Permission checks use `RNF_PERMISSION` with keys `<permissionKey>.list`,
+ * `.create`, `.update`, `.delete`, `.import`, `.export`.
  *
  * @template $Q Write model (request payload), extends {@link WriteModel}.
  * @template $S Read model (response payload), extends {@link ReadModel}.
  * @template $K Resource ID type, `number` or `string`.
  */
 @Injectable()
-export abstract class AbstractCRUDManager<
+export abstract class AbstractCrudManager<
   $Q extends WriteModel<$K>,
   $S extends ReadModel<$K>,
   $K extends string | number = number,
 > {
   private readonly permissionService = inject(RNF_PERMISSION);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
 
-  private ctx: CRUDContext | undefined;
-  private _addUpdateMode: 'add' | 'update' = 'add';
+  private ctx: CrudContext | undefined;
+  private _list: CrudList<$S, $K> | undefined;
   private _tableOptions: Partial<TableOptions> | undefined;
-  private _tableRows: $S[] = [];
+  private _addUpdateMode: 'add' | 'update' = 'add';
+  private editing: { id: $K; etag?: string } | undefined;
+  private readonly idempotencyKey = new IdempotencyKey();
+  private lastCreatePayload = '';
+  private selectionAttached = false;
+  private filterValues: CrudFilter = {};
 
-  readonly currentMode = signal<COMPONENT_MODES>('list');
+  readonly currentMode = signal<CrudComponentMode>('list');
+  /** `true` after a 412: the row changed on the server; offer {@link reloadConflict}. */
+  readonly conflict = signal(false);
+  readonly importFile = signal<File | undefined>(undefined);
+  readonly importOutcome = signal<ImportOutcome | undefined>(undefined);
 
   /** Display name for the resource (e.g. `'Product'`). Used in alert messages and form headers. */
   abstract readonly name: string;
   /** Dot-notation permission key prefix (e.g. `'products'` → checks `products.list`, `products.create`, etc.). Set to `''` to bypass all permission checks. */
   abstract permissionKey: string;
 
-  /** The `CrudDataSource` instance for this resource. */
+  /** The `CrudDataSource` for this resource, e.g. from `standardDataSource()`. */
   abstract get dataSource(): CrudDataSource<$Q, $S, $K>;
-  /** Returns the `ColumnOptions[]` for the list table. */
+  /** Returns the `ColumnOptions[]` for the list table; `sortable: true` columns write `orderBy`. */
   abstract tableColumns(): ColumnOptions[];
   /** Returns the reactive-form controls map for the add/update form. */
   abstract addUpdateFormControls(): GenericType;
   /** Converts a read-model row into the write-model shape for pre-filling the update form. */
   abstract toAddUpdateFormValue(data: $S): $Q;
 
+  /** Page size requested from the backend. */
+  protected pageSize = 10;
+  /** `Accept` type for the export download. */
+  protected exportFormat = 'text/csv';
+
   get pluralName(): string {
     return `${this.name}s`;
   }
 
-  protected uploadFieldName = 'uploadFile';
-
-  init(ctx: CRUDContext): void {
-    this.ctx = ctx;
+  /** Filters (named query parameters) shown above the table. None by default. */
+  filterFields(): readonly CrudFilterField[] {
+    return [];
   }
 
-  private requireCtx(): CRUDContext {
+  /** `true` once {@link init} has created the list controller. */
+  hasList(): boolean {
+    return this._list !== undefined;
+  }
+
+  /** The list controller; available once the component has called {@link init}. */
+  get list(): CrudList<$S, $K> {
+    if (!this._list) {
+      throw new Error(
+        'AbstractCrudManager.init() must be called before any operation',
+      );
+    }
+    return this._list;
+  }
+
+  init(ctx: CrudContext): void {
+    this.ctx = ctx;
+    runInInjectionContext(this.injector, () => {
+      this._list = createCrudList(this.dataSource, {
+        pageSize: this.pageSize,
+        injector: this.injector,
+      });
+      this.bindTable(ctx);
+    });
+  }
+
+  /** Mirrors controller state into the table: rows, loading, load errors. */
+  private bindTable(ctx: CrudContext): void {
+    const list = this.list;
+    effect(() => {
+      if (!ctx.listTable.rendered) return;
+      this.attachSelection(ctx);
+      const items = list.items();
+      ctx.listTable.load(items);
+      const selected = untracked(list.selection);
+      if (selected.length) {
+        ctx.listTable.bootstrapTable('checkBy', {
+          field: 'id',
+          values: selected,
+        });
+      }
+    });
+    effect(() => {
+      if (!ctx.listTable.rendered) return;
+      if (list.loading()) ctx.listTable.bootstrapTable('showLoading');
+    });
+    effect(() => {
+      const error = list.error();
+      if (error) untracked(() => ctx.alert.error(this.errorMessage(error)));
+    });
+  }
+
+  /** Feeds table check events back to the controller's selection (once). */
+  private attachSelection(ctx: CrudContext): void {
+    if (this.selectionAttached) return;
+    this.selectionAttached = true;
+    ctx.listTable.table.on(
+      'check.bs.table.crud uncheck.bs.table.crud check-all.bs.table.crud uncheck-all.bs.table.crud',
+      () =>
+        this.list.select(
+          ctx.listTable.getSelectedRows<$S>().map((row) => row.id),
+        ),
+    );
+  }
+
+  private requireCtx(): CrudContext {
     if (!this.ctx) {
       throw new Error(
-        'AbstractCRUDManager.init() must be called before any operation',
+        'AbstractCrudManager.init() must be called before any operation',
       );
     }
     return this.ctx;
   }
 
-  protected get listTable() {
-    return this.requireCtx().listTable;
-  }
   protected get addUpdateForm() {
     return this.requireCtx().addUpdateForm;
   }
   protected get deleteModal() {
     return this.requireCtx().deleteModal;
   }
-  protected get uploadForm() {
-    return this.requireCtx().uploadForm;
-  }
-  protected get downloadForm() {
-    return this.requireCtx().downloadForm;
-  }
   protected get alert() {
     return this.requireCtx().alert;
   }
-  protected get config(): CRUDOptions {
+  protected get config(): CrudOptions {
     return (this.ctx?.config() ?? {
       list: {},
       addUpdate: {},
       delete: {},
-      upload: {},
-      download: {},
-    }) as CRUDOptions;
+    }) as CrudOptions;
   }
 
   protected checkPermission(suffix: string): boolean {
@@ -178,27 +275,41 @@ export abstract class AbstractCRUDManager<
   enableDelete(): boolean {
     return this.checkPermission('delete');
   }
-  enableUpload(): boolean {
-    return this.checkPermission('upload');
+  enableImport(): boolean {
+    return this.features.import && this.checkPermission('import');
   }
-  enableDownload(): boolean {
-    return this.checkPermission('download');
+  enableExport(): boolean {
+    return this.features.export && this.checkPermission('export');
+  }
+  /** Both template downloads need `importTemplate`. */
+  enableImportTemplate(): boolean {
+    return this.features.importTemplate;
   }
 
-  handleErrorResponse(response: HttpErrorResponse, message?: string): void {
-    this.alert.error(message ?? this.errorMessage(response));
+  private get features() {
+    return crudFeatures(this.dataSource);
   }
 
   /**
-   * Renders an `HttpErrorResponse` as a user-facing message. Defaults to
-   * `response.message`; override to read an application-specific error body
-   * (e.g. a documented OpenAPI problem shape).
+   * Renders an error as a user-facing message: the problem's `detail` (else
+   * `title`) when the body is an RFC 9457 problem, otherwise the response's
+   * `message`. Override for an application-specific body.
    */
-  protected errorMessage(response: HttpErrorResponse): string {
-    return response.message;
+  protected errorMessage(error: unknown): string {
+    const problem = problemOf(error);
+    const summary = problem?.detail ?? problem?.title;
+    if (summary) return summary;
+    if (error instanceof HttpErrorResponse || error instanceof Error) {
+      return error.message;
+    }
+    return String(error);
   }
 
-  protected updateCurrentMode(mode: COMPONENT_MODES): void {
+  handleErrorResponse(error: unknown, message?: string): void {
+    this.alert.error(message ?? this.errorMessage(error));
+  }
+
+  protected updateCurrentMode(mode: CrudComponentMode): void {
     if (isDebugMode()) console.debug(`${this.name}.mode:`, mode);
     this.currentMode.set(mode);
     this.ctx?.alert.hide();
@@ -209,21 +320,15 @@ export abstract class AbstractCRUDManager<
     this._tableOptions = merge(
       {
         columns: this.tableColumns(),
-        ajax: (params: BootstrapAjaxParams) => this.tableDataSource(params),
-        showExport: false,
+        // The backend pages, sorts and filters; the table only renders a page.
+        sidePagination: 'server',
+        pagination: false,
+        search: false,
+        showRefresh: false,
+        showPaginationSwitch: false,
         mobileResponsive: false,
-        pageSize: 10,
-        paginationLoadMore: true,
-        queryParams: (params: GenericType) => {
-          params['limit'] = 2000;
-          params['offset'] = this._tableRows.length;
-          this.adjustTableQueryParams(params);
-          return params;
-        },
-        responseHandler: (response: ListResponse<$S>) => {
-          this._tableRows = this.handleListResponse(this._tableRows, response);
-          return this._tableRows;
-        },
+        onSort: (field: string, order: string) =>
+          this.list.setOrderBy(order === 'desc' ? `${field} desc` : field),
         formatNoMatches: () => 'No Records found',
         toolbarButtons: [
           ...(this.enableAdd()
@@ -235,47 +340,34 @@ export abstract class AbstractCRUDManager<
           ...(this.enableDelete()
             ? [ToolbarHelper.deleteButton(() => this.startDelete())]
             : []),
-          ...(this.enableUpload()
-            ? [ToolbarHelper.uploadButton(() => this.startUpload())]
+          ...(this.enableImport()
+            ? [
+                {
+                  ...ToolbarHelper.uploadButton(() => this.startImport()),
+                  label: 'Import',
+                },
+              ]
             : []),
-          ...(this.enableDownload()
-            ? [ToolbarHelper.downloadButton(() => this.startDownload())]
+          ...(this.enableExport()
+            ? [
+                {
+                  ...ToolbarHelper.downloadButton(() => this.submitExport()),
+                  label: 'Export',
+                },
+              ]
             : []),
         ],
         filterControl: false,
-        exportOptions: { fileName: this.pluralName },
       },
       this.config.list,
     );
     return this._tableOptions;
   }
 
-  protected adjustTableQueryParams(_params: GenericType): void {
-    return;
-  }
-
-  protected handleListResponse(rows: $S[], response: ListResponse<$S>): $S[] {
-    return rows.concat(response.results);
-  }
-
-  protected tableDataSource(params: BootstrapAjaxParams): void {
-    this.dataSource
-      .list(params.data)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response: ListResponse<$S>) => {
-          if (isDebugMode())
-            console.debug(
-              'AbstractCRUDManager.tableDataSource:',
-              response.count,
-            );
-          params.success(response);
-        },
-        error: (err: HttpErrorResponse) => {
-          params.error({ status: err.status } as JQueryXHR);
-          this.ctx?.alert.error(this.errorMessage(err));
-        },
-      });
+  /** Sets one declared filter; an empty value clears it. Resets to the first page. */
+  setFilterValue(name: string, value: string): void {
+    this.filterValues = { ...this.filterValues, [name]: value || undefined };
+    this.list.setFilter(this.filterValues);
   }
 
   addUpdateFormOptions(): Partial<FormOptions> {
@@ -288,18 +380,34 @@ export abstract class AbstractCRUDManager<
   protected startAdd(): void {
     if (isDebugMode()) console.info('%s.add.start', this.name);
     this._addUpdateMode = 'add';
+    this.editing = undefined;
+    this.conflict.set(false);
     this.addUpdateForm.updateOptions({ header: `Add ${this.name}` });
     this.addUpdateForm.reset();
     this.updateCurrentMode('addupdate');
   }
 
+  /** Reads the selected row fresh (for its `ETag`) and opens it in the form. */
   protected startUpdate(): void {
-    const data = this.listTable.getSelectedRow<$S>();
-    if (isDebugMode()) console.info('%s.update.start:', this.name, data);
-    this._addUpdateMode = 'update';
-    this.addUpdateForm.updateOptions({ header: `Update ${this.name}` });
-    this.addUpdateForm.update(this.toAddUpdateFormValue(data) as GenericType);
-    this.updateCurrentMode('addupdate');
+    const [id] = this.list.selection();
+    if (id === undefined) return;
+    this.dataSource
+      .get(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ value, etag }) => {
+          if (isDebugMode()) console.info('%s.update.start:', this.name, value);
+          this._addUpdateMode = 'update';
+          this.editing = { id, etag };
+          this.conflict.set(false);
+          this.addUpdateForm.updateOptions({ header: `Update ${this.name}` });
+          this.addUpdateForm.update(
+            this.toAddUpdateFormValue(value) as GenericType,
+          );
+          this.updateCurrentMode('addupdate');
+        },
+        error: (err: unknown) => this.handleErrorResponse(err),
+      });
   }
 
   submitAddUpdate(): void {
@@ -317,33 +425,35 @@ export abstract class AbstractCRUDManager<
       return;
     }
 
-    const writeObject = this.fromAddUpdateFormValue();
-
+    const payload = this.fromAddUpdateFormValue();
+    let request: Observable<unknown>;
     if (this._addUpdateMode === 'add') {
       this.alert.start(`Adding ${this.name} ...`);
-      this.dataSource
-        .create(writeObject)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (response: $S) => this.handleAddUpdateResponse(response),
-          error: (err: HttpErrorResponse) => {
-            this.handleErrorResponse(err);
-            this.addUpdateForm.enable();
-          },
-        });
+      request = this.dataSource.create(payload, {
+        idempotencyKey: this.keyFor(payload),
+      });
     } else {
+      const editing = this.editing;
+      if (!editing) return;
       this.alert.start(`Updating ${this.name} ...`);
-      this.dataSource
-        .update(writeObject.id as $K, writeObject)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (response: $S) => this.handleAddUpdateResponse(response),
-          error: (err: HttpErrorResponse) => {
-            this.handleErrorResponse(err);
-            this.addUpdateForm.enable();
-          },
-        });
+      request = this.dataSource.update(editing.id, payload, {
+        etag: editing.etag,
+      });
     }
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.handleAddUpdateSuccess(),
+      error: (err: unknown) => this.handleSaveError(err),
+    });
+  }
+
+  /** One key per submit attempt: reused on retry, renewed once the body changes. */
+  private keyFor(payload: $Q): string {
+    const body = JSON.stringify(payload);
+    if (body !== this.lastCreatePayload) {
+      this.idempotencyKey.reset();
+      this.lastCreatePayload = body;
+    }
+    return this.idempotencyKey.get();
   }
 
   protected validateAddUpdate(): boolean {
@@ -369,28 +479,65 @@ export abstract class AbstractCRUDManager<
     return this.toRequestParams<$Q>(this.addUpdateForm.rawValue);
   }
 
-  protected handleAddUpdateResponse(response: $S): void {
-    if (isDebugMode())
-      console.info('%s.%s.response:', this.name, this._addUpdateMode, response);
+  protected handleAddUpdateSuccess(): void {
+    const added = this._addUpdateMode === 'add';
+    this.idempotencyKey.reset();
+    this.lastCreatePayload = '';
     this.updateCurrentMode('list');
-    if (this._addUpdateMode === 'add') {
-      this.listTable.addRow(
-        this.adjustAddUpdateResponse(response) as GenericType,
-      );
-      this.alert.success(`Added ${this.name} successfully`);
-    } else {
-      this.listTable.updateRow(
-        this.adjustAddUpdateResponse(response) as GenericType,
-      );
-      this.alert.success(`Updated ${this.name} successfully`);
+    this.list.clearSelection();
+    this.list.reload();
+    this.alert.success(
+      added
+        ? `Added ${this.name} successfully`
+        : `Updated ${this.name} successfully`,
+    );
+  }
+
+  /**
+   * A failed save: 412 raises {@link conflict} (reload and reapply, never a
+   * silent overwrite); a problem body lands on the form's controls; anything
+   * else is shown as an alert. The form is re-enabled first because enabling
+   * re-runs validation and would clear the server errors.
+   */
+  protected handleSaveError(error: unknown): void {
+    this.addUpdateForm.enable();
+    switch (crudErrorKind(error)) {
+      case 'conflict':
+        this.conflict.set(true);
+        this.alert.error(
+          `This ${this.name} was changed by someone else. Reload the latest version, then save again.`,
+        );
+        break;
+      case 'problem':
+        problemToFormErrors(error, this.addUpdateForm.formGroup);
+        this.handleErrorResponse(error);
+        break;
+      default:
+        this.handleErrorResponse(error);
     }
   }
 
-  protected adjustAddUpdateResponse(response: $S): $S {
-    return response;
+  /** Re-reads the row for its new `ETag` and keeps the user's edits to save again. */
+  reloadConflict(): void {
+    const editing = this.editing;
+    if (!editing) return;
+    this.dataSource
+      .get(editing.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ etag }) => {
+          this.editing = { id: editing.id, etag };
+          this.conflict.set(false);
+          this.alert.info(
+            `Reloaded the latest ${this.name}. Your edits are kept, review them and save again.`,
+          );
+        },
+        error: (err: unknown) => this.handleErrorResponse(err),
+      });
   }
 
   cancelAddUpdate(): void {
+    this.conflict.set(false);
     this.updateCurrentMode('list');
   }
 
@@ -417,125 +564,135 @@ export abstract class AbstractCRUDManager<
 
   protected startDelete(): void {
     this.deleteModal.updateOptions({
-      context: {
-        name: this.name,
-        count: this.listTable.getSelectedRowsCount(),
-      },
+      context: { name: this.name, count: this.list.selection().length },
     });
     this.deleteModal.open();
   }
 
+  /** One `:batchDelete` when the data source has it, else one `DELETE` per id. */
   submitDelete(): void {
     this.deleteModal.dismissAll('Submit');
     this.alert.start(`Deleting ${this.pluralName} ...`);
-    const ids = this.listTable.getSelectedRows<$S>().map((row: $S) => row.id);
+    const ids = [...this.list.selection()];
     if (isDebugMode()) console.info('%s.delete:', this.name, ids);
-    this.dataSource
-      .bulkDelete(ids)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response: BulkDeleteResponse) => {
-          this.alert.success(response.message);
-          this.listTable.deleteRows(ids);
-        },
-        error: (err: HttpErrorResponse) => this.handleErrorResponse(err),
-      });
-  }
-
-  downloadTemplate(includeData: boolean): void {
-    this.dataSource
-      .uploadTemplate({ prefill: includeData })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response: CrudFileDownload) =>
-          AppUtil.saveBlob(response.blob, response.fileName),
-        error: (err: HttpErrorResponse) => this.handleErrorResponse(err),
-      });
-  }
-
-  uploadFormOptions(): Partial<FormOptions> {
-    return merge(
-      {
-        controls: { uploadFile: ['', [Validators.required]] },
-        header: `Upload ${this.pluralName}`,
-        submitBtn: 'Upload',
+    const { batchDelete } = this.dataSource;
+    const request: Observable<unknown> = batchDelete
+      ? batchDelete.call(this.dataSource, ids)
+      : forkJoin(ids.map((id) => this.dataSource.delete(id))).pipe(
+          map(() => undefined),
+        );
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.alert.success(
+          `Deleted ${ids.length} ${ids.length === 1 ? this.name : this.pluralName} successfully`,
+        );
+        this.list.clearSelection();
+        this.list.reload();
       },
-      this.config.upload,
-    );
+      error: (err: unknown) => this.handleErrorResponse(err),
+    });
   }
 
-  protected startUpload(): void {
-    this.updateCurrentMode('upload');
-    this.uploadForm.reset();
+  protected startImport(): void {
+    this.importFile.set(undefined);
+    this.importOutcome.set(undefined);
+    this.updateCurrentMode('import');
   }
 
-  submitUpload(): void {
-    if (isDebugMode())
-      console.info('%s.upload: field=%s', this.name, this.uploadFieldName);
-    this.alert.start(`Uploading ${this.pluralName} ...`);
-    this.updateCurrentMode('list');
-    this.dataSource
-      .upload(this.uploadFieldName)
+  setImportFile(file: File | undefined): void {
+    this.importFile.set(file);
+    this.importOutcome.set(undefined);
+  }
+
+  /** Step 1: upload with `validateOnly=true`; nothing is saved. */
+  validateImport(): void {
+    this.runImport(true);
+  }
+
+  /** Step 2: upload again to commit, after a successful {@link validateImport}. */
+  commitImport(): void {
+    this.runImport(false);
+  }
+
+  private runImport(validateOnly: boolean): void {
+    const file = this.importFile();
+    const importFn = this.dataSource.import;
+    if (!file || !importFn) return;
+    this.alert.hide();
+    importFn
+      .call(this.dataSource, file, { validateOnly })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response: UploadResponse) => {
-          if (response.errors.length > 0) {
-            this.alert.error(
-              `${this.pluralName} uploaded with errors [Added ${response.created} | Updated: ${response.updated} | Errored: ${response.errors.length}]`,
-            );
-          } else {
-            this.alert.success(
-              `${this.pluralName} uploaded successfully [Added ${response.created} | Updated: ${response.updated}]`,
-            );
-          }
-          this.listTable.refresh();
-        },
-        error: (err: HttpErrorResponse) => this.handleErrorResponse(err),
+        next: (report) => this.handleImportReport(report, validateOnly),
+        error: (err: unknown) => this.handleImportError(err),
       });
   }
 
-  cancelUpload(): void {
-    this.updateCurrentMode('list');
-  }
-
-  protected downloadFormControls(): GenericType {
-    return {};
-  }
-
-  downloadFormOptions(): Partial<FormOptions> {
-    return merge(
-      {
-        controls: this.downloadFormControls(),
-        header: `Download ${this.pluralName}`,
-      },
-      this.config.download,
+  private handleImportReport(
+    report: ImportReport,
+    validateOnly: boolean,
+  ): void {
+    const errors = (report.errors ?? []).map(
+      (e) => `${e.pointer ? `${e.pointer}: ` : ''}${e.detail}`,
     );
+    if (validateOnly) {
+      this.importOutcome.set({
+        report,
+        errors,
+        canCommit: errors.length === 0,
+      });
+      return;
+    }
+    // Committed. A 200 that lists errors is the partial-save variant.
+    this.importOutcome.set({ report, errors, canCommit: false });
+    const summary = `${this.pluralName} imported [Added ${report.created} | Updated ${report.updated} | Skipped ${report.skipped}]`;
+    if (errors.length) {
+      this.alert.warning(`${summary}, ${errors.length} row(s) failed`);
+    } else {
+      // Switch first: changing mode hides the alert.
+      this.updateCurrentMode('list');
+      this.alert.success(summary);
+    }
+    this.list.reload();
   }
 
-  protected startDownload(): void {
-    this.updateCurrentMode('download');
-    this.downloadForm.reset();
+  /** A 422 lists the failing rows (`pointer = /rows/12/Quantity`); nothing was saved. */
+  private handleImportError(error: unknown): void {
+    const problem = problemOf(error);
+    const errors = (problem?.errors ?? []).map(
+      (e) => `${e.pointer ? `${e.pointer}: ` : ''}${e.detail}`,
+    );
+    if (errors.length) {
+      this.importOutcome.set({ errors, canCommit: false });
+    } else {
+      this.handleErrorResponse(error);
+    }
   }
 
-  submitDownload(): void {
-    const params = this.toRequestParams<$Q>(this.downloadForm.rawValue);
-    if (isDebugMode()) console.info('%s.download:', this.name, params);
-    this.dataSource
-      .download(params)
+  downloadTemplate(prefill: boolean): void {
+    this.dataSource.importTemplate
+      ?.call(this.dataSource, this.list.filter(), { prefill })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response: CrudFileDownload) => {
-          this.updateCurrentMode('list');
-          AppUtil.saveBlob(response.blob, response.fileName);
-        },
-        error: (err: HttpErrorResponse) => {
-          this.updateCurrentMode('list');
-          this.handleErrorResponse(err);
-        },
+        next: (file: CrudFileDownload) =>
+          AppUtil.saveBlob(file.blob, file.fileName),
+        error: (err: unknown) => this.handleErrorResponse(err),
       });
   }
 
-  cancelDownload(): void {
+  /** `GET` of the collection with the current filters and `Accept: exportFormat`. */
+  submitExport(): void {
+    this.dataSource.export
+      ?.call(this.dataSource, this.exportFormat, this.list.filter())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (file: CrudFileDownload) =>
+          AppUtil.saveBlob(file.blob, file.fileName),
+        error: (err: unknown) => this.handleErrorResponse(err),
+      });
+  }
+
+  cancelImport(): void {
     this.updateCurrentMode('list');
   }
 }

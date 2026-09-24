@@ -398,7 +398,7 @@ One such service per resource: `items`, `orders`, `transactions`, `reconciliatio
 
 ⚠️ `list()` defaults `limit=2000`. DRF's default page-size parameter is usually `limit`/`offset` (LimitOffsetPagination) or `page` (PageNumberPagination) — confirm which the backend uses; with `PageNumberPagination`, `limit` is ignored and you'll silently get page 1.
 
-**Do not** adopt `AbstractCRUDManager` / `rnf-crud` — those render Bootstrap.
+**Do not** adopt `AbstractCrudManager` / `rnf-crud` — those render Bootstrap.
 
 ### 3C. Validate
 

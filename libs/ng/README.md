@@ -24,10 +24,12 @@ The pattern:
   only where the caller actually recovers.
 - **Downloads**: request `{ responseType: 'blob', observe: 'response' }`, then
   save the result with `AppUtil.saveBlob(blob, fileName)` from `@rn-forge/ng/core`.
-- **CRUD screens** (list/add/update/delete/upload/download) implement
-  `CrudDataSource` from `@rn-forge/ng-bootstrap/crud` over the pattern above,
-  and pair it with `AbstractCRUDManager` — see that package's README and
-  `apps/ng-demo/src/app/products/` for the canonical example.
+- **CRUD screens** (list/add/update/delete/import/export) take a
+  `CrudDataSource` from `@rn-forge/ng/crud`, usually `standardDataSource()` over
+  the wire standards, and pair it with `AbstractCrudManager` from
+  `@rn-forge/ng-bootstrap/crud`. See `libs/ng/crud/README.md`,
+  that package's README and `apps/ng-demo/src/app/products/` for the canonical
+  example.
 
 ## Storage
 
