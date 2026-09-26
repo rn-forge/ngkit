@@ -4,7 +4,8 @@ Reviewed 2026-09-23. H1, H2R, H3.1 (storage), H3.2 (core items) and H4.5 steps
 1–7 are complete (see the completion record). **H4 is awaiting owner review**
 before H4.6. H5 (OIDC
 client auth) is planned. E1, E2 and T1–T3 are proposals; the APIs they describe don't
-exist yet.
+exist yet. pykit references were remapped to pykit's epic/feature/story IDs on
+2026-09-26; see [pykit dependency map](#pykit-dependency-map-2026-09-26).
 
 Every item follows the **Design principles** in the ngkit `README.md` (the pykit
 principles applied to Angular). Where a section below conflicts with them, the
@@ -422,8 +423,11 @@ Evidence: `pnpm nx test ng` (305 passed), `pnpm nx run-many -t lint,build -p ng`
    BFF-ready.
 2. **`ng-bootstrap/crud` during H4.** Decided 2026-09-23: rewritten on the new
    controller in H4.5 step 6, not kept alongside it; `ng-demo` depends on it.
-3. **Forward H4.7 (`Content-Disposition`) and H5.5 (R6 identity-provider
-   views) to pykit.** Default: yes, as notes in the pykit plan's R7 and R6.
+3. **Forward H4.7 (`Content-Disposition`) and H5.5 (identity-provider views)
+   to pykit.** Default: yes. The pykit plan's R-items no longer exist, and
+   pykit ADR-0008 (2026-09-26) keeps other repositories' IDs and plans out of
+   pykit's docs. So each goes in as a requirement stated in pykit's own terms:
+   H4.7 as a new pykit feature, H5.5 as input to the deferred pykit F8.2 review.
 
 ## H4 — Standard resource screen (planned 2026-09-23)
 
@@ -432,38 +436,46 @@ Evidence: `pnpm nx test ng` (305 passed), `pnpm nx run-many -t lint,build -p ng`
 The CRUD screen is a client of **the wire contract**, not of pykit. pykit's
 premise is that a consumer cannot tell from the wire whether a service was
 built with pykit, the native frameworks or another stack. The screen therefore
-targets the standards that `pykit:packages/rn-forge-web/docs/adoption/api-conventions.md`
+targets the standards that `pykit:packages/rn-forge-web/docs/guides/api-conventions.md`
 applies, and works against any backend that follows them. Order of authority
 (README principle 1): published standard (RFC, then AIP where no RFC applies) →
 Angular's own mechanism → an ngkit wrapper.
 
-**Do not wait on pykit.** Everything the screen depends on is already decided
-there; what remains open (R4 model types, R5 library evaluations, R9
-persistence) is server-side only:
+**Do not wait on pykit.** Everything the screen depends on is decided and
+implemented there (pykit E2, E4). What remains open on the pykit side (F12.13
+model vocabulary, F12.5 SQLAlchemy helpers) is server-side only. `§n` below is a
+section of pykit's `api-conventions.md`; `F`/`E` IDs are pykit specs under
+`pykit:docs/specs/epics/`.
 
-| UI concern                 | Standard                                                                                                                                                                                                 | pykit status (2026-09-23)     |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| List and pagination        | AIP-158: `pageSize`, `pageToken` → `items`, `nextPageToken` (`null` on last), `totalSize` opt-in                                                                                                         | Done, `api-conventions.md` §4 |
-| Sorting                    | AIP-132 `orderBy` (`name desc,createTime`), allow-listed; a changed order with an old token is 400                                                                                                       | R8, "Adopt"                   |
-| Filtering                  | Per-field query parameters (AIP-160's filter language rejected)                                                                                                                                          | Decided, R8                   |
-| Errors and validation      | RFC 9457 problem+json; `errors[].{pointer, detail}`                                                                                                                                                      | Done, R2                      |
-| Update and concurrency     | `PATCH` = RFC 7396 merge patch; `ETag` + `If-Match` → 412                                                                                                                                                | Done, §3 and §10              |
-| Create retries             | `Idempotency-Key` (IETF draft); same key + different body 422, in flight 409                                                                                                                             | Done, R2 and B10              |
-| Delete                     | 204; already absent is 404                                                                                                                                                                               | Done, §10                     |
-| Export                     | `GET` collection with `Accept: text/csv` or xlsx; `?format=` fallback; `Content-Disposition` with `filename*` (RFC 6266/8187)                                                                            | R7 wire table                 |
-| Import and template        | `POST …:import` multipart `file`, `?validateOnly=true` (AIP-163) → `{created, updated, skipped, validateOnly}`; row errors 422 with `pointer = /rows/12/Quantity`; `GET …:importTemplate[?prefill=true]` | R7 wire table                 |
-| Bulk                       | `:batchCreate` `{requests}` (AIP-233); `:batchDelete` `{ids}` → 204 (AIP-235); all or nothing                                                                                                            | R7 wire table                 |
-| Field names and timestamps | camelCase; RFC 3339 UTC (AIP-142)                                                                                                                                                                        | Done §8; AIP-142 in R8        |
+| UI concern                 | Standard                                                                                                                                                                                                 | pykit status (2026-09-26)          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| List and pagination        | AIP-158: `pageSize`, `pageToken` → `items`, `nextPageToken` (`null` on last), `totalSize` opt-in                                                                                                         | Done, F2.1, §4                     |
+| Sorting                    | AIP-132 `orderBy` (`name desc`), allow-listed; a changed order with an old token is 400                                                                                                                  | Done, F4.6, §4; one field only     |
+| Filtering                  | Per-field query parameters (AIP-160's filter language rejected)                                                                                                                                          | Decided, E4 (AIP-160 rejected)     |
+| Errors and validation      | RFC 9457 problem+json; `errors[].{pointer, detail}`                                                                                                                                                      | Done, F2.1, F2.5, §2               |
+| Update and concurrency     | `PATCH` = RFC 7396 merge patch; `ETag` + `If-Match` → 412                                                                                                                                                | Done, F2.1, §3 and §10             |
+| Create retries             | `Idempotency-Key` (IETF draft); same key + different body 422, in flight 409                                                                                                                             | Done, F2.1, F4.1, §5               |
+| Delete                     | 204; already absent is 404                                                                                                                                                                               | Done, §10                          |
+| Export                     | `GET` collection with `Accept: text/csv` or xlsx; `?format=` fallback; `Content-Disposition` with `filename*` (RFC 6266/8187)                                                                            | Done, F4.5, §17; see H4.7 for CORS |
+| Import and template        | `POST …:import` multipart `file`, `?validateOnly=true` (AIP-163) → `{created, updated, skipped, validateOnly}`; row errors 422 with `pointer = /rows/12/Quantity`; `GET …:importTemplate[?prefill=true]` | Done, F4.5, §17                    |
+| Bulk                       | `:batchCreate` `{requests}` (AIP-233); `:batchDelete` `{ids}` → 204 (AIP-235); all or nothing                                                                                                            | Done, F4.5, §17                    |
+| Field names and timestamps | camelCase; RFC 3339 UTC (AIP-142); audit fields `createTime`, `updateTime`, `createdBy`, `updatedBy`                                                                                                     | Done, F4.6, §8 and §18             |
 
-Open pykit items that touch the UI, none of them blocking:
+The open pykit questions that touched the UI are now settled, and none of them
+changes ngkit:
 
-- **R7 Q1, import failure default.** All or nothing (422, nothing saved) is the
-  spec; partial save (200 with errors listed) is the one sanctioned variant.
-  The screen handles both.
-- **R7 Q2, export over the row cap.** Render whatever problem arrives; no
-  status-specific branch.
-- **R8 AIP-148 field names** (`createTime` vs `createdAt`). Affects only how the
-  app configures audit columns; nothing in ngkit names them.
+- **Import failure.** §17 specifies only all or nothing (422, nothing saved).
+  The partial-save variant is no longer mentioned; the screen still renders an
+  `ImportReport.errors` list if a backend sends one.
+- **Export over the row cap.** §17: 422 whose `detail` names the cap. The
+  screen renders the problem, with no status-specific branch.
+- **Audit field names.** §18 uses `createTime`/`updateTime` (AIP-148). The app
+  configures audit columns; nothing in ngkit names them.
+- **Multi-field `orderBy`.** pykit accepts one field: `orderBy=a,b` is a 400
+  (`orderBy accepts one field; got 2`). Multi-column sorting is pykit F12.3,
+  deferred until the owner starts it. `ng-bootstrap/crud` writes one field
+  already. Only the `crud.types.ts` doc example (`name desc,createTime`) implies
+  more; an app passing a multi-field `orderBy` to a pykit backend gets a 400.
 
 ### H4.2 — Data-source contract (replaces the current `CrudDataSource`)
 
@@ -647,20 +659,49 @@ One step per change, each green on its own checks before the next begins. Read
 Unit, demo and e2e checks are part of the H4.5 steps.
 
 - **Acceptance against the wire, not pykit internals:** run `ng-demo` e2e
-  against a pykit `FastApiApp` fixture serving one full resource (list with
+  against a real pykit backend serving one full resource (list with
   `orderBy`, get, create, patch with ETag, delete, `:batchDelete`, `:import`,
-  export). The existing conformance app `asgi_app.py` has only list/get/patch,
-  so the fixture lives on the pykit side, and it needs pykit R7 (import,
-  export, batch) and R8 (`orderBy`, `validateOnly`) first.
+  `:importTemplate`, export), in place of the demo's mock `/api`.
+- **Remapped 2026-09-26. The pykit wire work this waited on is done:** transfer
+  and bulk (old R7) is pykit F4.5, and `orderBy`, `validateOnly` and field names
+  (old R8) are F4.6. pykit's conformance cases cover each of them
+  (`transfer.*`, `pagination.*`).
+- **The fixture belongs to ngkit, not pykit.** pykit ADR-0008 (2026-09-26): no
+  pykit feature waits on another repository, and pykit's docs don't track other
+  repositories' plans. pykit proves its own side in S9.8.3/S9.8.4 (a scaffolded
+  `FastApiApp` or Django app passes every conformance case; planned for pykit
+  release-1). Whether ngkit's screen works against that wire is ngkit's own
+  test, so build the fixture here (for example `apps/ng-demo-api/`; settle the
+  location in the PR).
+- **Backend choice (owner, recommended Django).** `rn-forge-django`'s DRF transfer
+  mixins supply every handler (`:import`, `:importTemplate`, `:batchCreate`,
+  `:batchDelete`, export). `rn-forge-fastapi` supplies only export
+  (`tabular_format`, `tabular_response`) and import parsing (`read_rows`), so a
+  `FastApiApp` fixture hand-writes `:importTemplate` and the batch routes. That
+  code would be the fixture's own logic, not pykit's (pykit F12.1 covers only
+  `:batchGet`/`:batchUpdate`).
+- **Installing pykit.** Until pykit release-1 tags exist (S9.6.1), install from the
+  `feature/upgrade` branch pins (pykit F9.7). S9.7.1 is in progress: its clean
+  install passes only after the pins are pushed. Pin the fixture to the release-1
+  tag once it exists.
+- **Same origin.** Serve the fixture behind the `ng-demo` dev-server proxy until
+  H4.7 lands. Cross-origin, the browser can't read `Content-Disposition`.
+- **CI.** The e2e job then needs Python and `uv`. That is a repository config
+  change: plan it separately under repository approval rules, along with the
+  local and cloud `ci.yml` paths.
 - Breaking-change note in the release: `CrudDataSource` and its types move to
   `@rn-forge/ng/crud` and change shape.
 
 ### H4.7 — Sent to pykit (owner to forward)
 
 - **`EXPOSED_HEADERS` lacks `Content-Disposition`**
-  (`pykit:packages/rn-forge-web/src/rn_forge/web/tracing.py`, checked
-  2026-09-23). A cross-origin browser cannot read the export or template file
-  name. Add it with R7, or document export as same-origin only.
+  (`pykit:packages/rn-forge-web/src/rn_forge/web/tracing.py`, re-checked
+  2026-09-26; pykit `api-conventions.md` §16 lists `ETag`, `Link`, `Location`,
+  `Retry-After`, `Deprecation`, `Sunset`). A cross-origin browser cannot read
+  the export or template file name. No pykit spec covers it: the owner files it
+  as a new pykit feature, with acceptance as a pykit conformance case (for
+  example, extending `cors.exposed-headers-are-comma-joined`). Alternatively,
+  §16 documents export as same-origin only.
 
 ## H5 — OIDC client auth (planned 2026-09-23)
 
@@ -738,10 +779,20 @@ implementing PR, and record the comparison.
 
 ### H5.5 — Sent to pykit (owner to forward)
 
-- **R6:** the simplejwt login, token-exchange (`UserTokenView`) and SAML views
-  make `rn-forge-django` an identity provider, against pykit's own premise. If a
-  self-hosted identity provider is needed, adopt one (Keycloak,
-  `django-oauth-toolkit`) instead of keeping those views.
+- **Identity-provider views (input to pykit F8.2):** the simplejwt login,
+  token-exchange (`UserTokenView`) and SAML views make `rn-forge-django` an
+  identity provider. If a self-hosted identity provider is needed, adopt one
+  (Keycloak, `django-oauth-toolkit`) instead of keeping those views.
+  - Remapped 2026-09-26: old R6 is gone. pykit ADR-0006 and
+    `pykit:docs/architecture/authentication.md` now keep Django's login flows
+    as a deliberate exception to "pykit is not an authorization server".
+    Revisiting them is F8.2 ("Review auth as one piece"). F8.2 is deferred until
+    the pykit owner schedules it, and its open questions already ask whether a
+    SAML post-back issues a session, a JWT or both.
+  - The note goes in as input to F8.2 when it is scheduled. **It doesn't block
+    H5.** ngkit's OIDC client needs only the resource-server side, which is done:
+    `OidcAuthenticator`, `bearer_auth()`, `JWKSBearerAuthentication`, and the
+    401/403 rule in §7 (pykit F2.3).
 
 ### H5.6 — Verification
 
@@ -883,11 +934,54 @@ not steal focus back to the old trigger. Links preserve query parameters and
 fragments. Test overlay placement near the viewport edge and inherited theme
 tokens.
 
+## pykit dependency map (2026-09-26)
+
+pykit's `docs/plans/` (with its R/B item IDs) was removed on 2026-09-26. Its work
+is now `pykit:docs/specs/`, as epic `E<n>` → feature `F<n>.<m>` → story
+`S<n>.<m>.<k>`, with a board in `pykit:docs/specs/index.md` and release scope in
+`pykit:docs/releases/`. Two pykit rules shape how ngkit depends on it:
+
+- **ADR-0008:** pykit accepts its work inside pykit. An ngkit need goes in as a
+  requirement stated in pykit's terms (owner files a pykit feature). ngkit IDs
+  never appear in pykit's docs, and an ngkit fixture never lives in pykit.
+- **Deferred pykit epics aren't started or elaborated unless the pykit owner asks**
+  (`pykit:docs/specs/index.md`, Conventions).
+
+Old pykit references in this roadmap, remapped:
+
+| Old ref                             | pykit now                                     | Status                                                 |
+| ----------------------------------- | --------------------------------------------- | ------------------------------------------------------ |
+| R2 (problems, idempotency), B10     | F2.1, F2.5, F4.1                              | done                                                   |
+| R4 (model types)                    | F4.3 (wire models); F12.13 (model vocabulary) | F4.3 done; F12.13 deferred                             |
+| R5 (library evaluations)            | F4.4                                          | done                                                   |
+| R6 (Django identity-provider views) | F8.2 (whole-auth review); ADR-0006            | deferred: the owner schedules it                       |
+| R7 (import, export, batch)          | F4.5, `api-conventions.md` §17                | done                                                   |
+| R8 (`orderBy`, AIP names, times)    | F4.6, §4, §8, §18                             | done; multi-field `orderBy` is F12.3, deferred         |
+| R9 (persistence)                    | F4.7; F12.5 (SQLAlchemy helpers)              | F4.7 done; F12.5 deferred                              |
+| `asgi_app.py` (conformance app)     | `packages/rn-forge-web/docs/guides/examples/` | moved; conformance cases in `rn_forge.web.conformance` |
+| `docs/adoption/api-conventions.md`  | `packages/rn-forge-web/docs/guides/`          | moved; section numbers unchanged (§3, §4, §7, §8, §10) |
+
+What each ngkit phase needs from pykit, and what unblocks it:
+
+| ngkit phase                  | pykit dependency                                                                 | Blocked?                    | Unblock action                                                                                                                            |
+| ---------------------------- | -------------------------------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| H4.6 wire acceptance         | F4.5, F4.6 (done); pykit installable outside its workspace (S9.7.1, in progress) | Partly: installability only | pykit pushes S9.7.1's `feature/upgrade` pins. ngkit owner picks the backend and approves Python in CI (H4.6); build the fixture in ngkit. |
+| H4.6 release note            | none                                                                             | No                          | Use the `BREAKING CHANGE:` footer recorded in the completion record.                                                                      |
+| H4.7 `Content-Disposition`   | none yet: needs a new pykit feature (§16 `EXPOSED_HEADERS`)                      | No (H4.6 runs same-origin)  | ngkit owner files the pykit feature, or pykit documents export as same-origin only.                                                       |
+| H5 OIDC client               | F2.3 (done): `OidcAuthenticator`, 401/403 rule §7                                | No                          | Owner decision H5.4 (browser client or BFF). No BFF exists in pykit; a BFF would be a new pykit feature.                                  |
+| H5.5 identity-provider views | F8.2 (deferred)                                                                  | No: feedback only           | pykit owner schedules F8.2, then the H5.5 note is input to S8.2.1.                                                                        |
+| H5.6 acceptance              | F2.3 (done); installability (S9.7.1)                                             | Partly: installability only | Same as H4.6: the `FastApiApp` + Keycloak fixture is ngkit's (ADR-0008).                                                                  |
+| Stable pins for H4.6/H5.6    | pykit release-1 (S9.6.1 tag cut, S9.5.1 install check)                           | No: branch pins suffice     | Swap `feature/upgrade` for release-1 tags once cut.                                                                                       |
+| E1, E2, T1–T3                | none                                                                             | No                          | Owner orders them after the H4 review.                                                                                                    |
+
 ## Delivery sequence and evidence
 
 H1 ✓ → H2R ✓ → H3.1 ✓ → H3.2 ✓ (2026-09-23) → **H4 steps 1–7 (next)** → owner
 review → H4.6 and the order of the rest (H5, E1/E2, T1–T3). H4 doesn't wait on
-pykit; its wire acceptance (H4.6) and the H4.7/H5.5 feedback are pykit-side.
+pykit. H4.6's wire acceptance runs against an ngkit-owned fixture on the
+pykit features already done. The only pykit-side gate is S9.7.1's installable
+branch pins. The H4.7/H5.5 feedback goes to pykit as requirements; see the
+[pykit dependency map](#pykit-dependency-map-2026-09-26).
 E1's entry point is reconciled with `@rn-forge/ng/crud` when E1 is taken up. T
 work that renders a CRUD screen builds on the H4 controller. Each PR must name its source files, public exports and test evidence.
 No vague 'implement shared UI' tasks.
@@ -1038,5 +1132,14 @@ H4.6. Notes, deviations and evidence:
     (`ETag`/`If-Match` 412, `Idempotency-Key` replay, `orderBy` allow-list, a
     `bad*.csv` import returns 422 row errors); the e2e spec covers sort, filter,
     two-step import and row errors.
-- **Not done:** H4.6 wire acceptance against a pykit fixture, and the release
-  note; both wait for the owner review and pykit R7/R8.
+- **H4.6 (2026-09-26), partly done.**
+  - **Release note (done).** Put this in the commit footer (`BREAKING CHANGE:`) so
+    `nx release` carries it into the changelog: `CrudDataSource` and its types moved
+    from `@rn-forge/ng-bootstrap/crud` to `@rn-forge/ng/crud` and changed shape
+    (H4.2); `ng-bootstrap/crud` mode `'upload'` is now `'import'`, the `'download'`
+    mode is removed (export is a direct `GET`); permission keys `.upload` and
+    `.download` are now `.import` and `.export`.
+  - **Wire acceptance (not done).** Superseded by the 2026-09-26 remap (H4.6,
+    [pykit dependency map](#pykit-dependency-map-2026-09-26)). The fixture is
+    ngkit's own, and the pykit features it needs are done. It waits on the
+    owner's backend and CI decisions and on pykit S9.7.1's installable pins.
