@@ -27,7 +27,7 @@ export type CrudFilterValue =
 /** Named per-field query parameters the app declares (no expression language). */
 export type CrudFilter = Record<string, CrudFilterValue>;
 
-/** AIP-158 list request; `orderBy` is AIP-132 (`name desc,createTime`). */
+/** AIP-158 list request; `orderBy` is one AIP-132 field (`name desc`). */
 export interface ListRequest {
   readonly pageSize?: number;
   readonly pageToken?: string;

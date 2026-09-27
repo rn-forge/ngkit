@@ -1,0 +1,25 @@
+# The areas of ngkit's docs tree, in reading order. See _structure.md.
+version: 1
+areas:
+  - key: architecture
+    title: Architecture
+    nav: children
+  - key: guides
+    title: Guides
+    nav: children
+  - key: runbooks
+    title: Runbooks
+    nav: children
+    optional: true
+  - key: reference
+    title: Reference
+    nav: index-only
+  - key: releases
+    title: Releases
+    nav: index-only
+  - key: specs
+    title: Specs
+    nav: index-only
+  - key: adr
+    title: Decisions
+    nav: index-only

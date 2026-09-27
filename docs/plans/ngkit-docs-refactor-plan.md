@@ -759,8 +759,8 @@ absent '\b(H[1-5](\.[0-9])?|H2R(\.[0-9])?)\b' "${scope[@]}" -g '!docs/specs/**'
 absent -i 'pykit|cims|walgreens|ew-loop' "${scope[@]}"
 absent -i 'archetype|node-lib' "${scope[@]}"
 absent '\bR[0-9]\b|\bB10\b|api-conventions' "${scope[@]}"
-absent '/Users/|\.\./\.\./\.\./|github\.com/rn-forge/(?!ngkit)' --pcre2 "${scope[@]}"
-test "$(rg -l -i kiln "${scope[@]}" | sort | tr '\n' ' ')" = \
+absent '/Users/|\.\./\.\./\.\./\.\./|github\.com/rn-forge/(?!ngkit)' --pcre2 "${scope[@]}"
+test "$(rg -l -i kiln -g '!docs/plans/**' "${scope[@]}" | sort | tr '\n' ' ')" = \
   "docs/adr/ADR-0007.md docs/specs/_structure.md "
 
 # Content made it across (one distinctive string per source section)

@@ -5,7 +5,7 @@
  * release supports. Exercises real `file:` tarball installation (no verdaccio,
  * no pnpm workspace membership) so a broken peer range, a leaked `workspace:*`
  * reference, or an undeclared runtime import surfaces before it reaches a
- * consumer. See docs/plans/ngkit-roadmap.md (H1) for the requirement.
+ * consumer. See docs/architecture/release-pipeline.md.
  */
 import { execFileSync } from 'node:child_process';
 import {

@@ -78,7 +78,7 @@ export class AppUtil {
    * Hand-rolled, not wrapped around `file-saver`: checked on npm 2026-09-23,
    * `file-saver` 2.0.5 was last released 2020-11 and its repository last
    * pushed 2023-03, and the needed slice is a few lines of anchor and
-   * object-URL glue (README exemption 3).
+   * object-URL glue (ADR-0001 exemption 3).
    */
   static saveBlob(blob: Blob, fileName: string): void {
     const url = URL.createObjectURL(blob);

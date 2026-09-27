@@ -36,7 +36,7 @@ libs/ng-bootstrap/src/lib/     bootstrap.component.ts (ConfigurableComponent —
 libs/ng-bootstrap/shell/src/   header/, footer/, navbar/, offcanvas/, color-mode/, shell.config.ts
 libs/ng-bootstrap/form/src/    form/form.component.ts, form/fields/*/, form.config.ts
 libs/ng-bootstrap/auth/src/    auth/, user/, abstract-auth-page.ts, auth-ui.config.ts
-libs/ng/crud/src/    crud.types.ts, crud.list.ts, crud.errors.ts, crud.files.ts, crud.standard.ts
+libs/ng/crud/src/              crud.types.ts, crud.list.ts, crud.errors.ts, crud.files.ts, crud.standard.ts
 libs/ng-bootstrap/crud/src/    crud/crud.component.ts, crud/crud.manager.ts, crud.types.ts
 libs/ng-bootstrap/assets/      theme.scss + README.md (styling setup, Sass @forward rationale)
 apps/ng-demo/src/app/          ← THE reference implementation. Read this before writing anything.
@@ -222,12 +222,12 @@ JWT auth. **Zero-config default is fully open** (all permission checks pass) —
 
 ### 5.3 HTTP — Angular `HttpClient`, no ngkit wrapper
 
-> Releases after 0.1.2 remove `@rn-forge/ng/http` and `/http/crud`. 0.1.2 still ships `AbstractHTTPService`/`BackendService`, but don't build new code on them. Rationale: `docs/plans/ngkit-roadmap.md` H2R.
+> Releases after 0.1.2 remove `@rn-forge/ng/http` and `/http/crud`. 0.1.2 still ships `AbstractHTTPService`/`BackendService`, but don't build new code on them. Rationale: [ADR-0004](https://github.com/rn-forge/ngkit/blob/main/docs/adr/ADR-0004.md).
 
 - **One app-owned `InjectionToken<string>` per backend** (`ORDERS_API_URL`, `INVENTORY_API_URL`), provided once in `app.config.ts`.
 - **API services inject `HttpClient` and their token directly**, one method per operation, calling native `get/post/put/patch/delete`. Prefer a client generated from the backend's OpenAPI document when one exists.
 - **Query params:** pass `{ params: {...} }` — Angular encodes them. **Downloads:** `{ responseType: 'blob', observe: 'response' }`, then `AppUtil.saveBlob(blob, fileName)` from `/core`.
-- **Errors:** one functional interceptor in `provideHttpClient(withInterceptors([...]))` for reporting/telemetry; rethrow the original `HttpErrorResponse`. Per-call `catchError` only where the caller recovers. OpenTelemetry setup: plan H2R.4.
+- **Errors:** one functional interceptor in `provideHttpClient(withInterceptors([...]))` for reporting/telemetry; rethrow the original `HttpErrorResponse`. Per-call `catchError` only where the caller recovers. OpenTelemetry setup: [the HTTP guide](https://github.com/rn-forge/ngkit/blob/main/docs/guides/http.md#telemetry-versions-checked-2026-09-22).
 - **CRUD screens** take a `CrudDataSource` (§5.8): `standardDataSource()` for a standards-following backend, or your own implementation of the above.
 
 ### 5.4 `@rn-forge/ng-bootstrap` (root)

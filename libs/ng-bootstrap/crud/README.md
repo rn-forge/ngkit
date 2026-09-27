@@ -6,7 +6,7 @@ Secondary entry point of `@rn-forge/ng-bootstrap`. It can be used by importing f
 `CrudComponent`: list, add/update, delete, import and export. It holds no data
 logic. Paging, `orderBy`, filters and selection come from `createCrudList()`;
 server validation, 412 conflicts, `Idempotency-Key` and file names come from the
-same entry point. See [`libs/ng/crud/README.md`](../../ng/crud/README.md).
+same entry point. See [`libs/ng/crud/README.md`](https://github.com/rn-forge/ngkit/blob/main/libs/ng/crud/README.md).
 
 What the screen does:
 

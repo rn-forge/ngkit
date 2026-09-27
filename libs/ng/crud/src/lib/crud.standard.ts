@@ -57,7 +57,7 @@ function filterParams(
  * The {@link CrudDataSource} for any backend that follows the wire standards
  * the resource screen targets (AIP-158 paging, AIP-132 `orderBy`, RFC 7396 merge
  * patch with `ETag`/`If-Match`, `Idempotency-Key`, AIP-163 `:import`, AIP-235
- * `:batchDelete`; see `docs/plans/ngkit-roadmap.md` H4.1). It names and
+ * `:batchDelete`; see `docs/architecture/resource-screen.md`). It names and
  * detects no particular server framework.
  *
  * Call it in an injection context, like `inject()`. It adds no retries,

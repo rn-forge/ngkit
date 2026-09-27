@@ -5,8 +5,8 @@ This library was generated with [Nx](https://nx.dev).
 ## HTTP
 
 `ng` has no HTTP entry point — use Angular's native `HttpClient` directly.
-`@rn-forge/ng/http` was retired (see `docs/plans/ngkit-roadmap.md`
-H2R): a class that only injects `HttpClient` and concatenates a base URL adds
+`@rn-forge/ng/http` was retired (see
+["ngkit ships no HTTP client"](https://github.com/rn-forge/ngkit/blob/main/docs/adr/ADR-0004.md)): a class that only injects `HttpClient` and concatenates a base URL adds
 DI/base-URL boilerplate removal without justifying a public surface, and every
 app already calls several backends.
 
@@ -30,6 +30,9 @@ The pattern:
   `@rn-forge/ng-bootstrap/crud`. See `libs/ng/crud/README.md`,
   that package's README and `apps/ng-demo/src/app/products/` for the canonical
   example.
+
+See [the HTTP guide](https://github.com/rn-forge/ngkit/blob/main/docs/guides/http.md)
+for the full pattern, including OpenTelemetry setup.
 
 ## Storage
 
