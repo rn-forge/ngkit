@@ -12,4 +12,4 @@ The CRUD resource screen is rebuilt as a client of published wire standards ([AD
 | -------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
 | [F4.1 — `@rn-forge/ng/crud` entry point](F4.1-crud-entry-point.md)         | done        | Contract, list controller, errors and conflicts, file and write helpers, `standardDataSource()`. |
 | [F4.2 — Bootstrap renderer and demo](F4.2-bootstrap-renderer-and-demo.md)  | done        | `ng-bootstrap/crud` on the controller; import, export and the rewritten demo.                    |
-| [F4.3 — Accept the screen against a real backend](F4.3-wire-acceptance.md) | elaborating | `ng-demo` e2e against a backend fixture that follows the standards.                              |
+| [F4.3 — Accept the screen against a real backend](F4.3-wire-acceptance.md) | in progress | `ng-demo` e2e against a backend fixture that follows the standards.                              |
