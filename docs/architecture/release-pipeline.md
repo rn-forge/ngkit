@@ -42,7 +42,7 @@ Each publishable library's `project.json` sets `release.version.manifestRootsToU
 
 `.github/workflows/ci.yml` runs on push and pull request to `main` and `release/**`:
 
-- **`ci-cloud`** (default): distributes `lint`/`test`/`build`/`e2e-ci` across Nx Cloud agents (`.nx/workflows/agents.yaml`).
+- **`ci-cloud`** (default): distributes `lint`/`test`/`build`/`e2e-ci` across Nx Cloud agents using the `linux-medium` launch template (`.nx/workflows/agents.yaml`); the agent count comes from the repo variable `NX_CLOUD_AGENTS` (optional, default 3).
 - **`ci-local`**: the fallback that runs the same tasks on a single runner, with no Nx Cloud dependency. Playwright browsers install only when a project has an `e2e` target. Select it by setting the repo variable `USE_NX_CLOUD` to `false`, or via `workflow_dispatch` with `use-nx-cloud` unchecked.
 - **`package`**: runs after either path succeeds. It runs `nx run-many -t pack verify-dist verify-consumer` (every project that defines each target) and uploads the tarballs as a `package-tarballs` artifact.
 - **`sonar`**: skipped on Dependabot and fork pull requests (no `SONAR_TOKEN`). Runs `nx run-many -t test`, then finds every `coverage/**/lcov.info` and passes the list to the scanner as `-Dsonar.javascript.lcov.reportPaths`. It fails when none is found. `sonar-project.properties` names no coverage path, so a project with tests is covered without editing config. It passes `-Dsonar.qualitygate.wait=true`, so the job waits for the quality gate and fails when the gate fails.

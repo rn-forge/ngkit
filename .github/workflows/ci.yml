@@ -42,7 +42,8 @@ jobs:
 
       - uses: ./.github/actions/setup
         with:
-          start-ci-run: '--distribute-on="3 rn-forge-ng" --stop-agents-after="lint,test,build,e2e-ci"'
+          start-ci-run: >-
+            --distribute-on="${{ vars.NX_CLOUD_AGENTS || '3' }} linux-medium" --stop-agents-after="lint,test,build,e2e-ci"
 
       - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5
 

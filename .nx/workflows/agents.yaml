@@ -1,5 +1,5 @@
 launch-templates:
-  rn-forge-ng:
+  linux-medium:
     resource-class: 'docker_linux_amd64/medium'
     image: 'ubuntu22.04-node24.14-v1'
     init-steps:
@@ -16,8 +16,8 @@ launch-templates:
           base-branch: 'main'
       - name: Setup PNPM
         script: |
+          # `corepack enable` alone uses the pnpm version declared in package.json#packageManager
           corepack enable
-          corepack prepare pnpm@latest --activate
           pnpm config set store-dir ~/.local/share/pnpm/store
       - name: Install Node Modules
         uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/install-node-modules/main.yaml'
