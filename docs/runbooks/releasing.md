@@ -19,19 +19,22 @@ Run from the Actions tab: **Release** → Run workflow, from ref `main`. The inp
 3. Verify:
    - the tag `v<version>` exists;
    - the GitHub Release exists for it, with both tarballs attached;
+   - the `published-install` job passed (it installs the tarballs downloaded from that release);
    - the rolling `latest` release points at it (main releases only);
    - `CHANGELOG.md` has an entry for it (see [Breaking changes](#2-breaking-changes));
    - `libs/ng/package.json` and `libs/ng-bootstrap/package.json` on `main` both show the new version;
    - `ng-bootstrap`'s `peerDependencies["@rn-forge/ng"]`, in source and in the tarball, is pinned to the exact new version, not a `^` range.
 
+If a release fails, rerun **Release** from the same ref with the same inputs. A failure before the push leaves nothing public, and the rerun starts the same version again. After the push, the rerun finds the tag on `HEAD` and finishes that version (rebuild, GitHub Release, `latest`) instead of bumping; once the release is published, a rerun only repairs `latest`. If `published-install` fails, the release is already public: fix forward with a new release.
+
 ## 2. Breaking changes
 
-A breaking change reaches `CHANGELOG.md` only if `nx release` finds it in a commit. `nx.json#release.changelog` sets only `workspaceChangelog.createRelease: "github"`, so Nx's default changelog generation applies, which reads [Conventional Commits](https://www.conventionalcommits.org/) messages: a `type(scope): subject` header, with a `BREAKING CHANGE:` footer or a `!` after the type marking a break. This repository's commits are mostly not conventional, and `CHANGELOG.md`'s `0.1.2` entry reads "This was a version bump only, there were no code changes."
+A breaking change reaches `CHANGELOG.md` only if `nx release` finds it in a commit. `nx.json#release.changelog` sets only `workspaceChangelog.createRelease: false`, so Nx's default changelog generation applies, which reads [Conventional Commits](https://www.conventionalcommits.org/) messages: a `type(scope): subject` header, with a `BREAKING CHANGE:` footer or a `!` after the type marking a break. This repository's commits are mostly not conventional, and `CHANGELOG.md`'s `0.1.2` entry reads "This was a version bump only, there were no code changes."
 
 So, before a release that carries breaking changes, **do one of these** and check the dry-run changelog preview shows them:
 
 - put a `BREAKING CHANGE:` footer in a conventional commit that lands on the release branch; or
-- edit `CHANGELOG.md` and the GitHub Release notes by hand after the release.
+- edit `CHANGELOG.md` and the GitHub Release notes by hand after the release (the notes come from `CHANGELOG.md` at release time).
 
 The release page ([Release 1](../releases/release-1/index.md#breaking-changes-to-announce)) lists what each release must announce.
 
@@ -62,6 +65,8 @@ Example: `main` is at `v2.3.0`, a consumer needs a critical fix on the `1.x` lin
 ## 4. Re-enabling npm
 
 npm publishing is disabled by the hardcoded `dryRun: true` on both libraries' `nx-release-publish` targets. To re-enable it, remove that `dryRun` and set up npm Trusted Publishing (GitHub Actions OIDC, no long-lived token) per package on npmjs.com.
+
+Resume does not yet retry a failed npm publish: once the GitHub Release is published, a rerun skips the publish step, so a failed publish needs a manual `nx release publish`.
 
 ### 1. Bootstrap the first publish
 

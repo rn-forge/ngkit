@@ -36,9 +36,9 @@ See [README.md](README.md) for the project list and the packing workflow.
 Details and reasons are in [docs/architecture/release-pipeline.md](docs/architecture/release-pipeline.md); the procedure is [docs/runbooks/releasing.md](docs/runbooks/releasing.md).
 
 - `ng` and `ng-bootstrap` release together under fixed/grouped versioning ([ADR-0003](docs/adr/ADR-0003.md)); a new publishable library is tagged `publishable` (not added to `nx.json#release.projects`) and follows [docs/guides/development.md#adding-a-publishable-library](docs/guides/development.md#adding-a-publishable-library).
-- `dist/` is built once by `release.version.preVersionCommand` and never rebuilt downstream: the `Publish` and `Pack` steps in `release.yml` pass `--excludeTaskDependencies`, and `nx-release-publish` has no `dependsOn`.
+- `dist/` is built once by `release.version.preVersionCommand` and never rebuilt downstream, except when resuming a release, which rebuilds from the tag: the `Verify` and `Publish` steps in `release.yml` pass `--excludeTaskDependencies`, and `nx-release-publish` has no `dependsOn`.
 - Each publishable library's `release.version.manifestRootsToUpdate` is the pair `{projectRoot}` and `{ "path": "dist/{projectRoot}", "preserveLocalDependencyProtocols": false }`.
-- `nx.json#release.changelog.workspaceChangelog.createRelease: "github"` is what makes `nx release` push the version commit and tag.
+- The workflow pushes the release commit and tag only after `verify-dist` and `verify-consumer` pass, and creates the GitHub Release with its assets in one step (`createRelease` stays `false`).
 - Internal peers are exact pins on release, never widened by hand.
 - `workspace:*` must not reach a dist manifest.
 - npm is disabled (`dryRun: true` on both `nx-release-publish` targets); releases are tarballs on GitHub Releases.
