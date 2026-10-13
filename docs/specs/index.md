@@ -10,10 +10,10 @@ As of 2026-09-26, the libraries' packaging, the retired HTTP entry point, core c
 
 ### In progress
 
-| Epic                                                                        | Release                                                  | Next step           |
-| --------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------- |
-| [E4 — Standard resource screen](epics/E4-standard-resource-screen/index.md) | [Release 1](../releases/release-1/index.md) (F4.1, F4.2) | F4.3: decide S4.3.2 |
-| [E13 — Portable CI](epics/E13-portable-ci/index.md)                         | [Release 1](../releases/release-1/index.md)              | F13.2: S13.2.5      |
+| Epic                                                                        | Release                                                  | Next step            |
+| --------------------------------------------------------------------------- | -------------------------------------------------------- | -------------------- |
+| [E4 — Standard resource screen](epics/E4-standard-resource-screen/index.md) | [Release 1](../releases/release-1/index.md) (F4.1, F4.2) | F4.3: decide S4.3.2  |
+| [E13 — Portable CI](epics/E13-portable-ci/index.md)                         | [Release 1](../releases/release-1/index.md)              | F13.2: GitHub checks |
 
 ### To elaborate
 
