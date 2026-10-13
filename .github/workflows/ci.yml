@@ -139,8 +139,22 @@ jobs:
       - name: Generate coverage reports
         run: pnpm exec nx run-many -t test
 
+      # Coverage is discovered, not listed: every project's test target writes
+      # coverage/<project>/lcov.info.
+      - name: Discover lcov reports
+        id: lcov
+        run: |
+          reports=$(find coverage -name lcov.info | sort | paste -sd, -)
+          if [ -z "$reports" ]; then
+            echo "::error::No lcov.info found under coverage/"
+            exit 1
+          fi
+          echo "reports=$reports" >> "$GITHUB_OUTPUT"
+
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8
+        with:
+          args: -Dsonar.javascript.lcov.reportPaths=${{ steps.lcov.outputs.reports }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
