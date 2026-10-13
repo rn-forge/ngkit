@@ -1,6 +1,6 @@
 # E13 — Portable CI
 
-**Status:** planned · **Owner:** ngkit · **Release:** [Release 1](../../../releases/release-1/index.md)
+**Status:** in progress · **Owner:** ngkit · **Release:** [Release 1](../../../releases/release-1/index.md)
 
 **Source:** owner decision, 2026-09-28.
 
@@ -12,13 +12,13 @@ This epic turns the CI into a **repository-agnostic template**. The template's f
 
 The target shape, the template/repository split and the principles every feature follows are in [design.md](design.md).
 
-| Feature                                                     | Status  | Scope                                                                                                                                      |
-| ----------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| [F13.1 — Discovered projects](F13.1-discovered-projects.md) | planned | The `publishable` tag, target-driven `pack`/`verify-dist`, discovered coverage; no project name in CI, `nx.json` release config or scripts |
-| [F13.2 — One gate](F13.2-one-gate.md)                       | planned | Composite setup action, `ci-ok` as the one required check, the Sonar guard and quality-gate wait, generic Nx Cloud agents                  |
-| [F13.3 — Docs job](F13.3-docs-job.md)                       | planned | `pages.yml` becomes a `docs` job in `ci.yml`, after the checks pass, assembled from the projects that declare doc targets                  |
-| [F13.4 — Safe release](F13.4-safe-release.md)               | planned | Release requires a green CI run, verifies before pushing, treats the published release as the record, and checks the published assets      |
-| [F13.5 — Template contract](F13.5-template-contract.md)     | planned | Template-file marker, the portability check, and the architecture page that states what a repository must declare                          |
+| Feature                                                     | Status      | Scope                                                                                                                                      |
+| ----------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| [F13.1 — Discovered projects](F13.1-discovered-projects.md) | in progress | The `publishable` tag, target-driven `pack`/`verify-dist`, discovered coverage; no project name in CI, `nx.json` release config or scripts |
+| [F13.2 — One gate](F13.2-one-gate.md)                       | planned     | Composite setup action, `ci-ok` as the one required check, the Sonar guard and quality-gate wait, generic Nx Cloud agents                  |
+| [F13.3 — Docs job](F13.3-docs-job.md)                       | planned     | `pages.yml` becomes a `docs` job in `ci.yml`, after the checks pass, assembled from the projects that declare doc targets                  |
+| [F13.4 — Safe release](F13.4-safe-release.md)               | planned     | Release requires a green CI run, verifies before pushing, treats the published release as the record, and checks the published assets      |
+| [F13.5 — Template contract](F13.5-template-contract.md)     | planned     | Template-file marker, the portability check, and the architecture page that states what a repository must declare                          |
 
 **Order.** F13.1 first: every other feature consumes its discovery. F13.2 and F13.3 can follow in either order. F13.4 needs F13.1 and F13.2 (`ci-ok`). F13.5 closes the epic.
 

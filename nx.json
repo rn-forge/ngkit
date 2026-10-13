@@ -82,9 +82,9 @@
     }
   },
   "release": {
-    "projects": ["ng", "ng-bootstrap"],
+    "projects": ["tag:publishable"],
     "version": {
-      "preVersionCommand": "pnpm exec nx run-many -t build patch-package-exports --projects=ng,ng-bootstrap"
+      "preVersionCommand": "pnpm exec nx run-many -t build patch-package-exports -p tag:publishable"
     },
     "changelog": {
       "workspaceChangelog": {

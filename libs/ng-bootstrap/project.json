@@ -17,7 +17,7 @@
       "fallbackCurrentVersionResolver": "disk"
     }
   },
-  "tags": ["scope:ngkit", "type:ui"],
+  "tags": ["scope:ngkit", "type:ui", "publishable"],
   "targets": {
     "build": {
       "executor": "@nx/angular:package",
