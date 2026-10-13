@@ -154,3 +154,27 @@ jobs:
           name: package-tarballs
           path: dist/tarballs/*.tgz
           retention-days: 14
+
+  # The one check branch protection requires. Skipped jobs (Sonar on
+  # Dependabot/fork PRs, the unused ci-* path) pass; a failed or cancelled
+  # job, or neither ci-* path succeeding, fails it.
+  ci-ok:
+    needs: [ci-cloud, ci-local, sonarcloud, package]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Check needed jobs
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          bad=$(jq -r 'to_entries[] | select(.value.result | IN("failure", "cancelled")) | .key' <<<"$NEEDS" | paste -sd, -)
+          if [ -n "$bad" ]; then
+            echo "::error::Failed or cancelled: $bad"
+            exit 1
+          fi
+          if ! jq -e '[.["ci-cloud"].result, .["ci-local"].result] | index("success")' <<<"$NEEDS" >/dev/null; then
+            echo "::error::Neither ci-cloud nor ci-local succeeded"
+            exit 1
+          fi
