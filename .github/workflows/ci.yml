@@ -160,11 +160,72 @@ jobs:
           path: dist/tarballs/*.tgz
           retention-days: 14
 
+  # Publishes the docs site (Compodoc + Storybook) from main after the checks
+  # pass. Builds only when a project with a doc target is affected, or on a
+  # manual run. Job-level permissions replace the workflow-level ones, so
+  # actions: read stays for nx-set-shas (it queries workflow runs).
+  docs:
+    needs: [ci-cloud, ci-local]
+    if: ${{ always() && (needs.ci-cloud.result == 'success' || needs.ci-local.result == 'success') && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+
+      - name: Detect affected doc projects
+        id: affected
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] \
+            || [ "$(pnpm exec nx show projects --affected --with-target compodoc --json | jq 'length > 0')" = true ] \
+            || [ "$(pnpm exec nx show projects --affected --with-target build-storybook --json | jq 'length > 0')" = true ]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No affected project has a doc target; skipping the docs build"
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.affected.outputs.build == 'true'
+        run: pnpm exec nx run-many -t compodoc build-storybook
+
+      - if: steps.affected.outputs.build == 'true'
+        run: node tools/ci/assemble-site.mjs
+
+      - if: steps.affected.outputs.build == 'true'
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - if: steps.affected.outputs.build == 'true'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist/site
+          include-hidden-files: true
+
+      - if: steps.affected.outputs.build == 'true'
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+
   # The one check branch protection requires. Skipped jobs (Sonar on
-  # Dependabot/fork PRs, the unused ci-* path) pass; a failed or cancelled
+  # Dependabot/fork PRs, docs off main, the unused ci-* path) pass; a failed or cancelled
   # job, or neither ci-* path succeeding, fails it.
   ci-ok:
-    needs: [ci-cloud, ci-local, sonar, package]
+    needs: [ci-cloud, ci-local, sonar, package, docs]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
