@@ -65,7 +65,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Validate (lint, test, build)
-        run: pnpm exec nx run-many -t lint test build --projects=ng,ng-bootstrap
+        run: pnpm exec nx run-many -t lint test build -p tag:publishable
 
       # Version + changelog + git commit/tag/push + GitHub Release. Publishing
       # is deliberately excluded here (--skip-publish) because the combined
@@ -98,7 +98,7 @@ jobs:
       # Both paths above rewrite workspace:* peer deps to exact pins in the dist
       # manifest roots, so this guards the real release and the dry run alike.
       - name: Verify publishable dist manifests
-        run: node tools/scripts/verify-dist-manifests.mjs
+        run: pnpm exec nx run-many -t verify-dist -p tag:publishable --excludeTaskDependencies
 
       # --excludeTaskDependencies to not invalidate cache and use already prepped version in dist/
       # step's preVersionCommand.
@@ -115,7 +115,7 @@ jobs:
       # Same reason as above - pack the dist/ that was versioned, don't rebuild it.
       - name: Pack publishable tarballs
         if: ${{ !inputs.dry-run }}
-        run: pnpm exec nx run-many -t pack --projects=ng,ng-bootstrap --excludeTaskDependencies
+        run: pnpm exec nx run-many -t pack -p tag:publishable --excludeTaskDependencies
 
       - name: Resolve release tag
         if: ${{ !inputs.dry-run }}
