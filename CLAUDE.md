@@ -48,7 +48,7 @@ Details and reasons are in [docs/architecture/release-pipeline.md](docs/architec
 
 ### CI
 
-`ci.yml` is one toggle between distributed (`ci-cloud`) and local (`ci-local`) execution, plus a `package` job; Playwright uses the atomized `e2e-ci` target on the cloud path only. See [docs/architecture/release-pipeline.md#ci](docs/architecture/release-pipeline.md#ci).
+`ci.yml` is one toggle between distributed (`ci-cloud`) and local (`ci-local`) execution, plus a `package` job; Playwright uses the atomized `e2e-ci` target on the cloud path only. See [docs/architecture/release-pipeline.md#ci](docs/architecture/release-pipeline.md#ci); template files and what a repository declares for them: [docs/architecture/ci-template.md](docs/architecture/ci-template.md).
 
 ### Docs site
 

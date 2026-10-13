@@ -19,34 +19,35 @@ Every feature in E13 follows these. A change that breaks one records why in the 
 
 **Template-owned** — identical in every repository that uses the template; carries the marker from [F13.5](F13.5-template-contract.md):
 
-| File                                       | Role                                                                            |
-| ------------------------------------------ | ------------------------------------------------------------------------------- |
-| `.github/actions/setup/action.yml`         | Checkout, pnpm, Node, `pnpm install --frozen-lockfile`                          |
-| `.github/workflows/ci.yml`                 | `ci-cloud`/`ci-local`, `sonar`, `package`, `docs`, `ci-ok`                      |
-| `.github/workflows/release.yml`            | Gate, version, verify, push, release, published-asset check, rolling `latest`   |
-| `.github/dependabot.yml`                   | Weekly grouped `github-actions` updates                                         |
-| `.nx/workflows/agents.yaml`                | Nx Cloud launch template `linux-medium`                                         |
-| `tools/ci/resolve-dist-workspace-deps.mjs` | Rewrites `workspace:` ranges in one dist manifest (moved from `tools/scripts/`) |
-| `tools/ci/verify-dist-manifest.mjs`        | Checks one dist manifest (replaces `tools/scripts/verify-dist-manifests.mjs`)   |
-| `tools/ci/assemble-site.mjs`               | Builds `dist/site/` from the projects that declare doc targets                  |
-| `tools/ci/release-notes.mjs`               | Prints one version's section of `CHANGELOG.md`                                  |
-| `tools/ci/check-template.mjs`              | Fails when a template file contains a repository-specific value (F13.5)         |
+| File                                       | Role                                                                                 |
+| ------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `.github/actions/setup/action.yml`         | pnpm, Node, optional `nx start-ci-run`, `pnpm install --frozen-lockfile`             |
+| `.github/workflows/ci.yml`                 | `ci-cloud`/`ci-local`, `sonar`, `package`, `docs`, `template`, `ci-ok`               |
+| `.github/workflows/release.yml`            | Gate, version, verify, push, release, publish, rolling `latest`, `published-install` |
+| `.github/dependabot.yml`                   | Weekly grouped `github-actions` updates                                              |
+| `.nx/workflows/agents.yaml`                | Nx Cloud launch template `linux-medium`                                              |
+| `tools/ci/resolve-dist-workspace-deps.mjs` | Rewrites `workspace:` ranges in one dist manifest                                    |
+| `tools/ci/verify-dist-manifest.mjs`        | Checks one dist manifest                                                             |
+| `tools/ci/assemble-site.mjs`               | Builds `dist/site/` from the projects that declare doc targets                       |
+| `tools/ci/release-notes.mjs`               | Prints one version's section of `CHANGELOG.md`                                       |
+| `tools/ci/check-template.mjs`              | Fails when a template file contains a repository-specific value                      |
 
 **Repository-owned** — what a repository declares so the template can run:
 
-| Declaration                                                                                                                                                               | Used by                          |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `package.json#packageManager` (pnpm version)                                                                                                                              | setup action                     |
-| `.nvmrc` (Node major)                                                                                                                                                     | setup action                     |
-| `nx.json#nxCloudId`                                                                                                                                                       | `ci-cloud`                       |
-| `nx.json#release`: `projects: ["tag:publishable"]`, the `preVersionCommand` below, `workspaceChangelog.createRelease: false`                                              | `release.yml`                    |
-| `nx.json#targetDefaults` for `pack` and `verify-dist` (F13.1)                                                                                                             | `package`, `release.yml`         |
-| Project tag `publishable`, and `"pack": {}` / `"verify-dist": {}` on each publishable project                                                                             | `package`, `release.yml`         |
-| Targets `lint`, `test` (lcov under `coverage/{projectName}/`), `build`, `e2e`                                                                                             | `ci-cloud`/`ci-local`, `sonar`   |
-| Optional targets `verify-consumer`, `patch-package-exports`, `compodoc` (output `dist/compodoc/{projectName}`), `build-storybook` (output `dist/storybook/{projectName}`) | `package`, `release.yml`, `docs` |
-| `sonar-project.properties`: project key, organization, sources, exclusions — no coverage paths                                                                            | `sonar`                          |
-| Repo variables `USE_NX_CLOUD`, `NX_CLOUD_AGENTS`; secrets `NX_CLOUD_ACCESS_TOKEN`, `SONAR_TOKEN`                                                                          | `ci.yml`                         |
-| `tools/scripts/verify-consumer.mjs` (or any `verify-consumer` implementation)                                                                                             | `verify-consumer` target         |
+| Declaration                                                                                                                                                                                                      | Used by                          |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `package.json#packageManager` (pnpm version)                                                                                                                                                                     | setup action, Nx Cloud agents    |
+| `.nvmrc` (Node version)                                                                                                                                                                                          | setup action                     |
+| `nx.json#nxCloudId`                                                                                                                                                                                              | `ci-cloud`                       |
+| `nx.json#release`: `projects: ["tag:publishable"]`, `version.preVersionCommand` (`pnpm exec nx run-many -t build patch-package-exports -p tag:publishable`), `changelog.workspaceChangelog.createRelease: false` | `release.yml`                    |
+| `nx.json#targetDefaults` for `pack` (depends on `build`) and `verify-dist` (depends on `pack`, uncached)                                                                                                         | `package`, `release.yml`         |
+| Project tag `publishable`, and `"pack": {}` and `"verify-dist": {}` on each publishable project                                                                                                                  | `package`, `release.yml`         |
+| Targets `lint`, `test` (writes lcov under `coverage/{projectName}/`), `build`, `e2e` (the Playwright plugin's `e2e-ci` for the cloud path)                                                                       | `ci-cloud`, `ci-local`, `sonar`  |
+| Optional targets, declared per project: `verify-consumer`, `patch-package-exports`, `compodoc` (output `dist/compodoc/{projectName}`), `build-storybook` (output `dist/storybook/{projectName}`)                 | `package`, `release.yml`, `docs` |
+| The implementation behind `verify-consumer` (here `tools/scripts/verify-consumer.mjs`) and any other repository tooling, reached only through its Nx target                                                      | `verify-consumer` target         |
+| `sonar-project.properties`: project key, organization, sources, exclusions; no coverage paths                                                                                                                    | `sonar`                          |
+| Repository variables `USE_NX_CLOUD`, `NX_CLOUD_AGENTS`; secrets `NX_CLOUD_ACCESS_TOKEN`, `SONAR_TOKEN`                                                                                                           | `ci.yml`                         |
+| A `CHANGELOG.md` kept by `nx release`                                                                                                                                                                            | `release-notes.mjs`              |
 
 `preVersionCommand`: `pnpm exec nx run-many -t build patch-package-exports -p tag:publishable`.
 

@@ -54,6 +54,8 @@ Every job except `ci-ok` checks out the repository, then uses the shared `.githu
 
 Distributed versus local execution is a toggle, not two pipelines to maintain in parallel.
 
+Which of these files are portable and what a repository must declare for them is in [CI template](ci-template.md).
+
 Playwright e2e uses the atomized `e2e-ci` target (`@nx/playwright/plugin`'s default `<targetName>-ci`) so Nx Cloud can distribute individual spec files as separate tasks. Only the cloud path needs it; the local fallback runs plain `e2e`.
 
 ## Release workflow
