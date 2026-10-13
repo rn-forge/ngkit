@@ -38,7 +38,7 @@ pnpm nx serve ng-demo
 `ng` and `ng-bootstrap` each have a `pack` target that builds the library and produces an installable tarball under `dist/tarballs/`:
 
 ```sh
-pnpm nx run-many -t pack --projects=ng,ng-bootstrap
+pnpm nx run-many -t pack -p tag:publishable
 ```
 
 CI uploads these as a `package-tarballs` artifact on every run, and the `Release` workflow attaches them to the corresponding GitHub Release (both the versioned tag and a rolling `latest` release on `main`). See [docs/runbooks/releasing.md](docs/runbooks/releasing.md) for the full release process and [docs/architecture/release-pipeline.md](docs/architecture/release-pipeline.md) for the design rationale.

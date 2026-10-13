@@ -4,9 +4,13 @@ How ngkit builds, versions, packs and publishes its libraries. The choices behin
 
 ## Build once
 
-**`dist/` is built once, by `nx.json#release.version.preVersionCommand`, and everything downstream consumes it read-only.** The command builds `ng` and `ng-bootstrap` and runs `patch-package-exports`. The version step then stamps the new version and rewrites `workspace:*` into the _already built_ `dist/libs/*/package.json`. Any later task that rebuilds regenerates those manifests from source and silently undoes it.
+**`dist/` is built once, by `nx.json#release.version.preVersionCommand`, and everything downstream consumes it read-only.** The command is `nx run-many -t build patch-package-exports -p tag:publishable`: it builds every project tagged `publishable` (see [Publishable tag](#publishable-tag)) and runs `patch-package-exports` where a project defines it. The version step then stamps the new version and rewrites `workspace:*` into the _already built_ `dist/libs/*/package.json`. Any later task that rebuilds regenerates those manifests from source and silently undoes it.
 
 That is why the `Publish` and `Pack` steps in `release.yml` pass `--excludeTaskDependencies`, and why `nx-release-publish` carries no `dependsOn`: versioning edits `libs/*/package.json`, which invalidates the build cache, so a task dependency _will_ rebuild. `preVersionCommand` therefore has to produce a fully release-ready `dist/`, including `patch-package-exports`.
+
+## Publishable tag
+
+A library is released when its `project.json` carries the tag `publishable`. `nx.json#release.projects` is `["tag:publishable"]` and `preVersionCommand` and the `release.yml` steps select `-p tag:publishable`, so no project list appears in release config or workflows. Adding a library to the release is tagging it.
 
 ## Manifest roots
 
@@ -21,25 +25,27 @@ Each publishable library's `project.json` sets `release.version.manifestRootsToU
 
 ## `patch-package-exports`
 
-`ng-bootstrap`'s `patch-package-exports` target (`libs/ng-bootstrap/scripts/patch-package-exports.mjs`) fixes the ng-packagr dist `package.json`'s `exports` map so deep asset imports (`@rn-forge/ng-bootstrap/assets/*`) resolve at all. It is a `dependsOn` of `pack` (the plain `nx pack` path used by `ci.yml`) and is run explicitly by `preVersionCommand` on the release path. It must execute after every build of `ng-bootstrap` and before versioning stamps the dist manifest. Any new library shipping non-TS assets alongside compiled entry points needs the same pattern.
+`ng-bootstrap`'s `patch-package-exports` target (`libs/ng-bootstrap/scripts/patch-package-exports.mjs`) fixes the ng-packagr dist `package.json`'s `exports` map so deep asset imports (`@rn-forge/ng-bootstrap/assets/*`) resolve at all. It is a `dependsOn` of `ng-bootstrap`'s `pack` override (the plain `nx pack` path used by `ci.yml`) and is run by `preVersionCommand` on the release path for every publishable project that defines it. It must execute after every build of `ng-bootstrap` and before versioning stamps the dist manifest. Any new library shipping non-TS assets alongside compiled entry points needs the same pattern.
 
 ## Packing
 
-`ng` and `ng-bootstrap` each have a `pack` target that builds the library and produces an installable tarball under `dist/tarballs/`. `tools/scripts/resolve-dist-workspace-deps.mjs` runs ahead of `npm pack`: it rewrites any `workspace:` protocol dependency in a dist manifest to the referenced local package's current version. Plain `nx pack` (the path `ci.yml`'s `package` job uses) never runs `nx release version`, so without it `ng-bootstrap`'s dist `package.json` would carry a literal `"@rn-forge/ng": "workspace:*"` peer that an external `npm` or `pnpm install` cannot resolve. It is a no-op once `nx release version` has already stamped an exact pin, so the real release path is unaffected.
+`pack` and `verify-dist` are defined once, in `nx.json#targetDefaults`; each publishable `project.json` declares them as `"pack": {}` and `"verify-dist": {}`. `ng-bootstrap`'s only override is `"pack": { "dependsOn": ["patch-package-exports"] }`.
 
-`tools/scripts/verify-dist-manifests.mjs` asserts, for each `dist/libs/*/package.json`, that no `workspace:` protocol remains in its `dependencies`, `peerDependencies` or `optionalDependencies`, and that the ng-packagr output is complete: `name` and `version` are set, and there is `module` or `exports`, and `typings` or `exports`. It runs from both `ci.yml`'s `package` job and `release.yml`.
+- **`pack`** depends on `build`, runs `tools/ci/resolve-dist-workspace-deps.mjs` on the dist manifest, then `npm pack` into `dist/tarballs/`. The script rewrites any `workspace:` protocol dependency to the referenced local package's current version, reading name and version from every project root Nx reports. Plain `nx pack` (the path `ci.yml`'s `package` job uses) never runs `nx release version`, so without it `ng-bootstrap`'s dist `package.json` would carry a literal `"@rn-forge/ng": "workspace:*"` peer that an external `npm` or `pnpm install` cannot resolve. It is a no-op once `nx release version` has already stamped an exact pin, so the real release path is unaffected.
+- **`verify-dist`** depends on `pack` and is never cached. It runs `tools/ci/verify-dist-manifest.mjs dist/<projectRoot>`, which asserts that no `workspace:` protocol remains in the manifest's `dependencies`, `peerDependencies` or `optionalDependencies`, and that the ng-packagr output is complete: `name` and `version` are set, and there is `module` or `exports`, and `typings` or `exports`. It runs from both `ci.yml`'s `package` job and `release.yml`.
 
 ## Consumer verification
 
-`tools/scripts/verify-consumer.mjs`, run by the `ng:verify-consumer` target (which depends on `pack`), installs the packed `@rn-forge/ng` tarball via `file:` into four throwaway fixtures under `dist/consumer-fixtures/` (outside the pnpm workspace glob): Angular 22.0.6 and 22.1.7, each with and without `zone.js` loaded. It smoke-tests every secondary entry point (`.`, `./core`, `./auth`, `./crud`) plus a `LocalStorageService` round-trip through DI, and asserts the installed manifest carries no `workspace:` protocol dependency. There is no verdaccio and no workspace fixture. It runs in `ci.yml`'s `package` job.
+`tools/scripts/verify-consumer.mjs`, run by the `verify-consumer` target (which depends on `pack`), installs the packed `@rn-forge/ng` tarball via `file:` into four throwaway fixtures under `dist/consumer-fixtures/` (outside the pnpm workspace glob): Angular 22.0.6 and 22.1.7, each with and without `zone.js` loaded. It smoke-tests every secondary entry point (`.`, `./core`, `./auth`, `./crud`) plus a `LocalStorageService` round-trip through DI, and asserts the installed manifest carries no `workspace:` protocol dependency. There is no verdaccio and no workspace fixture. It runs in `ci.yml`'s `package` job.
 
 ## CI
 
 `.github/workflows/ci.yml` runs on push and pull request to `main` and `release/**`:
 
 - **`ci-cloud`** (default): distributes `lint`/`test`/`build`/`e2e-ci` across Nx Cloud agents (`.nx/workflows/agents.yaml`).
-- **`ci-local`**: the fallback that runs the same tasks on a single runner, with no Nx Cloud dependency. Select it by setting the repo variable `USE_NX_CLOUD` to `false`, or via `workflow_dispatch` with `use-nx-cloud` unchecked.
-- **`package`**: runs after either path succeeds. It packs tarballs, verifies the dist manifests, runs `ng:verify-consumer`, and uploads the tarballs as a `package-tarballs` artifact.
+- **`ci-local`**: the fallback that runs the same tasks on a single runner, with no Nx Cloud dependency. Playwright browsers install only when a project has an `e2e` target. Select it by setting the repo variable `USE_NX_CLOUD` to `false`, or via `workflow_dispatch` with `use-nx-cloud` unchecked.
+- **`package`**: runs after either path succeeds. It runs `nx run-many -t pack verify-dist verify-consumer` (every project that defines each target) and uploads the tarballs as a `package-tarballs` artifact.
+- **`sonarcloud`**: runs `nx run-many -t test`, then finds every `coverage/**/lcov.info` and passes the list to the scanner as `-Dsonar.javascript.lcov.reportPaths`. It fails when none is found. `sonar-project.properties` names no coverage path, so a project with tests is covered without editing config.
 
 Distributed versus local execution is a toggle, not two pipelines to maintain in parallel.
 
@@ -47,7 +53,7 @@ Playwright e2e uses the atomized `e2e-ci` target (`@nx/playwright/plugin`'s defa
 
 ## Release workflow
 
-`release.yml` is a manual `workflow_dispatch`. It validates (lint, test, build), runs `nx release … --skip-publish` (version, changelog, commit, tag, push, GitHub Release), verifies the dist manifests, runs `nx release publish --tag=<dist-tag> --excludeTaskDependencies` (a dry run while npm is disabled), packs the tarballs without rebuilding, attaches them to the versioned GitHub Release, and moves the rolling `latest` release when run from `main`. The combined `nx release` command has no `--tag` flag, which is why publish is a separate step. A dry run uses `nx release version` instead, because the combined command writes no files under `--dry-run`, and dist manifests would keep their `workspace:*` references.
+`release.yml` is a manual `workflow_dispatch`. It validates (lint, test, build), runs `nx release … --skip-publish` (version, changelog, commit, tag, push, GitHub Release), runs the `verify-dist` target for `-p tag:publishable`, runs `nx release publish --tag=<dist-tag> --excludeTaskDependencies` (a dry run while npm is disabled), packs the tarballs without rebuilding (`-p tag:publishable`), attaches them to the versioned GitHub Release, and moves the rolling `latest` release when run from `main`. The combined `nx release` command has no `--tag` flag, which is why publish is a separate step. A dry run uses `nx release version` instead, because the combined command writes no files under `--dry-run`, and dist manifests would keep their `workspace:*` references.
 
 Release commit and tag are pushed to the branch the run started from, so the "Use workflow from" ref decides whether it is a normal release (`main`) or a hotfix (`release/<major>.x`).
 

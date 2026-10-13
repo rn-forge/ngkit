@@ -43,10 +43,8 @@ Each PR names its source files, public exports and test evidence. No vague "impl
 Inspect resolved Nx targets with `pnpm nx show project <name> --json`; run the relevant library lint/test/build/pack via Nx. For each new published entry point, add it to `ng:verify-consumer`'s matrix and test exports, peer resolution and runtime styles from the packed tarball. Confirm the `ng-demo` app still builds after core changes. Never run a release/publish as a validation shortcut.
 
 ```sh
-pnpm nx run-many -t lint test build --projects=ng,ng-bootstrap,ng-demo
-pnpm nx run-many -t pack --projects=ng,ng-bootstrap
-node tools/scripts/verify-dist-manifests.mjs
-pnpm nx run ng:verify-consumer
+pnpm nx run-many -t lint test build
+pnpm nx run-many -t pack verify-dist verify-consumer
 ```
 
 **Coverage.** `ng`'s test target enforces 80% statements/branches/functions/lines across `core`, `auth` and `crud` (`coverageInclude` in `libs/ng/project.json`). New code must clear it without lowering the thresholds.
@@ -68,14 +66,13 @@ For `@rn-forge/ng/<name>`, mirror `libs/ng/crud/` or `libs/ng/auth/`. Missing an
 Scaffold the library through an Nx generator (`pnpm nx g @nx/angular:lib <name> --publishable`; check `--help` for the flags), then work through this list once:
 
 1. `libs/<name>/package.json` carries the metadata `ng` and `ng-bootstrap` already have: `description`, `license`, `repository`, and `publishConfig.access: "public"`. Without it the package isn't really consumable externally even if it builds fine.
-2. Add the library to `nx.json#release.projects` and to `release.version.preVersionCommand`, so `dist/` is built once and release-ready ([Release pipeline](../architecture/release-pipeline.md#build-once)).
+2. Tag it `publishable` in its `project.json`. The tag puts it in `nx.json#release.projects`, `preVersionCommand`, the release workflow and CI's package job, so none of them is edited ([Release pipeline](../architecture/release-pipeline.md#publishable-tag)).
 3. In its `project.json`, set `release.version.manifestRootsToUpdate` to `{projectRoot}` plus `{ "path": "dist/{projectRoot}", "preserveLocalDependencyProtocols": false }`. Keep the `false` if a genuine `workspace:*` dependency is ever added between these libraries.
-4. Add `pack` and `nx-release-publish` targets, with `dryRun: true` on `nx-release-publish` while npm is disabled. `pack` must consume the version-stamped `dist/` without rebuilding, so the release workflow's `Pack` step passes `--excludeTaskDependencies`.
-5. If the library ships non-TS assets alongside compiled entry points, add a `patch-package-exports` target and make `pack` depend on it and `preVersionCommand` run it, as `ng-bootstrap` does ([details](../architecture/release-pipeline.md#patch-package-exports)).
-6. Extend the release pack/upload steps and CI's package verification for the extra artifact.
-7. Add a `compodoc` target and a docs-site entry under `api/<name>/` in `.github/workflows/pages.yml` and `tools/pages/index.html`, plus Storybook or examples, without replacing Bootstrap's docs.
-8. Add each entry point to `tools/scripts/verify-consumer.mjs`'s matrix, and test the exports from the packed artifact.
-9. Add a row for it to the Projects table in `README.md` and [Workspace](../architecture/workspace.md).
-10. Reviewing a pull request that adds a library, check `nx.json`, `project.json`, workflows and package metadata together: this is repository configuration, and it changes what is released.
+4. Declare `"pack": {}` and `"verify-dist": {}`, which take their definition from `nx.json#targetDefaults`, and an `nx-release-publish` target with `dryRun: true` while npm is disabled. Release steps pass `--excludeTaskDependencies`, so `pack` consumes the version-stamped `dist/` without rebuilding.
+5. If the library ships non-TS assets alongside compiled entry points, add a `patch-package-exports` target and override `"pack": { "dependsOn": ["patch-package-exports"] }`, as `ng-bootstrap` does; `preVersionCommand` already runs it ([details](../architecture/release-pipeline.md#patch-package-exports)).
+6. If it has a docs site, add a `compodoc` target and, for the docs site only, an `api/<name>/` entry in `.github/workflows/pages.yml` and `tools/pages/index.html`, plus Storybook or examples, without replacing Bootstrap's docs.
+7. If it has consumer-facing entry points, add a `verify-consumer` target, add each entry point to `tools/scripts/verify-consumer.mjs`'s matrix, and test the exports from the packed artifact.
+8. Add a row for it to the Projects table in `README.md` and [Workspace](../architecture/workspace.md).
+9. Reviewing a pull request that adds a library, check `nx.json`, `project.json` and package metadata together: this is repository configuration, and it changes what is released.
 
 A library that is Angular- or CDK-dependent lists those as framework peers; `ng` is a same-release peer only where the library uses shared behavior from it ([ADR-0002](../adr/ADR-0002.md)).
