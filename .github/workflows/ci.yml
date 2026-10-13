@@ -222,11 +222,22 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
 
+  # Fails when a template-owned file holds a repository-specific value
+  template:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/setup
+
+      - run: node tools/ci/check-template.mjs
+
   # The one check branch protection requires. Skipped jobs (Sonar on
   # Dependabot/fork PRs, docs off main, the unused ci-* path) pass; a failed or cancelled
   # job, or neither ci-* path succeeding, fails it.
   ci-ok:
-    needs: [ci-cloud, ci-local, sonar, package, docs]
+    needs: [ci-cloud, ci-local, sonar, package, docs, template]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
