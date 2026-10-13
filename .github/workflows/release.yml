@@ -83,38 +83,67 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # Version + changelog + git commit/tag/push + GitHub Release. Publishing
-      # is deliberately excluded here (--skip-publish) because the combined
-      # `nx release` command has no way to pass a custom npm dist-tag; that's
-      # done as a separate `nx release publish` step below, which resolves
-      # the version from the tag/commit this step just created.
-      - name: Version and changelog
+      # Commits and tags locally only; nothing is pushed until the checks pass.
+      # Publishing is excluded (--skip-publish) because the combined command
+      # cannot pass a custom npm dist-tag; the Publish step below does that.
+      - name: Version locally
         if: ${{ !inputs.dry-run }}
-        run: >
-          pnpm exec nx release
-          "${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}"
-          --skip-publish
-          ${{ inputs.first-release && '--first-release' || '' }}
+        run: |
+          args=(release "$VERSION_SPEC" --skip-publish)
+          if [ "$FIRST_RELEASE" = "true" ]; then args+=(--first-release); fi
+          pnpm exec nx "${args[@]}"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for createRelease: github
+          VERSION_SPEC: ${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}
+          FIRST_RELEASE: ${{ inputs.first-release }}
+
+      - name: Resolve release tag
+        if: ${{ !inputs.dry-run }}
+        id: tag
+        run: |
+          tags=$(git tag --points-at HEAD --list 'v*')
+          if [ -z "$tags" ] || [ "$(wc -l <<<"$tags")" -ne 1 ]; then
+            echo "::error::Expected exactly one v* tag at HEAD, found: ${tags:-none}"
+            exit 1
+          fi
+          echo "name=$tags" >> "$GITHUB_OUTPUT"
 
       # Dry runs deliberately do NOT use the combined `nx release` command
       # as it does not write files when dry-run flag is present.
       # so dist manifests still carry workspace:* references that pnpm publish rejects
       - name: Version (dry-run simulation)
         if: ${{ inputs.dry-run }}
-        run: >
-          pnpm exec nx release version
-          "${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}"
-          --git-commit=false
-          --git-tag=false
-          --stage-changes=false
-          ${{ inputs.first-release && '--first-release' || '' }}
+        run: |
+          args=(release version "$VERSION_SPEC" --git-commit=false --git-tag=false --stage-changes=false)
+          if [ "$FIRST_RELEASE" = "true" ]; then args+=(--first-release); fi
+          pnpm exec nx "${args[@]}"
+        env:
+          VERSION_SPEC: ${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}
+          FIRST_RELEASE: ${{ inputs.first-release }}
 
-      # Both paths above rewrite workspace:* peer deps to exact pins in the dist
-      # manifest roots, so this guards the real release and the dry run alike.
-      - name: Verify publishable dist manifests
-        run: pnpm exec nx run-many -t verify-dist -p tag:publishable --excludeTaskDependencies
+      # Both version paths rewrite workspace:* peer deps to exact pins in the dist
+      # manifest roots. --excludeTaskDependencies packs the versioned dist/ rather
+      # than rebuilding it.
+      - name: Verify
+        run: |
+          pnpm exec nx run-many -t pack -p tag:publishable --excludeTaskDependencies
+          pnpm exec nx run-many -t verify-dist -p tag:publishable --excludeTaskDependencies
+          pnpm exec nx run-many -t verify-consumer -p tag:publishable --excludeTaskDependencies
+
+      - name: Push release commit and tag
+        if: ${{ !inputs.dry-run }}
+        run: git push --atomic origin "HEAD:refs/heads/$GITHUB_REF_NAME" "refs/tags/$TAG"
+        env:
+          TAG: ${{ steps.tag.outputs.name }}
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry-run }}
+        run: |
+          tag="$TAG"
+          node tools/ci/release-notes.mjs "${tag#v}" > "$RUNNER_TEMP/notes.md"
+          gh release create "$tag" dist/tarballs/*.tgz --verify-tag --title "$tag" --notes-file "$RUNNER_TEMP/notes.md"
+        env:
+          TAG: ${{ steps.tag.outputs.name }}
+          GH_TOKEN: ${{ github.token }}
 
       # --excludeTaskDependencies to not invalidate cache and use already prepped version in dist/
       # step's preVersionCommand.
@@ -128,25 +157,6 @@ jobs:
         env:
           DIST_TAG: ${{ inputs.dist-tag }}
 
-      # Same reason as above - pack the dist/ that was versioned, don't rebuild it.
-      - name: Pack publishable tarballs
-        if: ${{ !inputs.dry-run }}
-        run: pnpm exec nx run-many -t pack -p tag:publishable --excludeTaskDependencies
-
-      - name: Resolve release tag
-        if: ${{ !inputs.dry-run }}
-        id: tag
-        run: echo "name=v$(node -p "require('./dist/libs/ng/package.json').version")" >> "$GITHUB_OUTPUT"
-
-      # `nx release`'s `changelog.workspaceChangelog.createRelease: "github"` (nx.json)
-      # already created the GitHub Release for this tag in the "Version and changelog"
-      # step above; this just attaches the packed tarballs to it as downloadable assets.
-      - name: Attach tarballs to versioned release
-        if: ${{ !inputs.dry-run }}
-        run: gh release upload ${{ steps.tag.outputs.name }} dist/tarballs/*.tgz --clobber
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       # Rolling pointer so consumers can depend on a stable, version-less URL
       # (.../releases/download/latest/<pkg>.tgz) instead of tracking exact tags.
       # Only moves on main - hotfix releases from release/** branches keep their
@@ -157,6 +167,7 @@ jobs:
           gh release delete latest --yes --cleanup-tag || true
           git tag -f latest
           git push origin latest --force
-          gh release create latest dist/tarballs/*.tgz --title "Latest" --notes "Rolling pointer to ${{ steps.tag.outputs.name }}"
+          gh release create latest dist/tarballs/*.tgz --title "Latest" --notes "Rolling pointer to $TAG"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.name }}

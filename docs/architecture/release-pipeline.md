@@ -21,7 +21,7 @@ Each publishable library's `project.json` sets `release.version.manifestRootsToU
 
 ## Pushing the release
 
-`nx.json#release.changelog.workspaceChangelog.createRelease: "github"` is what makes `nx release` **push** the version commit and tag at all: Nx's `git.push` default is `false`, and the combined command only pushes when a remote release is configured. Without it the release commit and tag stay local to the runner and the later `gh release upload` steps have no tag to attach to.
+`nx.json#release.changelog.workspaceChangelog.createRelease` is `false`, so `nx release` versions, commits and tags locally only and pushes nothing. `release.yml` pushes the release commit and tag itself (`git push --atomic`) after `pack`, `verify-dist` and `verify-consumer` pass, then creates the GitHub Release with `gh release create`, using the `CHANGELOG.md` section extracted by `tools/ci/release-notes.mjs`.
 
 ## `patch-package-exports`
 
