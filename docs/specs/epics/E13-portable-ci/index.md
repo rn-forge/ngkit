@@ -16,7 +16,7 @@ The target shape, the template/repository split and the principles every feature
 | ----------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | [F13.1 — Discovered projects](F13.1-discovered-projects.md) | done        | The `publishable` tag, target-driven `pack`/`verify-dist`, discovered coverage; no project name in CI, `nx.json` release config or scripts |
 | [F13.2 — One gate](F13.2-one-gate.md)                       | in progress | Composite setup action, `ci-ok` as the one required check, the Sonar guard and quality-gate wait, generic Nx Cloud agents                  |
-| [F13.3 — Docs job](F13.3-docs-job.md)                       | planned     | `pages.yml` becomes a `docs` job in `ci.yml`, after the checks pass, assembled from the projects that declare doc targets                  |
+| [F13.3 — Docs job](F13.3-docs-job.md)                       | in progress | `pages.yml` becomes a `docs` job in `ci.yml`, after the checks pass, assembled from the projects that declare doc targets                  |
 | [F13.4 — Safe release](F13.4-safe-release.md)               | planned     | Release requires a green CI run, verifies before pushing, treats the published release as the record, and checks the published assets      |
 | [F13.5 — Template contract](F13.5-template-contract.md)     | planned     | Template-file marker, the portability check, and the architecture page that states what a repository must declare                          |
 
