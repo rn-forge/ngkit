@@ -78,6 +78,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           DRY_RUN: ${{ inputs.dry-run }}
 
+      # The checkout fetched tags from origin, so a tag at HEAD is a pushed tag.
+      # A version counts as shipped only when its GitHub Release is published.
+      - name: Detect release state
+        id: state
+        run: |
+          tag=$(git tag --points-at HEAD --list 'v*')
+          if [ -z "$tag" ]; then
+            mode=new
+          elif [ "$(wc -l <<<"$tag")" -ne 1 ]; then
+            echo "::error::More than one v* tag at HEAD: $tag"
+            exit 1
+          elif [ "$(gh release view "$tag" --json isDraft --jq .isDraft 2>/dev/null)" = false ]; then
+            mode=released
+          else
+            mode=resume
+          fi
+          echo "::notice::Release mode: $mode${tag:+ ($tag)}"
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Configure git author
         run: |
           git config user.name "github-actions[bot]"
@@ -87,7 +108,7 @@ jobs:
       # Publishing is excluded (--skip-publish) because the combined command
       # cannot pass a custom npm dist-tag; the Publish step below does that.
       - name: Version locally
-        if: ${{ !inputs.dry-run }}
+        if: ${{ !inputs.dry-run && steps.state.outputs.mode == 'new' }}
         run: |
           args=(release "$VERSION_SPEC" --skip-publish)
           if [ "$FIRST_RELEASE" = "true" ]; then args+=(--first-release); fi
@@ -96,6 +117,7 @@ jobs:
           VERSION_SPEC: ${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}
           FIRST_RELEASE: ${{ inputs.first-release }}
 
+      # In resume and released modes HEAD already carries the tag, so this resolves it too.
       - name: Resolve release tag
         if: ${{ !inputs.dry-run }}
         id: tag
@@ -124,21 +146,32 @@ jobs:
       # manifest roots. --excludeTaskDependencies packs the versioned dist/ rather
       # than rebuilding it.
       - name: Verify
+        if: ${{ inputs.dry-run || steps.state.outputs.mode == 'new' }}
         run: |
           pnpm exec nx run-many -t pack -p tag:publishable --excludeTaskDependencies
           pnpm exec nx run-many -t verify-dist -p tag:publishable --excludeTaskDependencies
           pnpm exec nx run-many -t verify-consumer -p tag:publishable --excludeTaskDependencies
 
+      # Resume: preVersionCommand does not run, so dist/ is rebuilt from the tagged
+      # source (with task dependencies) and pack stamps the exact internal pins.
+      - name: Rebuild and verify (resume)
+        if: ${{ !inputs.dry-run && steps.state.outputs.mode == 'resume' }}
+        run: pnpm exec nx run-many -t pack verify-dist verify-consumer -p tag:publishable
+
       - name: Push release commit and tag
-        if: ${{ !inputs.dry-run }}
+        if: ${{ !inputs.dry-run && steps.state.outputs.mode == 'new' }}
         run: git push --atomic origin "HEAD:refs/heads/$GITHUB_REF_NAME" "refs/tags/$TAG"
         env:
           TAG: ${{ steps.tag.outputs.name }}
 
       - name: Create GitHub Release
-        if: ${{ !inputs.dry-run }}
+        if: ${{ !inputs.dry-run && steps.state.outputs.mode != 'released' }}
         run: |
           tag="$TAG"
+          # Only a draft can reach this step (published means released mode); keeps the tag.
+          if gh release view "$tag" --json isDraft --jq .isDraft >/dev/null 2>&1; then
+            gh release delete "$tag" --yes
+          fi
           node tools/ci/release-notes.mjs "${tag#v}" > "$RUNNER_TEMP/notes.md"
           gh release create "$tag" dist/tarballs/*.tgz --verify-tag --title "$tag" --notes-file "$RUNNER_TEMP/notes.md"
         env:
@@ -148,6 +181,7 @@ jobs:
       # --excludeTaskDependencies to not invalidate cache and use already prepped version in dist/
       # step's preVersionCommand.
       - name: Publish
+        if: ${{ inputs.dry-run || steps.state.outputs.mode != 'released' }}
         run: >
           pnpm exec nx release publish
           --tag="$DIST_TAG"
@@ -164,10 +198,20 @@ jobs:
       - name: Update rolling "latest" release
         if: ${{ !inputs.dry-run && github.ref_name == 'main' }}
         run: |
+          # Released mode has no local tarballs; fetch them from the published release.
+          if ! compgen -G 'dist/tarballs/*.tgz' >/dev/null; then
+            gh release download "$TAG" --dir dist/tarballs --pattern '*.tgz'
+          fi
           gh release delete latest --yes --cleanup-tag || true
           git tag -f latest
           git push origin latest --force
           gh release create latest dist/tarballs/*.tgz --title "Latest" --notes "Rolling pointer to $TAG"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.name }}
+
+      - name: Already released
+        if: ${{ !inputs.dry-run && steps.state.outputs.mode == 'released' }}
+        run: echo "::notice::$TAG is already released"
+        env:
           TAG: ${{ steps.tag.outputs.name }}
