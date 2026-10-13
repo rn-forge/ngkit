@@ -18,7 +18,7 @@ This document is the **intent** layer: what to use, what to prefer, how pieces w
 | Need                                                               | Go to                                                                                                                       |
 | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | Which component/service to use, and how they compose               | **This document**                                                                                                           |
-| Live component examples, props, rendered states                    | **Storybook** — <https://rn-forge.github.io/ngkit/storybook/>                                                               |
+| Live component examples, props, rendered states                    | **Storybook** — <https://rn-forge.github.io/ngkit/storybook/ng-bootstrap/>                                                  |
 | Exact inputs/outputs/methods/types for any class                   | **Compodoc API docs** — <https://rn-forge.github.io/ngkit/api/ng/> and <https://rn-forge.github.io/ngkit/api/ng-bootstrap/> |
 | Ground truth — behaviour not documented, or docs look inconsistent | **The source**, see the path map below                                                                                      |
 

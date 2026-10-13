@@ -84,5 +84,5 @@ Open: an internal registry instead of vendored tarballs (a `.verdaccio` config e
 
 ## 5. One-time repository setup
 
-- **GitHub Pages.** Repo Settings → Pages → Source: **GitHub Actions**. The `Pages` workflow handles the rest.
+- **GitHub Pages.** Repo Settings → Pages → Source: **GitHub Actions**. The `docs` job in CI handles the rest.
 - **Branch protection.** If `main` has branch protection or rulesets blocking direct pushes, add a bypass for the `github-actions` app (or the `github-actions[bot]` actor) so the release commit can be pushed. Do not switch to a personal access token to route around this. Branch protection on `main` and `release/**` requires the `ci-ok` status check and nothing else.

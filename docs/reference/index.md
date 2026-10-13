@@ -2,7 +2,7 @@
 
 Generated and per-package reference. How to use one entry point lives in that entry point's `README.md`; exact signatures come from doc comments, which Compodoc renders.
 
-- [Storybook](https://rn-forge.github.io/ngkit/storybook/): live component examples, props and rendered states for `ng-bootstrap`.
+- [Storybook](https://rn-forge.github.io/ngkit/storybook/ng-bootstrap/): live component examples, props and rendered states for `ng-bootstrap`.
 - [API reference for `ng`](https://rn-forge.github.io/ngkit/api/ng/): Compodoc.
 - [API reference for `ng-bootstrap`](https://rn-forge.github.io/ngkit/api/ng-bootstrap/): Compodoc.
 

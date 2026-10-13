@@ -52,4 +52,4 @@ Details and reasons are in [docs/architecture/release-pipeline.md](docs/architec
 
 ### Docs site
 
-Storybook and Compodoc publish to GitHub Pages on push to `main`, assembled under `dist/site/`. See [docs/architecture/release-pipeline.md#docs-site](docs/architecture/release-pipeline.md#docs-site).
+The site is the `docs` job in `ci.yml`: Storybook and Compodoc publish to GitHub Pages on push to `main`, assembled under `dist/site/` from the projects that declare doc targets. See [docs/architecture/release-pipeline.md#docs-site](docs/architecture/release-pipeline.md#docs-site).
