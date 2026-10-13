@@ -5,15 +5,17 @@
  * version of the referenced local package.
  *
  * `nx release version`'s `manifestRootsToUpdate` + `preserveLocalDependencyProtocols:
- * false` already does this during an actual release. Plain `nx pack` (used by
- * ci.yml's `package` job to produce CI-only tarballs) never runs that release
- * step, so without this, a dependency like ng-bootstrap's peer on `@rn-forge/ng`
- * ships the literal `workspace:*` string, which `npm install`/`pnpm install`
+ * false` already does this during an actual release. Plain `nx pack` never runs
+ * that release step, so without this a dependency on another workspace package
+ * would ship the literal `workspace:*` string, which `npm install`/`pnpm install`
  * cannot resolve for an external consumer.
+ *
+ * Local package versions are read from the root of every project Nx reports.
  *
  * Usage: node resolve-dist-workspace-deps.mjs <dist-package-json-path>
  */
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const [, , distManifestArg] = process.argv;
@@ -27,20 +29,30 @@ if (!distManifestArg) {
 const workspaceRoot = process.cwd();
 const distManifestPath = join(workspaceRoot, distManifestArg);
 
+function nx(...args) {
+  return JSON.parse(
+    execFileSync('pnpm', ['exec', 'nx', ...args], {
+      cwd: workspaceRoot,
+      encoding: 'utf-8',
+      maxBuffer: 64 * 1024 * 1024,
+    }),
+  );
+}
+
 function findLocalPackageVersions() {
   /** @type {Map<string, string>} */
   const versions = new Map();
-  const libsDir = join(workspaceRoot, 'libs');
-  for (const entry of readdirSync(libsDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const pkgPath = join(libsDir, entry.name, 'package.json');
+  for (const project of nx('show', 'projects', '--json')) {
+    const { root } = nx('show', 'project', project, '--json');
     try {
-      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+      const pkg = JSON.parse(
+        readFileSync(join(workspaceRoot, root, 'package.json'), 'utf-8'),
+      );
       if (pkg.name && pkg.version) {
         versions.set(pkg.name, pkg.version);
       }
     } catch {
-      // no package.json at libs/<entry>/package.json - not a publishable root, skip
+      // no package.json at the project root - not a package, skip
     }
   }
   return versions;
@@ -61,7 +73,8 @@ function resolveWorkspaceRange(range, dep, localVersions) {
   return protocolValue;
 }
 
-const localVersions = findLocalPackageVersions();
+/** @type {Map<string, string> | undefined} */
+let localVersions;
 const manifest = JSON.parse(readFileSync(distManifestPath, 'utf-8'));
 let changed = false;
 
@@ -74,7 +87,11 @@ for (const field of [
   if (!deps) continue;
   for (const [dep, range] of Object.entries(deps)) {
     if (typeof range === 'string' && range.startsWith('workspace:')) {
-      deps[dep] = resolveWorkspaceRange(range, dep, localVersions);
+      deps[dep] = resolveWorkspaceRange(
+        range,
+        dep,
+        (localVersions ??= findLocalPackageVersions()),
+      );
       changed = true;
     }
   }

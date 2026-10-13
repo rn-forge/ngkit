@@ -34,14 +34,8 @@
         "development": {}
       }
     },
-    "pack": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["build"],
-      "options": {
-        "cwd": "{workspaceRoot}",
-        "command": "mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
-      }
-    },
+    "pack": {},
+    "verify-dist": {},
     "verify-consumer": {
       "executor": "nx:run-commands",
       "dependsOn": ["pack"],

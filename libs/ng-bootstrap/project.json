@@ -43,13 +43,9 @@
       }
     },
     "pack": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["patch-package-exports"],
-      "options": {
-        "cwd": "{workspaceRoot}",
-        "command": "node tools/scripts/resolve-dist-workspace-deps.mjs dist/{projectRoot}/package.json && mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
-      }
+      "dependsOn": ["patch-package-exports"]
     },
+    "verify-dist": {},
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}",
