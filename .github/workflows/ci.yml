@@ -40,19 +40,9 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        name: Install pnpm
+      - uses: ./.github/actions/setup
         with:
-          run_install: false
-
-      - run: pnpm dlx nx start-ci-run --distribute-on="3 rn-forge-ng" --stop-agents-after="lint,test,build,e2e-ci"
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - run: pnpm install --frozen-lockfile
+          start-ci-run: '--distribute-on="3 rn-forge-ng" --stop-agents-after="lint,test,build,e2e-ci"'
 
       - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5
 
@@ -74,17 +64,7 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        name: Install pnpm
-        with:
-          run_install: false
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       # Browsers are only needed when some project has an e2e target
       - name: Detect e2e projects
@@ -124,17 +104,7 @@ jobs:
         with:
           fetch-depth: 0 # Sonar needs full history, not a shallow clone
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        name: Install pnpm
-        with:
-          run_install: false
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       - name: Generate coverage reports
         run: pnpm exec nx run-many -t test
@@ -171,17 +141,7 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        name: Install pnpm
-        with:
-          run_install: false
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       # Plain `nx pack` (unlike the release path) never stamps workspace:*
       # peers to exact pins, so verify-dist checks the CI tarballs' manifests.

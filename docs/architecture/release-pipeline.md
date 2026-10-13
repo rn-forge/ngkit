@@ -47,6 +47,8 @@ Each publishable library's `project.json` sets `release.version.manifestRootsToU
 - **`package`**: runs after either path succeeds. It runs `nx run-many -t pack verify-dist verify-consumer` (every project that defines each target) and uploads the tarballs as a `package-tarballs` artifact.
 - **`sonarcloud`**: runs `nx run-many -t test`, then finds every `coverage/**/lcov.info` and passes the list to the scanner as `-Dsonar.javascript.lcov.reportPaths`. It fails when none is found. `sonar-project.properties` names no coverage path, so a project with tests is covered without editing config.
 
+Every job checks out the repository, then uses the shared `.github/actions/setup` action, which installs pnpm (version from `package.json#packageManager`) and Node (version from `.nvmrc`) and runs `pnpm install --frozen-lockfile`.
+
 Distributed versus local execution is a toggle, not two pipelines to maintain in parallel.
 
 Playwright e2e uses the atomized `e2e-ci` target (`@nx/playwright/plugin`'s default `<targetName>-ci`) so Nx Cloud can distribute individual spec files as separate tasks. Only the cloud path needs it; the local fallback runs plain `e2e`.

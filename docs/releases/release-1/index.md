@@ -10,15 +10,15 @@ Every scope story is done, and the owner approves.
 
 ## Scope
 
-| Feature                                                                                                                 | Epic                                                         | Status  |
-| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------- |
-| [F4.1 — CRUD entry point](../../specs/epics/E4-standard-resource-screen/F4.1-crud-entry-point.md)                       | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done    |
-| [F4.2 — Bootstrap renderer and demo](../../specs/epics/E4-standard-resource-screen/F4.2-bootstrap-renderer-and-demo.md) | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done    |
-| [F13.1 — Discovered projects](../../specs/epics/E13-portable-ci/F13.1-discovered-projects.md)                           | [E13](../../specs/epics/E13-portable-ci/index.md)            | done    |
-| [F13.2 — One gate](../../specs/epics/E13-portable-ci/F13.2-one-gate.md)                                                 | [E13](../../specs/epics/E13-portable-ci/index.md)            | planned |
-| [F13.3 — Docs job](../../specs/epics/E13-portable-ci/F13.3-docs-job.md)                                                 | [E13](../../specs/epics/E13-portable-ci/index.md)            | planned |
-| [F13.4 — Safe release](../../specs/epics/E13-portable-ci/F13.4-safe-release.md)                                         | [E13](../../specs/epics/E13-portable-ci/index.md)            | planned |
-| [F13.5 — Template contract](../../specs/epics/E13-portable-ci/F13.5-template-contract.md)                               | [E13](../../specs/epics/E13-portable-ci/index.md)            | planned |
+| Feature                                                                                                                 | Epic                                                         | Status      |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------- |
+| [F4.1 — CRUD entry point](../../specs/epics/E4-standard-resource-screen/F4.1-crud-entry-point.md)                       | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done        |
+| [F4.2 — Bootstrap renderer and demo](../../specs/epics/E4-standard-resource-screen/F4.2-bootstrap-renderer-and-demo.md) | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done        |
+| [F13.1 — Discovered projects](../../specs/epics/E13-portable-ci/F13.1-discovered-projects.md)                           | [E13](../../specs/epics/E13-portable-ci/index.md)            | done        |
+| [F13.2 — One gate](../../specs/epics/E13-portable-ci/F13.2-one-gate.md)                                                 | [E13](../../specs/epics/E13-portable-ci/index.md)            | in progress |
+| [F13.3 — Docs job](../../specs/epics/E13-portable-ci/F13.3-docs-job.md)                                                 | [E13](../../specs/epics/E13-portable-ci/index.md)            | planned     |
+| [F13.4 — Safe release](../../specs/epics/E13-portable-ci/F13.4-safe-release.md)                                         | [E13](../../specs/epics/E13-portable-ci/index.md)            | planned     |
+| [F13.5 — Template contract](../../specs/epics/E13-portable-ci/F13.5-template-contract.md)                               | [E13](../../specs/epics/E13-portable-ci/index.md)            | planned     |
 
 ### Done before this release
 
