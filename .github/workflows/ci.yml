@@ -91,12 +91,12 @@ jobs:
   # Runs regardless of which path above executed - Sonar needs full (not
   # affected-only) coverage, so it regenerates lcov reports itself rather
   # than reusing whatever ci-cloud/ci-local happened to run.
-  # Skipped for Dependabot PRs: GitHub sandboxes Dependabot-triggered runs
-  # like fork PRs (read-only GITHUB_TOKEN, no Actions secrets), so SONAR_TOKEN
-  # isn't available there - the next push to main still scans the merged code.
-  sonarcloud:
+  # Skipped for Dependabot PRs and fork PRs: GitHub sandboxes both (read-only
+  # GITHUB_TOKEN, no Actions secrets), so SONAR_TOKEN isn't available there -
+  # the next push to main still scans the merged code.
+  sonar:
     needs: [ci-cloud, ci-local]
-    if: ${{ always() && github.actor != 'dependabot[bot]' && (needs.ci-cloud.result == 'success' || needs.ci-local.result == 'success') }}
+    if: ${{ always() && github.actor != 'dependabot[bot]' && (needs.ci-cloud.result == 'success' || needs.ci-local.result == 'success') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -124,7 +124,11 @@ jobs:
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8
         with:
-          args: -Dsonar.javascript.lcov.reportPaths=${{ steps.lcov.outputs.reports }}
+          # Without qualitygate.wait the job passes on submitting the analysis,
+          # so a failed quality gate would never fail CI.
+          args: >
+            -Dsonar.javascript.lcov.reportPaths=${{ steps.lcov.outputs.reports }}
+            -Dsonar.qualitygate.wait=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -159,7 +163,7 @@ jobs:
   # Dependabot/fork PRs, the unused ci-* path) pass; a failed or cancelled
   # job, or neither ci-* path succeeding, fails it.
   ci-ok:
-    needs: [ci-cloud, ci-local, sonarcloud, package]
+    needs: [ci-cloud, ci-local, sonar, package]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
