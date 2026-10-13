@@ -198,6 +198,18 @@ jobs:
       - name: Update rolling "latest" release
         if: ${{ !inputs.dry-run && github.ref_name == 'main' }}
         run: |
+          # Skip when the remote "latest" tag already sits on this tag's commit and
+          # the release carries the same assets. (targetCommitish is a branch name,
+          # so the tag's ref is what records the commit.)
+          list='[.assets[].name] | sort | join(",")'
+          want=$(git rev-parse "$TAG^{commit}")
+          refs=$(git ls-remote origin refs/tags/latest 'refs/tags/latest^{}')
+          have=$(echo "$refs" | awk '/\^\{\}$/ {p=$1} {l=$1} END {print p ? p : l}')
+          if [ "$have" = "$want" ] &&
+            [ "$(gh release view latest --json assets --jq "$list")" = "$(gh release view "$TAG" --json assets --jq "$list")" ]; then
+            echo "::notice::latest already points at $TAG"
+            exit 0
+          fi
           # Released mode has no local tarballs; fetch them from the published release.
           if ! compgen -G 'dist/tarballs/*.tgz' >/dev/null; then
             gh release download "$TAG" --dir dist/tarballs --pattern '*.tgz'
@@ -207,7 +219,7 @@ jobs:
           git push origin latest --force
           gh release create latest dist/tarballs/*.tgz --title "Latest" --notes "Rolling pointer to $TAG"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.tag.outputs.name }}
 
       - name: Already released
