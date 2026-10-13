@@ -32,6 +32,7 @@ on:
 permissions:
   contents: write # push release commit + tags, create GitHub Releases
   id-token: write # npm OIDC trusted publishing
+  actions: read # read ci.yml runs for the gate
 
 concurrency:
   group: release
@@ -52,13 +53,35 @@ jobs:
         with:
           registry-url: 'https://registry.npmjs.org'
 
+      # A release commit is pushed with GITHUB_TOKEN, which starts no workflow,
+      # so a resumed release gates on the commit it was cut from (HEAD^).
+      - name: Gate on a green CI run
+        run: |
+          if [ -n "$(git tag --points-at HEAD --list 'v*')" ]; then
+            sha=$(git rev-parse HEAD^)
+          else
+            sha=$(git rev-parse HEAD)
+          fi
+          count=$(gh run list --workflow ci.yml --commit "$sha" --status success --json databaseId --jq length)
+          if [ "$count" -ge 1 ]; then
+            echo "Found a successful ci.yml run for $sha"
+            exit 0
+          fi
+          msg="No successful ci.yml run for $sha"
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "::warning::$msg"
+          else
+            echo "::error::$msg"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ inputs.dry-run }}
+
       - name: Configure git author
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Validate (lint, test, build)
-        run: pnpm exec nx run-many -t lint test build -p tag:publishable
 
       # Version + changelog + git commit/tag/push + GitHub Release. Publishing
       # is deliberately excluded here (--skip-publish) because the combined
