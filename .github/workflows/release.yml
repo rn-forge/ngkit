@@ -42,6 +42,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      tag: ${{ steps.tag.outputs.name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -227,3 +229,26 @@ jobs:
         run: echo "::notice::$TAG is already released"
         env:
           TAG: ${{ steps.tag.outputs.name }}
+
+  # Installs what consumers download, not what the release runner built.
+  published-install:
+    needs: release
+    if: ${{ !inputs.dry-run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - uses: ./.github/actions/setup
+
+      - name: Verify the released tarballs
+        run: |
+          gh release download "$TAG" --dir dist/tarballs --pattern '*.tgz'
+          pnpm exec nx run-many -t verify-consumer --excludeTaskDependencies
+        env:
+          TAG: ${{ needs.release.outputs.tag }}
+          GH_TOKEN: ${{ github.token }}

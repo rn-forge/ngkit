@@ -61,4 +61,4 @@ $ git log --oneline -E --grep 'F4\.[12]|S4\.[12]\.[0-9]|F13\.[1-5]'
 - The tag exists.
 - The GitHub Release exists with both tarballs.
 - `CHANGELOG.md` has an entry that names each breaking change above.
-- `verify-consumer` passes on the released tarballs.
+- `verify-consumer` passes on the released tarballs (evidence: the `published-install` job in `release.yml`).
