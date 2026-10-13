@@ -18,7 +18,7 @@ Every scope story is done, and the owner approves.
 | [F13.2 — One gate](../../specs/epics/E13-portable-ci/F13.2-one-gate.md)                                                 | [E13](../../specs/epics/E13-portable-ci/index.md)            | done        |
 | [F13.3 — Docs job](../../specs/epics/E13-portable-ci/F13.3-docs-job.md)                                                 | [E13](../../specs/epics/E13-portable-ci/index.md)            | in progress |
 | [F13.4 — Safe release](../../specs/epics/E13-portable-ci/F13.4-safe-release.md)                                         | [E13](../../specs/epics/E13-portable-ci/index.md)            | in progress |
-| [F13.5 — Template contract](../../specs/epics/E13-portable-ci/F13.5-template-contract.md)                               | [E13](../../specs/epics/E13-portable-ci/index.md)            | planned     |
+| [F13.5 — Template contract](../../specs/epics/E13-portable-ci/F13.5-template-contract.md)                               | [E13](../../specs/epics/E13-portable-ci/index.md)            | in progress |
 
 ### Done before this release
 

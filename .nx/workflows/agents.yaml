@@ -1,3 +1,4 @@
+# ci-template: repository-agnostic. Reads only the declarations in docs/architecture/ci-template.md.
 launch-templates:
   linux-medium:
     resource-class: 'docker_linux_amd64/medium'

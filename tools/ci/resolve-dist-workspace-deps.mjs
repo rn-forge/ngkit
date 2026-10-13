@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// ci-template: repository-agnostic. Reads only the declarations in docs/architecture/ci-template.md.
 /**
  * Rewrites `workspace:*` (and `workspace:^` / `workspace:~`) dependency ranges
  * in a built dist package.json to a real semver range, using the current

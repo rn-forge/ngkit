@@ -1,3 +1,4 @@
+# ci-template: repository-agnostic. Reads only the declarations in docs/architecture/ci-template.md.
 name: Setup
 description: Install pnpm and Node, optionally start an Nx Cloud CI run, and install dependencies. Run after actions/checkout.
 

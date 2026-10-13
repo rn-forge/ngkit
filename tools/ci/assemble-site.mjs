@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// ci-template: repository-agnostic. Reads only the declarations in docs/architecture/ci-template.md.
 /**
  * Assembles the docs site into `dist/site/` from every project that declares
  * a `compodoc` or `build-storybook` target:

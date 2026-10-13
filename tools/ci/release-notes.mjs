@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// ci-template: repository-agnostic. Reads only the declarations in docs/architecture/ci-template.md.
 /**
  * Prints the section of `CHANGELOG.md` (read from the current directory) whose
  * `## ` heading contains `<version>` as a whole token, from that heading up to

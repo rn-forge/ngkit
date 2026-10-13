@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// ci-template: repository-agnostic. Reads only the declarations in docs/architecture/ci-template.md.
 /**
  * Verifies the built package manifest at `<dist-dir>/package.json`:
  * no `workspace:` protocol ranges, required fields present, and entry points
