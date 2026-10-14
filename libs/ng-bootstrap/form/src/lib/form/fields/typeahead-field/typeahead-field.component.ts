@@ -77,7 +77,9 @@ const DEFAULT_FORMATTER = (
           (o, i) => (o as Record<string, unknown> | undefined)?.[i],
           value,
         );
-      return resolved == null ? '' : String(resolved);
+      return resolved == null || typeof resolved === 'object'
+        ? ''
+        : String(resolved);
     })
     .join(' - ');
 };

@@ -94,13 +94,13 @@ export class FormComponent
       if (isDebugMode())
         console.debug('FormComponent.rebuildGroup: fields=', controlKeys);
 
-      this._formGroup = this.formBuilder.group(controls);
-      if (this.config.validators?.validateDateRange) {
-        FormUtil.VALIDATORS.DATE_RANGE(
-          this._formGroup,
-          ...this.config.validators.validateDateRange,
-        );
-      }
+      const dateRange = this.config.validators?.validateDateRange;
+      this._formGroup = this.formBuilder.group(
+        controls,
+        dateRange
+          ? { validators: FormUtil.VALIDATORS.DATE_RANGE(...dateRange) }
+          : {},
+      );
       this._context = {
         $implicit: { formGroup: this._formGroup, ...this.config.contextParams },
       };

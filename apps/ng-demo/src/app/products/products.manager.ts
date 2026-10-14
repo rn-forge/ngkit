@@ -1,10 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { AbstractCRUDManager } from '@rn-forge/ng-bootstrap/crud';
+import { standardDataSource } from '@rn-forge/ng/crud';
+import {
+  AbstractCrudManager,
+  CrudFilterField,
+} from '@rn-forge/ng-bootstrap/crud';
 import { ColumnOptions } from '@rn-forge/ng-bootstrap';
 import { GenericType } from '@rn-forge/ng/core';
-import { BackendService } from '@rn-forge/ng/http/crud';
-import { ProductsService } from './products.service';
+import { DEMO_API_URL } from '../shared/api.tokens';
 import { ProductRead, ProductWrite } from './products.types';
 
 const CATEGORIES = ['Widgets', 'Gadgets', 'Other'];
@@ -14,32 +17,47 @@ const ACTIVE_OPTIONS = [
 ];
 
 @Injectable()
-export class ProductsManager extends AbstractCRUDManager<
+export class ProductsManager extends AbstractCrudManager<
   ProductWrite,
   ProductRead
 > {
   override readonly name = 'Product';
   override permissionKey = 'demo.products';
 
-  private readonly productsService = new ProductsService();
+  override readonly dataSource = standardDataSource<ProductWrite, ProductRead>({
+    baseUrl: inject(DEMO_API_URL),
+    collection: '/products',
+    features: {
+      batchDelete: true,
+      import: true,
+      importTemplate: true,
+      export: ['text/csv'],
+    },
+  });
 
   readonly categories = CATEGORIES;
   readonly activeOptions = ACTIVE_OPTIONS;
 
-  override get domainService(): BackendService<ProductWrite, ProductRead> {
-    return this.productsService;
+  override filterFields(): readonly CrudFilterField[] {
+    return [
+      { name: 'name', label: 'Name' },
+      {
+        name: 'category',
+        label: 'Category',
+        options: CATEGORIES.map((c) => ({ code: c, name: c })),
+      },
+    ];
   }
 
   override tableColumns(): ColumnOptions[] {
     return [
       { field: 'state', title: 'State', checkbox: true },
       { field: 'id', title: 'ID', sortable: true },
-      { field: 'name', title: 'Name', sortable: true, filterControl: 'input' },
+      { field: 'name', title: 'Name', sortable: true },
       {
         field: 'category',
         title: 'Category',
         sortable: true,
-        filterControl: 'select',
       },
       {
         field: 'price',

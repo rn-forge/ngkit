@@ -1,5 +1,5 @@
 import { FormControl, FormGroup } from '@angular/forms';
-import { DateUtil, FormUtil, ObjectUtil } from './core.utils';
+import { AppUtil, DateUtil, FormUtil, ObjectUtil } from './core.utils';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -14,6 +14,43 @@ function dirtyControl(value: string): FormControl<string> {
   c.markAsDirty();
   return c;
 }
+
+// ---------------------------------------------------------------------------
+// AppUtil
+// ---------------------------------------------------------------------------
+
+describe('AppUtil.saveBlob()', () => {
+  it('creates an object URL, clicks a download anchor, then revokes the URL', () => {
+    vi.useFakeTimers();
+    const url = 'blob:fixture';
+    const createObjectURL = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValue(url);
+    const revokeObjectURL = vi
+      .spyOn(URL, 'revokeObjectURL')
+      .mockImplementation(() => undefined);
+    const anchor = document.createElement('a');
+    const clickSpy = vi
+      .spyOn(anchor, 'click')
+      .mockImplementation(() => undefined);
+    vi.spyOn(document, 'createElement').mockReturnValue(anchor);
+
+    const blob = new Blob(['id,name\n'], { type: 'text/csv' });
+    AppUtil.saveBlob(blob, 'export.csv');
+
+    expect(createObjectURL).toHaveBeenCalledWith(blob);
+    expect(anchor.href).toBe(url);
+    expect(anchor.download).toBe('export.csv');
+    expect(clickSpy).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(100);
+    expect(revokeObjectURL).toHaveBeenCalledWith(url);
+
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+});
 
 // ---------------------------------------------------------------------------
 // DateUtil
@@ -73,6 +110,49 @@ describe('DateUtil', () => {
 
     it('returns today for zero offset', () => {
       expect(DateUtil.diffDate('0')).toBe('2025-06-15');
+    });
+  });
+
+  describe('UTC vs local variants', () => {
+    it('isoFormatUtc() uses the UTC calendar date', () => {
+      expect(DateUtil.isoFormatUtc(new Date('2025-06-15T23:30:00.000Z'))).toBe(
+        '2025-06-15',
+      );
+      expect(DateUtil.isoFormatUtc(new Date('2025-06-16T00:30:00.000Z'))).toBe(
+        '2025-06-16',
+      );
+    });
+
+    it('fromTimestampLocal() matches isoFormat() of the same instant', () => {
+      const ts = new Date(2025, 0, 1, 0, 30).getTime();
+      expect(DateUtil.fromTimestampLocal(ts)).toBe('2025-01-01');
+      expect(DateUtil.fromTimestampLocal(ts)).toBe(
+        DateUtil.isoFormat(new Date(ts)),
+      );
+    });
+
+    it('diffDateLocal() moves calendar days across a leap day', () => {
+      vi.setSystemTime(new Date(2024, 1, 28, 12));
+      expect(DateUtil.diffDateLocal('1')).toBe('2024-02-29');
+      expect(DateUtil.diffDateLocal('2')).toBe('2024-03-01');
+      expect(DateUtil.diffDateLocal('-28')).toBe('2024-01-31');
+    });
+
+    it('diffDateLocal() is calendar-based around US DST changes', () => {
+      vi.setSystemTime(new Date(2025, 2, 8, 12));
+      expect(DateUtil.diffDateLocal('1')).toBe('2025-03-09');
+      expect(DateUtil.diffDateLocal('2')).toBe('2025-03-10');
+      vi.setSystemTime(new Date(2025, 10, 1, 12));
+      expect(DateUtil.diffDateLocal('1')).toBe('2025-11-02');
+      expect(DateUtil.diffDateLocal('2')).toBe('2025-11-03');
+    });
+
+    it('isValidDate() accepts real dates and rejects impossible ones', () => {
+      expect(DateUtil.isValidDate('2024-02-29')).toBe(true);
+      expect(DateUtil.isValidDate('2025-02-29')).toBe(false);
+      expect(DateUtil.isValidDate('2025-13-01')).toBe(false);
+      expect(DateUtil.isValidDate('2025-04-31')).toBe(false);
+      expect(DateUtil.isValidDate('15-06-2025')).toBe(false);
     });
   });
 
@@ -197,10 +277,42 @@ describe('ObjectUtil', () => {
       expect(conflict).toContain('bar');
     });
 
-    it('does not report a conflict for numeric values (lodash isEmpty treats numbers as empty)', () => {
-      // isEmpty(number) === true in lodash — primitives have no enumerable keys
-      const result = ObjectUtil.diff({ a: 1 }, { a: 2 });
-      expect(result).not.toHaveProperty('conflicts');
+    it.each<[string, object, object]>([
+      ['numbers', { a: 1 }, { a: 2 }],
+      ['zero vs one', { a: 0 }, { a: 1 }],
+      ['false vs true', { a: false }, { a: true }],
+      ['null vs value', { a: null }, { a: 'x' }],
+      ['array elements', { a: [1, 2] }, { a: [1, 3] }],
+      ['array vs object', { a: [] }, { a: {} }],
+      ['nested numbers', { n: { a: 0 } }, { n: { a: 1 } }],
+    ])('reports a conflict for differing %s', (_d, source, target) => {
+      expect(ObjectUtil.diff(source, target)).toHaveProperty('conflicts');
+    });
+
+    it.each<[string, object, object]>([
+      ['equal zero', { a: 0 }, { a: 0 }],
+      ['equal false', { a: false }, { a: false }],
+      ['null vs undefined', { a: null }, { a: undefined }],
+      ['equal arrays', { a: [1, { b: 2 }] }, { a: [1, { b: 2 }] }],
+      ['empty arrays', { a: [] }, { a: [] }],
+      ['equal dates', { a: new Date(5) }, { a: new Date(5) }],
+    ])('reports no conflict for %s', (_d, source, target) => {
+      expect(ObjectUtil.diff(source, target)).toEqual({});
+    });
+
+    it('reports differing dates as a conflict', () => {
+      expect(
+        ObjectUtil.diff({ a: new Date(1) }, { a: new Date(2) }),
+      ).toHaveProperty('conflicts');
+    });
+
+    it('distinguishes a missing key from an undefined value', () => {
+      expect(ObjectUtil.diff({}, { a: undefined })).toHaveProperty(
+        'missing_in_source',
+      );
+      expect(ObjectUtil.diff({ a: undefined }, {})).toHaveProperty(
+        'missing_in_target',
+      );
     });
 
     it('reports no conflict for identical non-empty string values', () => {
@@ -307,6 +419,53 @@ describe('FormUtil.VALIDATORS', () => {
   // ---------------------------------------------------------------------------
   // NUMBER
   // ---------------------------------------------------------------------------
+  describe('pristine and zero handling', () => {
+    it('validates pristine non-empty values', () => {
+      expect(
+        FormUtil.VALIDATORS.TEXT({ minLength: 5 })(new FormControl('abc')),
+      ).toHaveProperty('error');
+      expect(
+        FormUtil.VALIDATORS.NUMBER({ min: 10 })(new FormControl(5)),
+      ).toHaveProperty('error');
+    });
+
+    it('treats numeric 0 as a value, not as empty', () => {
+      expect(
+        FormUtil.VALIDATORS.NUMBER({ min: 1 })(new FormControl(0)),
+      ).toHaveProperty('error');
+      expect(
+        FormUtil.VALIDATORS.NUMBER({ min: 0 })(new FormControl(0)),
+      ).toBeNull();
+      expect(
+        FormUtil.VALIDATORS.NUMBER({ min: 0 })(new FormControl(-1)),
+      ).toHaveProperty('error');
+      expect(
+        FormUtil.VALIDATORS.NUMBER({ max: 0 })(new FormControl(1)),
+      ).toHaveProperty('error');
+      expect(
+        FormUtil.VALIDATORS.NUMBER({ decimalPlaces: 0 })(new FormControl(1.5)),
+      ).toHaveProperty('error');
+    });
+
+    it.each([null, undefined, ''])('skips empty optional value %j', (v) => {
+      expect(
+        FormUtil.VALIDATORS.NUMBER({ min: 1 })(new FormControl(v)),
+      ).toBeNull();
+      expect(
+        FormUtil.VALIDATORS.TEXT({ minLength: 3 })(new FormControl(v)),
+      ).toBeNull();
+      expect(FormUtil.VALIDATORS.DATE()(new FormControl(v))).toBeNull();
+    });
+
+    it('validates programmatically set values', () => {
+      const c = new FormControl('');
+      c.setValue('abc');
+      expect(FormUtil.VALIDATORS.TEXT({ minLength: 5 })(c)).toHaveProperty(
+        'error',
+      );
+    });
+  });
+
   describe('NUMBER', () => {
     it('returns null for a pristine control', () => {
       const control = new FormControl('42');
@@ -378,6 +537,14 @@ describe('FormUtil.VALIDATORS', () => {
       ['today regardless of allowPast', () => dirtyControl('2025-06-15')],
     ])('returns null for %s', (_desc, makeControl) => {
       expect(FormUtil.VALIDATORS.DATE()(makeControl())).toBeNull();
+    });
+
+    it('returns an error for an impossible calendar date', () => {
+      vi.setSystemTime(new Date('2025-01-01T12:00:00Z'));
+      const validator = FormUtil.VALIDATORS.DATE({ allowPast: true });
+      expect(validator(new FormControl('2025-02-30'))).toHaveProperty('error');
+      expect(validator(new FormControl('2025-02-29'))).toHaveProperty('error');
+      expect(validator(new FormControl('2024-02-29'))).toBeNull();
     });
 
     it('returns an error for an invalid date format', () => {
@@ -457,82 +624,65 @@ describe('FormUtil.VALIDATORS', () => {
   // DATE_RANGE
   // ---------------------------------------------------------------------------
   describe('DATE_RANGE', () => {
-    it('sets an error on startDate when start is moved after end', () => {
-      const form = new FormGroup({
-        startDate: new FormControl('2025-06-01'),
-        endDate: new FormControl('2025-06-20'),
-      });
-      FormUtil.VALIDATORS.DATE_RANGE(form);
+    const group = (start: string, end: string, extra = {}) =>
+      new FormGroup(
+        { startDate: new FormControl(start), endDate: new FormControl(end) },
+        { validators: FormUtil.VALIDATORS.DATE_RANGE(), ...extra },
+      );
 
+    it('reports dateRange when start is after end', () => {
+      expect(group('2025-06-25', '2025-06-20').errors).toEqual({
+        dateRange: 'Start date cannot be after end date',
+      });
+    });
+
+    it('is valid when start is before or equal to end', () => {
+      expect(group('2025-06-10', '2025-06-20').errors).toBeNull();
+      expect(group('2025-06-20', '2025-06-20').errors).toBeNull();
+    });
+
+    it('re-evaluates when values change programmatically', () => {
+      const form = group('2025-06-10', '2025-06-20');
       form.controls['startDate'].setValue('2025-06-25');
-
-      expect(form.controls['startDate'].errors).toEqual({
-        error: 'Start date cannot be after end date',
-      });
+      expect(form.errors).toHaveProperty('dateRange');
+      form.controls['endDate'].setValue('2025-06-30');
+      expect(form.errors).toBeNull();
     });
 
-    it('sets an error on endDate when end is moved before start', () => {
-      const form = new FormGroup({
-        startDate: new FormControl('2025-06-10'),
-        endDate: new FormControl('2025-06-20'),
-      });
-      FormUtil.VALIDATORS.DATE_RANGE(form);
-
-      form.controls['endDate'].setValue('2025-06-05');
-
-      expect(form.controls['endDate'].errors).toEqual({
-        error: 'End date cannot be before start date',
-      });
+    it.each([
+      ['empty end', '2025-06-25', ''],
+      ['empty start', '', '2025-06-20'],
+      ['invalid calendar date', '2025-02-30', '2025-01-01'],
+    ])('ignores %s', (_d, start, end) => {
+      expect(group(start, end).errors).toBeNull();
     });
 
-    it('clears endDate errors when start moves to before end', () => {
-      const form = new FormGroup({
-        startDate: new FormControl('2025-06-10'),
-        endDate: new FormControl('2025-06-20'),
+    it('does not touch control errors or other group errors', () => {
+      const other = () => ({ other: true });
+      const form = new FormGroup(
+        {
+          startDate: new FormControl('2025-06-25'),
+          endDate: new FormControl('2025-06-20'),
+        },
+        [other, FormUtil.VALIDATORS.DATE_RANGE()],
+      );
+      form.controls['startDate'].setErrors({ error: 'own' });
+      expect(form.controls['startDate'].errors).toEqual({ error: 'own' });
+      expect(form.errors).toEqual({
+        other: true,
+        dateRange: 'Start date cannot be after end date',
       });
-      FormUtil.VALIDATORS.DATE_RANGE(form);
-      form.controls['endDate'].setErrors({ error: 'pre-existing error' });
-
-      form.controls['startDate'].setValue('2025-06-05');
-
-      expect(form.controls['endDate'].errors).toBeNull();
-    });
-
-    it('clears startDate errors when end moves to after start', () => {
-      const form = new FormGroup({
-        startDate: new FormControl('2025-06-10'),
-        endDate: new FormControl('2025-06-20'),
-      });
-      FormUtil.VALIDATORS.DATE_RANGE(form);
-      form.controls['startDate'].setErrors({ error: 'pre-existing error' });
-
-      form.controls['endDate'].setValue('2025-06-25');
-
-      expect(form.controls['startDate'].errors).toBeNull();
-    });
-
-    it('does not set an error when endDate has no value', () => {
-      const form = new FormGroup({
-        startDate: new FormControl('2025-06-10'),
-        endDate: new FormControl(''),
-      });
-      FormUtil.VALIDATORS.DATE_RANGE(form);
-
-      form.controls['startDate'].setValue('2025-06-25');
-
-      expect(form.controls['startDate'].errors).toBeNull();
     });
 
     it('uses custom control names when provided', () => {
-      const form = new FormGroup({
-        from: new FormControl('2025-06-01'),
-        to: new FormControl('2025-06-20'),
-      });
-      FormUtil.VALIDATORS.DATE_RANGE(form, 'from', 'to');
-
-      form.controls['from'].setValue('2025-06-25');
-
-      expect(form.controls['from'].errors).toHaveProperty('error');
+      const form = new FormGroup(
+        {
+          from: new FormControl('2025-06-25'),
+          to: new FormControl('2025-06-20'),
+        },
+        { validators: FormUtil.VALIDATORS.DATE_RANGE('from', 'to') },
+      );
+      expect(form.errors).toHaveProperty('dateRange');
     });
   });
 });

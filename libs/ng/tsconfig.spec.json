@@ -9,7 +9,7 @@
     "src/**/*.d.ts",
     "core/src/**/*.ts",
     "auth/src/**/*.ts",
-    "http/src/**/*.ts",
-    "http/crud/src/**/*.ts"
+    "crud/src/**/*.ts",
+    "http/src/**/*.ts"
   ]
 }

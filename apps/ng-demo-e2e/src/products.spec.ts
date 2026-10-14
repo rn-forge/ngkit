@@ -42,10 +42,10 @@ test.describe('Products page', () => {
       listView.getByRole('button', { name: 'Delete' }),
     ).toBeVisible();
     await expect(
-      listView.getByRole('button', { name: 'Upload' }),
+      listView.getByRole('button', { name: 'Import' }),
     ).toBeVisible();
     await expect(
-      listView.getByRole('button', { name: 'Download' }),
+      listView.getByRole('button', { name: 'Export' }),
     ).toBeVisible();
   });
 
@@ -139,40 +139,122 @@ test.describe('Products page', () => {
 
     await expect(page.locator('.modal.show')).toBeHidden();
     await expect(
-      page.getByText('Deleted 1 record(s) successfully'),
+      page.getByText('Deleted 1 Product successfully'),
     ).toBeVisible();
   });
 
   // -------------------------------------------------------------------------
-  // Upload
+  // Import
   // -------------------------------------------------------------------------
 
-  test('navigates to upload view and back via cancel', async ({ page }) => {
+  test('navigates to import view and back via cancel', async ({ page }) => {
     await page
       .locator('[aria-label="List View"]')
-      .getByRole('button', { name: 'Upload' })
+      .getByRole('button', { name: 'Import' })
       .click();
 
-    const uploadView = page.locator('[aria-label="Upload View"]');
-    await expect(uploadView).toBeVisible();
-    // List view is hidden while in upload mode
+    const importView = page.locator('[aria-label="Import View"]');
+    await expect(importView).toBeVisible();
+    // List view is hidden while in import mode
     await expect(page.locator('[aria-label="List View"]')).toBeHidden();
 
-    await uploadView.getByRole('button', { name: 'Cancel' }).click();
+    await importView.getByRole('button', { name: 'Cancel' }).click();
     await expect(page.locator('[aria-label="List View"]')).toBeVisible();
   });
 
-  test('shows template download buttons in upload view', async ({ page }) => {
+  test('shows template download buttons in import view', async ({ page }) => {
     await page
       .locator('[aria-label="List View"]')
-      .getByRole('button', { name: 'Upload' })
+      .getByRole('button', { name: 'Import' })
       .click();
 
-    const uploadView = page.locator('[aria-label="Upload View"]');
+    const importView = page.locator('[aria-label="Import View"]');
     // Two template buttons: "Template" and "Template (With Data)"
     await expect(
-      uploadView.getByRole('button', { name: /Template/i }),
+      importView.getByRole('button', { name: /Template/i }),
     ).toHaveCount(2);
+  });
+
+  // -------------------------------------------------------------------------
+  // Sort, filter, paging
+  // -------------------------------------------------------------------------
+
+  test('sorting a column shows the server order', async ({ page }) => {
+    const firstName = () =>
+      page.locator('tbody tr').first().locator('td').nth(2);
+    await expect(firstName()).toHaveText('Widget A');
+
+    // The demo's mock API sorts server-side, so the order below is its answer.
+    const header = page.locator('th', { hasText: 'Name' }).first();
+    await header.click(); // ascending
+    await header.click(); // descending
+    await expect(firstName()).toHaveText('Widget B');
+  });
+
+  test('a declared filter narrows the list and paging shows no total', async ({
+    page,
+  }) => {
+    await page
+      .getByLabel('Category', { exact: true })
+      .first()
+      .selectOption('Gadgets');
+    await expect(page.locator('tbody tr')).toHaveCount(2);
+    await expect(page.getByText('Gadget Y')).toBeVisible();
+
+    const pager = page.getByRole('navigation', { name: 'Pagination' });
+    await expect(pager.getByText('Page 1')).toBeVisible();
+    await expect(pager.getByText('total')).toHaveCount(0);
+    await expect(
+      pager.getByRole('button', { name: 'Previous' }),
+    ).toBeDisabled();
+    await expect(pager.getByRole('button', { name: 'Next' })).toBeDisabled();
+  });
+
+  // -------------------------------------------------------------------------
+  // Two-step import
+  // -------------------------------------------------------------------------
+
+  test('imports in two steps: validate, then commit', async ({ page }) => {
+    await page
+      .locator('[aria-label="List View"]')
+      .getByRole('button', { name: 'Import' })
+      .click();
+    const importView = page.locator('[aria-label="Import View"]');
+    await importView.getByLabel('Import file').setInputFiles({
+      name: 'rows.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from('id,name\n'),
+    });
+
+    const commit = importView.getByRole('button', { name: /Import$/ });
+    await expect(commit).toBeDisabled();
+    await importView.getByRole('button', { name: 'Validate' }).click();
+    await expect(importView.getByText(/Validated:/)).toBeVisible();
+    await expect(commit).toBeEnabled();
+
+    await commit.click();
+    await expect(page.getByText(/imported \[Added 2/)).toBeVisible();
+    await expect(page.locator('[aria-label="List View"]')).toBeVisible();
+  });
+
+  test('shows row errors from a failed import validation', async ({ page }) => {
+    await page
+      .locator('[aria-label="List View"]')
+      .getByRole('button', { name: 'Import' })
+      .click();
+    const importView = page.locator('[aria-label="Import View"]');
+    await importView.getByLabel('Import file').setInputFiles({
+      name: 'bad.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from('id,name\n'),
+    });
+    await importView.getByRole('button', { name: 'Validate' }).click();
+    await expect(
+      importView.getByText('/rows/2/price: price must be a number'),
+    ).toBeVisible();
+    await expect(
+      importView.getByRole('button', { name: /Import$/ }),
+    ).toBeDisabled();
   });
 });
 

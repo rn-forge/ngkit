@@ -13,10 +13,10 @@ import {
 } from '@rn-forge/ng/auth';
 import { provideRnForgeBootstrapConfig } from '@rn-forge/ng-bootstrap';
 import { provideRnForgeShellConfig } from '@rn-forge/ng-bootstrap/shell';
-import { provideRnForgeHttpConfig } from '@rn-forge/ng/http';
 
 // internal imports
 import { appRoutes } from './app.routes';
+import { DEMO_API_URL } from './shared/api.tokens';
 import { DemoErrorHandler } from './shared/global-error.handler';
 import { mockApiInterceptor } from './shared/mock-api.interceptor';
 
@@ -39,13 +39,12 @@ export const appConfig: ApplicationConfig = {
         ignoreAppRoutes: ['/auth'],
       },
       backend: {
+        baseUrl: '/api',
         ignoreBackendURLs: ['/api/auth/'],
       },
     }),
 
-    provideRnForgeHttpConfig({
-      apiBasePath: '/api',
-    }),
+    { provide: DEMO_API_URL, useValue: '/api' },
 
     provideRnForgeBootstrapConfig({
       table: {

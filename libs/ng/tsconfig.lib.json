@@ -11,8 +11,8 @@
     "src/**/*.ts",
     "core/src/**/*.ts",
     "auth/src/**/*.ts",
-    "http/src/**/*.ts",
-    "http/crud/src/**/*.ts"
+    "crud/src/**/*.ts",
+    "http/src/**/*.ts"
   ],
   "exclude": [
     "src/**/*.spec.ts",
@@ -20,10 +20,10 @@
     "core/src/**/*.spec.ts",
     "core/src/**/*.test.ts",
     "auth/src/**/*.spec.ts",
+    "crud/src/**/*.spec.ts",
     "auth/src/**/*.test.ts",
+    "crud/src/**/*.test.ts",
     "http/src/**/*.spec.ts",
-    "http/src/**/*.test.ts",
-    "http/crud/src/**/*.spec.ts",
-    "http/crud/src/**/*.test.ts"
+    "http/src/**/*.test.ts"
   ]
 }

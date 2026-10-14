@@ -1,8 +1,13 @@
+import { provideHttpClient } from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouteService } from '@rn-forge/ng/core';
 import { RN_FORGE_APP_CONFIG_TOKEN } from '@rn-forge/ng/core';
-import { AuthService } from './auth.services';
+import { AuthBackendService, AuthService } from './auth.services';
 import { RNF_AUTH_CONFIG_TOKEN, RnForgeAuthConfig } from './auth.config';
 import {
   AllowAnyPermission,
@@ -390,5 +395,111 @@ describe('AuthService (auth enabled)', () => {
       const url = spy.mock.calls[0][0] as string;
       expect(url).toContain('returnUrl=');
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AuthBackendService
+// ---------------------------------------------------------------------------
+
+describe('AuthBackendService', () => {
+  let controller: HttpTestingController;
+
+  afterEach(() => TestBed.resetTestingModule());
+
+  it('throws a clear error when backend.baseUrl is not configured', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: RN_FORGE_APP_CONFIG_TOKEN, useValue: { appName: 'test-app' } },
+        { provide: RNF_AUTH_CONFIG_TOKEN, useValue: { backend: {} } },
+      ],
+    });
+    expect(() => TestBed.inject(AuthBackendService)).toThrow(
+      /RnForgeAuthConfig.backend.baseUrl is not configured/,
+    );
+  });
+
+  it('accepts an empty string baseUrl (current origin)', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: RN_FORGE_APP_CONFIG_TOKEN, useValue: { appName: 'test-app' } },
+        { provide: RNF_AUTH_CONFIG_TOKEN, useValue: { backend: { baseUrl: '' } } },
+      ],
+    });
+    expect(() => TestBed.inject(AuthBackendService)).not.toThrow();
+  });
+
+  describe('with backend.baseUrl and default auth paths', () => {
+    let service: AuthBackendService;
+
+    beforeEach(() => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          { provide: RN_FORGE_APP_CONFIG_TOKEN, useValue: { appName: 'test-app' } },
+          {
+            provide: RNF_AUTH_CONFIG_TOKEN,
+            useValue: { backend: { baseUrl: '/api' } },
+          },
+        ],
+      });
+      service = TestBed.inject(AuthBackendService);
+      controller = TestBed.inject(HttpTestingController);
+    });
+
+    afterEach(() => controller.verify());
+
+    it('login() posts to baseUrl + authApiRoot + loginPath', () => {
+      service.login('user@example.com').subscribe();
+      const req = controller.expectOne('/api/auth/login');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ user: 'user@example.com' });
+      req.flush({ access_token: 'token' });
+    });
+
+    it('logout() posts to baseUrl + authApiRoot + logoutPath', () => {
+      service.logout().subscribe();
+      const req = controller.expectOne('/api/auth/logout');
+      expect(req.request.method).toBe('POST');
+      req.flush('ok');
+    });
+  });
+
+  it('honors configured authApiRoot/loginPath/logoutPath', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: RN_FORGE_APP_CONFIG_TOKEN, useValue: { appName: 'test-app' } },
+        {
+          provide: RNF_AUTH_CONFIG_TOKEN,
+          useValue: {
+            backend: {
+              baseUrl: 'https://api.example.test',
+              authApiRoot: '/identity',
+              loginPath: '/signin',
+              logoutPath: '/signout',
+            },
+          },
+        },
+      ],
+    });
+    const service = TestBed.inject(AuthBackendService);
+    controller = TestBed.inject(HttpTestingController);
+
+    service.login('user@example.com').subscribe();
+    controller
+      .expectOne('https://api.example.test/identity/signin')
+      .flush({ access_token: 'token' });
+
+    service.logout().subscribe();
+    controller.expectOne('https://api.example.test/identity/signout').flush('ok');
+
+    controller.verify();
   });
 });

@@ -62,6 +62,16 @@ describe('TypeaheadFieldComponent', () => {
       expect(component.formatterFn()({ nested: {} }, component)).toBe('');
     });
 
+    it('resolves an attribute pointing at a nested object to an empty string', () => {
+      fixture.componentRef.setInput('formatFields', {
+        search: ['nested'],
+      });
+      fixture.detectChanges();
+      expect(
+        component.formatterFn()({ nested: { last: 'Lovelace' } }, component),
+      ).toBe('');
+    });
+
     it('defaults to the "name" attribute when no formatFields entry matches', () => {
       expect(component.formatterFn()({ name: 'Widget' }, component)).toBe(
         'Widget',

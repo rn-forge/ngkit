@@ -1,6 +1,12 @@
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../dist/libs/ng",
+  "allowedNonPeerDependencies": [
+    "^lodash-es$",
+    "^build-url-ts$",
+    "^content-disposition$",
+    "^jwt-decode$"
+  ],
   "lib": {
     "entryFile": "src/index.ts"
   }

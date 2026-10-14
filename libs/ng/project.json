@@ -17,7 +17,7 @@
       "fallbackCurrentVersionResolver": "disk"
     }
   },
-  "tags": ["scope:ngkit", "type:core"],
+  "tags": ["scope:ngkit", "type:core", "publishable"],
   "targets": {
     "build": {
       "executor": "@nx/angular:package",
@@ -34,12 +34,15 @@
         "development": {}
       }
     },
-    "pack": {
+    "pack": {},
+    "verify-dist": {},
+    "verify-consumer": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build"],
+      "dependsOn": ["pack"],
+      "cache": false,
       "options": {
         "cwd": "{workspaceRoot}",
-        "command": "mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
+        "command": "node tools/scripts/verify-consumer.mjs"
       }
     },
     "nx-release-publish": {
@@ -56,18 +59,16 @@
         "include": [
           "../core/src/**/*.spec.ts",
           "../auth/src/**/*.spec.ts",
-          "../http/src/**/*.spec.ts",
-          "../http/crud/src/**/*.spec.ts"
+          "../crud/src/**/*.spec.ts"
         ],
         "coverage": true,
         "coverageReporters": ["text-summary", "lcov"],
         "coverageInclude": [
           "libs/ng/core/src/**",
           "libs/ng/auth/src/**",
-          "libs/ng/http/src/**",
-          "libs/ng/http/crud/src/**"
+          "libs/ng/crud/src/**"
         ],
-        "coverageExclude": ["**/*.config.ts", "libs/ng/http/crud/src/**"],
+        "coverageExclude": ["**/*.config.ts"],
         "coverageThresholds": {
           "statements": 80,
           "branches": 80,

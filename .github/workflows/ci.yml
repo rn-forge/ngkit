@@ -1,3 +1,4 @@
+# ci-template: repository-agnostic. Reads only the declarations in docs/architecture/ci-template.md.
 name: CI
 
 on:
@@ -40,21 +41,12 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        name: Install pnpm
+      - uses: ./.github/actions/setup
         with:
-          run_install: false
+          start-ci-run: >-
+            --distribute-on="${{ vars.NX_CLOUD_AGENTS || '3' }} linux-medium" --stop-agents-after="lint,test,build,e2e-ci"
 
-      - run: pnpm dlx nx start-ci-run --distribute-on="3 rn-forge-ng" --stop-agents-after="lint,test,build,e2e-ci"
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - run: pnpm install --frozen-lockfile
-
-      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5
+      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
 
       - run: pnpm exec nx affected -t lint test build e2e-ci
 
@@ -74,19 +66,15 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        name: Install pnpm
-        with:
-          run_install: false
+      - uses: ./.github/actions/setup
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - run: pnpm install --frozen-lockfile
+      # Browsers are only needed when some project has an e2e target
+      - name: Detect e2e projects
+        id: e2e
+        run: echo "has-e2e=$(pnpm exec nx show projects --with-target e2e --json | jq 'length > 0')" >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browsers
+        if: steps.e2e.outputs.has-e2e == 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: playwright-cache
         with:
@@ -94,23 +82,23 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - run: pnpm exec playwright install --with-deps
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        if: steps.e2e.outputs.has-e2e == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
       - run: pnpm exec playwright install-deps
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        if: steps.e2e.outputs.has-e2e == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
 
-      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5
+      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
 
       - run: pnpm exec nx affected -t lint test build e2e
 
   # Runs regardless of which path above executed - Sonar needs full (not
   # affected-only) coverage, so it regenerates lcov reports itself rather
   # than reusing whatever ci-cloud/ci-local happened to run.
-  # Skipped for Dependabot PRs: GitHub sandboxes Dependabot-triggered runs
-  # like fork PRs (read-only GITHUB_TOKEN, no Actions secrets), so SONAR_TOKEN
-  # isn't available there - the next push to main still scans the merged code.
-  sonarcloud:
+  # Skipped for Dependabot PRs and fork PRs: GitHub sandboxes both (read-only
+  # GITHUB_TOKEN, no Actions secrets), so SONAR_TOKEN isn't available there -
+  # the next push to main still scans the merged code.
+  sonar:
     needs: [ci-cloud, ci-local]
-    if: ${{ always() && github.actor != 'dependabot[bot]' && (needs.ci-cloud.result == 'success' || needs.ci-local.result == 'success') }}
+    if: ${{ always() && github.actor != 'dependabot[bot]' && (needs.ci-cloud.result == 'success' || needs.ci-local.result == 'success') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -118,23 +106,31 @@ jobs:
         with:
           fetch-depth: 0 # Sonar needs full history, not a shallow clone
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        name: Install pnpm
-        with:
-          run_install: false
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       - name: Generate coverage reports
-        run: pnpm exec nx run-many -t test --projects=ng,ng-bootstrap,ng-demo
+        run: pnpm exec nx run-many -t test
+
+      # Coverage is discovered, not listed: every project's test target writes
+      # coverage/<project>/lcov.info.
+      - name: Discover lcov reports
+        id: lcov
+        run: |
+          reports=$(find coverage -name lcov.info | sort | paste -sd, -)
+          if [ -z "$reports" ]; then
+            echo "::error::No lcov.info found under coverage/"
+            exit 1
+          fi
+          echo "reports=$reports" >> "$GITHUB_OUTPUT"
 
       - name: SonarQube Cloud Scan
-        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        with:
+          # Without qualitygate.wait the job passes on submitting the analysis,
+          # so a failed quality gate would never fail CI.
+          args: >
+            -Dsonar.javascript.lcov.reportPaths=${{ steps.lcov.outputs.reports }}
+            -Dsonar.qualitygate.wait=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -151,20 +147,12 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        name: Install pnpm
-        with:
-          run_install: false
+      - uses: ./.github/actions/setup
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Pack publishable tarballs
-        run: pnpm exec nx run-many -t pack --projects=ng,ng-bootstrap
+      # Plain `nx pack` (unlike the release path) never stamps workspace:*
+      # peers to exact pins, so verify-dist checks the CI tarballs' manifests.
+      - name: Pack and verify publishable tarballs
+        run: pnpm exec nx run-many -t pack verify-dist verify-consumer
 
       - name: Upload package tarballs
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -172,3 +160,99 @@ jobs:
           name: package-tarballs
           path: dist/tarballs/*.tgz
           retention-days: 14
+
+  # Publishes the docs site (Compodoc + Storybook) from main after the checks
+  # pass. Builds only when a project with a doc target is affected, or on a
+  # manual run. Job-level permissions replace the workflow-level ones, so
+  # actions: read stays for nx-set-shas (it queries workflow runs).
+  docs:
+    needs: [ci-cloud, ci-local]
+    if: ${{ always() && (needs.ci-cloud.result == 'success' || needs.ci-local.result == 'success') && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+
+      - name: Detect affected doc projects
+        id: affected
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] \
+            || [ "$(pnpm exec nx show projects --affected --with-target compodoc --json | jq 'length > 0')" = true ] \
+            || [ "$(pnpm exec nx show projects --affected --with-target build-storybook --json | jq 'length > 0')" = true ]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No affected project has a doc target; skipping the docs build"
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.affected.outputs.build == 'true'
+        run: pnpm exec nx run-many -t compodoc build-storybook
+
+      - if: steps.affected.outputs.build == 'true'
+        run: node tools/ci/assemble-site.mjs
+
+      - if: steps.affected.outputs.build == 'true'
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - if: steps.affected.outputs.build == 'true'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist/site
+          include-hidden-files: true
+
+      - if: steps.affected.outputs.build == 'true'
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+
+  # Fails when a template-owned file holds a repository-specific value
+  template:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/setup
+
+      - run: node tools/ci/check-template.mjs
+
+  # The one check branch protection requires. Skipped jobs (Sonar on
+  # Dependabot/fork PRs, docs off main, the unused ci-* path) pass; a failed or cancelled
+  # job, or neither ci-* path succeeding, fails it.
+  ci-ok:
+    needs: [ci-cloud, ci-local, sonar, package, docs, template]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Check needed jobs
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          bad=$(jq -r 'to_entries[] | select(.value.result | IN("failure", "cancelled")) | .key' <<<"$NEEDS" | paste -sd, -)
+          if [ -n "$bad" ]; then
+            echo "::error::Failed or cancelled: $bad"
+            exit 1
+          fi
+          if ! jq -e '[.["ci-cloud"].result, .["ci-local"].result] | index("success")' <<<"$NEEDS" >/dev/null; then
+            echo "::error::Neither ci-cloud nor ci-local succeeded"
+            exit 1
+          fi

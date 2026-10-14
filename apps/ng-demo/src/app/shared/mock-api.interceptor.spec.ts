@@ -1,5 +1,6 @@
 import {
   HttpClient,
+  HttpErrorResponse,
   provideHttpClient,
   withInterceptors,
 } from '@angular/common/http';
@@ -10,7 +11,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { getJwtForEmail } from './demo-jwt';
-import { mockApiInterceptor } from './mock-api.interceptor';
+import { mockApiInterceptor, resetMockApi } from './mock-api.interceptor';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -64,7 +65,7 @@ describe('mockApiInterceptor', () => {
     let status = 0;
     await new Promise<void>((resolve) => {
       http
-        .get('/api/products/', { headers: { 'X-Demo-Error': 'true' } })
+        .get('/api/products', { headers: { 'X-Demo-Error': 'true' } })
         .subscribe({
           error: (e) => {
             status = e.status;
@@ -98,92 +99,152 @@ describe('mockApiInterceptor', () => {
     });
   });
 
-  it('returns a CSV template for the upload template route', async () => {
-    const { http } = setup();
+  describe('products (wire standards)', () => {
+    type Page = {
+      items: { id: number; name: string }[];
+      nextPageToken: string | null;
+    };
+    const get = <T>(http: HttpClient, url: string) =>
+      firstValueFrom(http.get<T>(url));
+    const fail = (p: Promise<unknown>) =>
+      p.then(
+        () => undefined,
+        (e: HttpErrorResponse) => e,
+      );
 
-    const res = await firstValueFrom(
-      http.get('/api/products/upload/template/', { responseType: 'blob' }),
-    );
+    beforeEach(() => resetMockApi());
 
-    expect(res).toBeInstanceOf(Blob);
-    expect(await blobToText(res)).toContain('id,name,category,price,active');
-  });
-
-  it('returns the seeded products list', async () => {
-    const { http } = setup();
-
-    const res: unknown = await firstValueFrom(http.get('/api/products/'));
-
-    expect(res).toMatchObject({ count: 5 });
-    expect((res as { results: unknown[] }).results).toHaveLength(5);
-  });
-
-  it('returns an upload summary for a bulk upload', async () => {
-    const { http } = setup();
-
-    const res: unknown = await firstValueFrom(
-      http.post('/api/products/upload/', new FormData()),
-    );
-
-    expect(res).toEqual({ created: 2, updated: 1, errors: [] });
-  });
-
-  it('returns a CSV blob for a download request', async () => {
-    const { http } = setup();
-
-    const res = await firstValueFrom(
-      http.post('/api/products/download/', {}, { responseType: 'blob' }),
-    );
-
-    expect(res).toBeInstanceOf(Blob);
-    expect(await blobToText(res)).toContain('Widget A');
-  });
-
-  it('echoes the request body with a generated id when creating a product', async () => {
-    const { http } = setup();
-
-    const res: unknown = await firstValueFrom(
-      http.post('/api/products/', { name: 'New Thing' }),
-    );
-
-    expect(res).toEqual({ name: 'New Thing', id: 99 });
-  });
-
-  it('echoes the request body when updating a product', async () => {
-    const { http } = setup();
-
-    const res: unknown = await firstValueFrom(
-      http.put('/api/products/7/', { name: 'Updated' }),
-    );
-
-    expect(res).toEqual({ name: 'Updated' });
-  });
-
-  it('reports a bulk-delete count and message', async () => {
-    const { http } = setup();
-
-    const res: unknown = await firstValueFrom(
-      http.request('DELETE', '/api/products/bulk-delete/', {
-        body: { ids: [1, 2, 3] },
-      }),
-    );
-
-    expect(res).toEqual({
-      count: 3,
-      message: 'Deleted 3 record(s) successfully',
+    it('pages with pageSize and an opaque nextPageToken', async () => {
+      const { http } = setup();
+      const first = await get<Page>(http, '/api/products?pageSize=2');
+      expect(first.items.map((p) => p.id)).toEqual([1, 2]);
+      expect(first.nextPageToken).toBe('2');
+      const last = await get<Page>(
+        http,
+        '/api/products?pageSize=2&pageToken=4',
+      );
+      expect(last.items.map((p) => p.id)).toEqual([5]);
+      expect(last.nextPageToken).toBeNull();
     });
-  });
 
-  it('treats a missing ids array as an empty bulk delete', async () => {
-    const { http } = setup();
+    it('orders by an allow-listed field and rejects others with 400', async () => {
+      const { http } = setup();
+      const desc = await get<Page>(http, '/api/products?orderBy=price%20desc');
+      expect(desc.items[0].name).toBe('Gadget Y');
+      const err = await fail(get(http, '/api/products?orderBy=active'));
+      expect(err?.status).toBe(400);
+    });
 
-    const res: unknown = await firstValueFrom(
-      http.request('DELETE', '/api/products/bulk-delete/', { body: {} }),
-    );
+    it('filters by named query parameters', async () => {
+      const { http } = setup();
+      const res = await get<Page>(
+        http,
+        '/api/products?category=Gadgets&name=x',
+      );
+      expect(res.items.map((p) => p.name)).toEqual(['Gadget X']);
+    });
 
-    expect(res).toEqual({
-      count: 0,
-      message: 'Deleted 0 record(s) successfully',
+    it('serves a row with its ETag and 404s a missing one', async () => {
+      const { http } = setup();
+      const res = await firstValueFrom(
+        http.get('/api/products/1', { observe: 'response' }),
+      );
+      expect(res.headers.get('ETag')).toBe('"v1"');
+      expect((await fail(get(http, '/api/products/999')))?.status).toBe(404);
+    });
+
+    it('creates once per Idempotency-Key', async () => {
+      const { http } = setup();
+      const post = () =>
+        firstValueFrom(
+          http.post<{ id: number }>(
+            '/api/products',
+            { name: 'N' },
+            {
+              headers: { 'Idempotency-Key': 'k1' },
+            },
+          ),
+        );
+      const [a, b] = [await post(), await post()];
+      expect(a.id).toBe(b.id);
+      expect((await get<Page>(http, '/api/products')).items).toHaveLength(6);
+    });
+
+    it('merge-patches with If-Match: new ETag on success, 412 when stale, 422 when invalid', async () => {
+      const { http } = setup();
+      const patch = (body: object, ifMatch: string) =>
+        firstValueFrom(
+          http.patch<{ name: string }>('/api/products/1', body, {
+            headers: {
+              'Content-Type': 'application/merge-patch+json',
+              'If-Match': ifMatch,
+            },
+            observe: 'response',
+          }),
+        );
+      const ok = await patch({ name: 'Renamed' }, '"v1"');
+      expect(ok.body?.name).toBe('Renamed');
+      expect(ok.headers.get('ETag')).toBe('"v2"');
+      expect((await fail(patch({ name: 'x' }, '"v1"')))?.status).toBe(412);
+      const invalid = await fail(patch({ name: ' ' }, '"v2"'));
+      expect(invalid?.status).toBe(422);
+      expect(invalid?.error.errors[0].pointer).toBe('/name');
+    });
+
+    it('deletes one and batch-deletes with 204', async () => {
+      const { http } = setup();
+      await firstValueFrom(http.delete('/api/products/1'));
+      await firstValueFrom(
+        http.post('/api/products:batchDelete', { ids: [2, 3] }),
+      );
+      expect(
+        (await get<Page>(http, '/api/products')).items.map((p) => p.id),
+      ).toEqual([4, 5]);
+    });
+
+    it('imports with validateOnly echoed, and 422 row errors for a bad file', async () => {
+      const { http } = setup();
+      const form = (name: string) => {
+        const f = new FormData();
+        f.append('file', new File(['x'], name));
+        return f;
+      };
+      const ok = await firstValueFrom(
+        http.post('/api/products:import?validateOnly=true', form('rows.csv')),
+      );
+      expect(ok).toEqual({
+        created: 2,
+        updated: 1,
+        skipped: 0,
+        validateOnly: true,
+      });
+      const bad = await fail(
+        firstValueFrom(http.post('/api/products:import', form('bad.csv'))),
+      );
+      expect(bad?.status).toBe(422);
+      expect(bad?.error.errors[0].pointer).toBe('/rows/2/price');
+    });
+
+    it('serves the import template and a CSV export named by Content-Disposition', async () => {
+      const { http } = setup();
+      const template = await firstValueFrom(
+        http.get('/api/products:importTemplate', { responseType: 'blob' }),
+      );
+      expect(await blobToText(template)).toContain(
+        'id,name,category,price,active',
+      );
+
+      const exported = await firstValueFrom(
+        http.get('/api/products', {
+          headers: { Accept: 'text/csv' },
+          responseType: 'blob',
+          observe: 'response',
+        }),
+      );
+      expect(exported.headers.get('Content-Disposition')).toContain(
+        'products.csv',
+      );
+      expect(await blobToText(exported.body as Blob)).toContain('Widget A');
     });
   });
 
@@ -198,12 +259,13 @@ describe('mockApiInterceptor', () => {
   });
 
   it('strips the query string before matching the route', async () => {
+    resetMockApi();
     const { http } = setup();
 
     const res: unknown = await firstValueFrom(
-      http.get('/api/products/?page=2'),
+      http.get('/api/products?pageSize=1'),
     );
 
-    expect(res).toMatchObject({ count: 5 });
+    expect(res).toMatchObject({ nextPageToken: '1' });
   });
 });

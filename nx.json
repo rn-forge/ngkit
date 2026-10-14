@@ -14,6 +14,23 @@
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
   "targetDefaults": {
+    "pack": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node tools/ci/resolve-dist-workspace-deps.mjs dist/{projectRoot}/package.json && mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
+      }
+    },
+    "verify-dist": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["pack"],
+      "cache": false,
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node tools/ci/verify-dist-manifest.mjs dist/{projectRoot}"
+      }
+    },
     "@angular/build:application": {
       "cache": true,
       "dependsOn": ["^build"],
@@ -82,13 +99,13 @@
     }
   },
   "release": {
-    "projects": ["ng", "ng-bootstrap"],
+    "projects": ["tag:publishable"],
     "version": {
-      "preVersionCommand": "pnpm exec nx run-many -t build patch-package-exports --projects=ng,ng-bootstrap"
+      "preVersionCommand": "pnpm exec nx run-many -t build patch-package-exports -p tag:publishable"
     },
     "changelog": {
       "workspaceChangelog": {
-        "createRelease": "github"
+        "createRelease": false
       }
     }
   },

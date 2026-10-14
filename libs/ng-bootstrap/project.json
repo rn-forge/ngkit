@@ -17,7 +17,7 @@
       "fallbackCurrentVersionResolver": "disk"
     }
   },
-  "tags": ["scope:ngkit", "type:ui"],
+  "tags": ["scope:ngkit", "type:ui", "publishable"],
   "targets": {
     "build": {
       "executor": "@nx/angular:package",
@@ -43,13 +43,9 @@
       }
     },
     "pack": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["patch-package-exports"],
-      "options": {
-        "cwd": "{workspaceRoot}",
-        "command": "mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
-      }
+      "dependsOn": ["patch-package-exports"]
     },
+    "verify-dist": {},
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}",

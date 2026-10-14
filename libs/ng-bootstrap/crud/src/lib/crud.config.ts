@@ -1,14 +1,14 @@
 import { makeEnvironmentProviders } from '@angular/core';
 import { RN_FORGE_BOOTSTRAP_CONFIG_PARTS } from '@rn-forge/ng-bootstrap';
 
-import type { CRUDOptions } from './crud/crud.types';
+import type { CrudOptions } from './crud/crud.types';
 
 /**
  * Configuration for the crud EP component.
  * Keys match each component's `configKey`.
  */
 export interface CrudConfig {
-  crud?: Partial<CRUDOptions>;
+  crud?: Partial<CrudOptions>;
 }
 
 /**

@@ -8,22 +8,28 @@ import {
 } from '@rn-forge/ng-bootstrap';
 import { FormComponent, FormOptions } from '@rn-forge/ng-bootstrap/form';
 
-export type COMPONENT_MODES = 'list' | 'addupdate' | 'upload' | 'download';
+export type CrudComponentMode = 'list' | 'addupdate' | 'import';
 
-export interface CRUDOptions extends ConfigOptions {
+/**
+ * A filter the app declares: a named query parameter the backend accepts.
+ * Rendered as a text input, or as a select when `options` is given.
+ */
+export interface CrudFilterField {
+  readonly name: string;
+  readonly label: string;
+  readonly options?: readonly { code: string; name: string }[];
+}
+
+export interface CrudOptions extends ConfigOptions {
   list: Partial<TableOptions>;
   addUpdate: Partial<FormOptions>;
   delete: Partial<ModalOptions>;
-  upload: Partial<FormOptions>;
-  download: Partial<FormOptions>;
 }
 
-export interface CRUDContext {
+export interface CrudContext {
   readonly listTable: TableComponent;
   readonly addUpdateForm: FormComponent;
   readonly deleteModal: ModalComponent;
-  readonly uploadForm: FormComponent;
-  readonly downloadForm: FormComponent;
   readonly alert: AlertComponent;
-  readonly config: () => CRUDOptions;
+  readonly config: () => CrudOptions;
 }

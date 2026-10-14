@@ -24,26 +24,32 @@
 
 ## Project Guidelines
 
-See [README.md](README.md) for the project list, common `pnpm nx` commands, and the packing/tarball workflow.
+See [README.md](README.md) for the project list and the packing workflow.
 
-### Publishing & release
+- **Start here:** read [docs/specs/index.md](docs/specs/index.md) (the board) before starting work; place docs by `docs/_structure.md`; find content through [docs/index.md](docs/index.md). Don't start or elaborate a deferred epic unless the owner asks.
+- **Principles:** the [ADR log](docs/adr/index.md) binds every change. Record any deviation, with its reason, in the feature's Design or the doc comment.
+- **Docs are self-contained:** they describe only this repository and name no other repository or surveyed application, except as `docs/specs/_structure.md` and ADR-0007 allow.
+- **Commands and checks:** see [docs/guides/development.md](docs/guides/development.md).
 
-- `ng` and `ng-bootstrap` release together under **fixed/grouped versioning** (Nx's default `projectsRelationship`) — every release bumps and republishes both, even if only one changed. A new publishable library must be added to `nx.json#release.projects` too.
-- **`dist/` is built once, by `release.version.preVersionCommand`, and everything downstream consumes it read-only.** The version step stamps the new version and rewrites `workspace:*` into the _already built_ `dist/libs/*/package.json`; any later task that rebuilds regenerates those manifests from source and silently undoes it. That's why the `Publish` and `Pack` steps in `release.yml` pass `--excludeTaskDependencies` and why `nx-release-publish` carries no `dependsOn` — versioning edits `libs/*/package.json`, which invalidates the build cache, so a task dependency _will_ rebuild. `preVersionCommand` therefore has to produce a fully release-ready `dist/`, including `patch-package-exports`.
-- Each publishable library's `project.json` sets `release.version.manifestRootsToUpdate` to both `{projectRoot}` and `{ "path": "dist/{projectRoot}", "preserveLocalDependencyProtocols": false }`. `dist/` is gitignored and ng-packagr regenerates it from source on every build, so without also bumping the source manifest, `libs/*/package.json` on `main` would never reflect the released version. Any new publishable library needs this same pair.
-- `nx.json#release.changelog.workspaceChangelog.createRelease: "github"` is what makes `nx release` **push** the version commit and tag at all — Nx's `git.push` default is `false`, and the combined command only pushes when a remote release is configured. Without it the release commit/tag stay local to the runner and the later `gh release upload` steps have no tag to attach to.
-- Internal peer deps between these libraries (e.g. `ng-bootstrap`'s peer on `ng`) get rewritten to an **exact pin** on release, not a `^` range — the same convention Angular uses between its own lockstep-released packages. Don't manually widen these.
-- `workspace:*` protocol references must never leak into a published dist manifest. `preserveLocalDependencyProtocols: false` on the dist manifest root is the guard — keep it if a genuine `workspace:*` dependency is ever added between these libraries.
-- npm publishing is currently **disabled** — `dryRun: true` is hardcoded on both libraries' `nx-release-publish` targets. Releases currently distribute as tarballs attached to GitHub Releases (`pack` targets + `release.yml`), not npm packages. To re-enable npm: remove the hardcoded `dryRun` and set up npm Trusted Publishing (GitHub Actions OIDC, no long-lived token) per package on npmjs.com.
-- Hotfixes to an older major: cut `release/<major>.x` on demand from the last tag of that major, land the fix on `main` first and cherry-pick back, then release from that branch with `dist-tag: v<major>-lts` — never `latest`, which only ever moves on releases from `main`.
-- Any new publishable library needs the same `package.json` metadata `ng`/`ng-bootstrap` already have — `description`, `license`, `repository`, `publishConfig.access: "public"` — without it the package isn't really consumable externally even if it builds fine.
-- `ng-bootstrap`'s `patch-package-exports` target fixes the ng-packagr dist `package.json`'s `exports` map so deep asset imports (`@rn-forge/ng-bootstrap/assets/*`) resolve at all. It's a `dependsOn` of `pack` (for the plain `nx pack` path used by `ci.yml`) and is run explicitly by `preVersionCommand` on the release path — it must execute after every build of `ng-bootstrap` and before versioning stamps the dist manifest. Any new library shipping non-TS assets alongside compiled entry points will need the same pattern.
+### Release invariants
+
+Details and reasons are in [docs/architecture/release-pipeline.md](docs/architecture/release-pipeline.md); the procedure is [docs/runbooks/releasing.md](docs/runbooks/releasing.md).
+
+- `ng` and `ng-bootstrap` release together under fixed/grouped versioning ([ADR-0003](docs/adr/ADR-0003.md)); a new publishable library is tagged `publishable` (not added to `nx.json#release.projects`) and follows [docs/guides/development.md#adding-a-publishable-library](docs/guides/development.md#adding-a-publishable-library).
+- `dist/` is built once by `release.version.preVersionCommand` and never rebuilt downstream, except when resuming a release, which rebuilds from the tag: the `Verify` and `Publish` steps in `release.yml` pass `--excludeTaskDependencies`, and `nx-release-publish` has no `dependsOn`.
+- Each publishable library's `release.version.manifestRootsToUpdate` is the pair `{projectRoot}` and `{ "path": "dist/{projectRoot}", "preserveLocalDependencyProtocols": false }`.
+- The workflow pushes the release commit and tag only after `verify-dist` and `verify-consumer` pass, and creates the GitHub Release with its assets in one step (`createRelease` stays `false`).
+- Internal peers are exact pins on release, never widened by hand.
+- `workspace:*` must not reach a dist manifest.
+- npm is disabled (`dryRun: true` on both `nx-release-publish` targets); releases are tarballs on GitHub Releases.
+- Hotfixes to an older major release from `release/<major>.x` with `dist-tag: v<major>-lts`, never `latest`.
+- A new publishable library needs the same `package.json` metadata `ng`/`ng-bootstrap` have: `description`, `license`, `repository`, `publishConfig.access: "public"`.
+- A library shipping non-TS assets needs `patch-package-exports` after every build and before versioning.
 
 ### CI
 
-- Distributed vs. local execution is a toggle, not two pipelines to maintain in parallel — see `ci.yml`'s `ci-cloud`/`ci-local`/`package` jobs and the `USE_NX_CLOUD` repo variable (or the `use-nx-cloud` `workflow_dispatch` input).
-- Playwright e2e uses the atomized `e2e-ci` target (`@nx/playwright/plugin`'s default `<targetName>-ci`) so Nx Cloud can distribute individual spec files as separate tasks. Only the cloud path needs it — the local fallback runs plain `e2e`.
+`ci.yml` is one toggle between distributed (`ci-cloud`) and local (`ci-local`) execution, plus a `package` job; Playwright uses the atomized `e2e-ci` target on the cloud path only. See [docs/architecture/release-pipeline.md#ci](docs/architecture/release-pipeline.md#ci); template files and what a repository declares for them: [docs/architecture/ci-template.md](docs/architecture/ci-template.md).
 
 ### Docs site
 
-- Storybook (`ng-bootstrap`) + Compodoc (`ng`, `ng-bootstrap`) publish to GitHub Pages on push to `main`, assembled under `dist/site/` (`storybook/`, `api/ng/`, `api/ng-bootstrap/`, plus a hand-written `index.html` from `tools/pages/index.html`). A new publishable library should get its own `api/<name>/` entry the same way.
+The site is the `docs` job in `ci.yml`: Storybook and Compodoc publish to GitHub Pages on push to `main`, assembled under `dist/site/` from the projects that declare doc targets. See [docs/architecture/release-pipeline.md#docs-site](docs/architecture/release-pipeline.md#docs-site).

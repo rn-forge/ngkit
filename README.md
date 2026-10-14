@@ -15,6 +15,17 @@ This workspace uses **pnpm**, not npm/npx. Install it via [Corepack](https://nod
 
 Run `pnpm nx show project <name> --web` to see a project's full, resolved target list.
 
+## Design principles
+
+**Goal:** easy-to-use wrappers and plumbing to stand up an Angular web app quickly, with best practices and industry standards built in, so the developer writes only functional code.
+
+1. **Standards and proven libraries first.** Use the published standard, then Angular, then a maintained npm package, and wrap rather than reimplement ([ADR-0001](docs/adr/ADR-0001.md)).
+2. **Package boundaries are one-way.** `ng` has no UI, `ng-bootstrap` depends on `ng` and never the reverse, and presentation libraries only render ([ADR-0002](docs/adr/ADR-0002.md)).
+3. **`ng` and `ng-bootstrap` release together.** They share one version and ship as tarballs on GitHub Releases ([ADR-0003](docs/adr/ADR-0003.md)).
+4. **ngkit is upstream.** Apps build on these libraries instead of re-deriving them ([ADR-0001](docs/adr/ADR-0001.md)).
+
+These principles apply to every current and future entry point and package. When a plan or a change conflicts with one of them, the principle wins, unless the plan or change records the deviation and its reason.
+
 ## Getting started
 
 ```sh
@@ -22,54 +33,23 @@ pnpm install
 pnpm nx serve ng-demo
 ```
 
-## Run tasks
-
-```sh
-pnpm nx serve ng-demo          # dev server
-pnpm nx build ng-demo          # production bundle
-pnpm nx build ng               # build the ng library
-pnpm nx test ng-bootstrap      # unit tests
-pnpm nx lint ng                # lint
-pnpm nx e2e ng-demo-e2e        # playwright e2e, run locally
-pnpm nx show project ng-demo   # list all available targets for a project
-```
-
-Targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks) from plugins (`nx.json#plugins`) or defined explicitly in each project's `project.json`.
-
-Prefer `nx affected`/`nx run-many` over running a single project's target when working across the whole workspace — see [.github/workflows/ci.yml](.github/workflows/ci.yml) for how CI invokes these.
-
-[More about running tasks in the docs »](https://nx.dev/features/run-tasks)
-
 ## Packing libraries
 
 `ng` and `ng-bootstrap` each have a `pack` target that builds the library and produces an installable tarball under `dist/tarballs/`:
 
 ```sh
-pnpm nx run-many -t pack --projects=ng,ng-bootstrap
+pnpm nx run-many -t pack -p tag:publishable
 ```
 
-CI uploads these as a `package-tarballs` artifact on every run, and the `Release` workflow attaches them to the corresponding GitHub Release (both the versioned tag and a rolling `latest` release on `main`). See [docs/RELEASING.md](docs/RELEASING.md) for the full release process and [docs/specs/release-and-cicd.md](docs/specs/release-and-cicd.md) for the design rationale.
+CI uploads these as a `package-tarballs` artifact on every run, and the `Release` workflow attaches them to the corresponding GitHub Release (both the versioned tag and a rolling `latest` release on `main`). See [docs/runbooks/releasing.md](docs/runbooks/releasing.md) for the full release process and [docs/architecture/release-pipeline.md](docs/architecture/release-pipeline.md) for the design rationale.
 
-## Add new projects
+## Documentation
 
-Use an [Nx plugin](https://nx.dev/concepts/nx-plugins) generator to scaffold new projects:
-
-```sh
-pnpm nx g @nx/angular:app demo
-pnpm nx g @nx/angular:lib mylib
-```
-
-`pnpm nx list` shows installed plugins; `pnpm nx list <plugin-name>` shows what a specific plugin can generate. [Nx Console](https://nx.dev/getting-started/editor-setup) provides the same browsing experience inside your IDE.
-
-[Learn more about Nx plugins »](https://nx.dev/concepts/nx-plugins) | [Browse the plugin registry »](https://nx.dev/plugin-registry)
-
-## CI
-
-`.github/workflows/ci.yml` runs on push/PR:
-
-- **`ci-cloud`** (default): distributes `lint`/`test`/`build`/`e2e-ci` across Nx Cloud agents (`.nx/workflows/agents.yaml`).
-- **`ci-local`**: fallback that runs the same tasks on a single runner — no Nx Cloud dependency. Select it by setting the repo variable `USE_NX_CLOUD` to `false`, or via `workflow_dispatch` with `use-nx-cloud` unchecked.
-- **`package`**: runs after either path succeeds — verifies publishable dist manifests, packs tarballs, uploads them as a build artifact.
+- [docs/index.md](docs/index.md): where everything is, and in what order to read it.
+- [Specs board](docs/specs/index.md): what is done, what is next.
+- [Decisions](docs/adr/index.md): the ADR log.
+- [Developing ngkit](docs/guides/development.md): commands, checks, adding projects.
+- [Published site](https://rn-forge.github.io/ngkit/): Storybook and API reference.
 
 ## Useful links
 

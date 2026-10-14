@@ -6,7 +6,7 @@ This library was generated with [Nx](https://nx.dev).
 
 Call `provideRnForgeBootstrapConfig(...)` in the app's `app.config.ts`. It registers an app initializer that dynamically loads all required vendor scripts (Bootstrap, bootstrap-table + extensions, jQuery, and treegrid when `table.treegrid` is enabled) — no `scripts`/`polyfills` entries are needed in the app's build config for this.
 
-For styles, see [`assets/README.md`](./assets/README.md).
+For styles, see [`assets/README.md`](https://github.com/rn-forge/ngkit/blob/main/libs/ng-bootstrap/assets/README.md).
 
 ### `allowedCommonJsDependencies`
 

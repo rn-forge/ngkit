@@ -1,43 +1,46 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { ReadModel, WriteModel } from '@rn-forge/ng/http/crud';
-import { AbstractCRUDManager } from './crud.manager';
-import { CRUDComponent } from './crud.component';
-import { CRUDContext } from './crud.types';
+import { ReadModel, WriteModel } from '@rn-forge/ng/crud';
+import { AbstractCrudManager } from './crud.manager';
+import { CrudComponent } from './crud.component';
+import { CrudContext } from './crud.types';
 
 function makeMockManager() {
   const initSpy = vi.fn();
   return {
-    currentMode: signal<'list' | 'addupdate' | 'upload' | 'download'>('list'),
+    currentMode: signal<'list' | 'addupdate' | 'import'>('list'),
+    conflict: signal(false),
+    importFile: signal(undefined),
+    importOutcome: signal(undefined),
     enableList: () => false,
     enableAddUpdate: () => false,
     enableDelete: () => false,
-    enableUpload: () => false,
-    enableDownload: () => false,
+    enableImport: () => false,
+    enableImportTemplate: () => false,
+    filterFields: () => [],
+    hasList: () => false,
     pluralName: 'Tests',
     tableOptions: () => ({ columns: [] }),
     addUpdateFormOptions: () => ({ controls: {} }),
     deleteModalOptions: () => ({}),
-    uploadFormOptions: () => ({ controls: {} }),
-    downloadFormOptions: () => ({ controls: {} }),
     init: initSpy,
     _initSpy: initSpy,
-  } as unknown as AbstractCRUDManager<WriteModel, ReadModel> & {
+  } as unknown as AbstractCrudManager<WriteModel, ReadModel> & {
     _initSpy: ReturnType<typeof vi.fn>;
   };
 }
 
-describe('CRUDComponent', () => {
-  let component: CRUDComponent;
-  let fixture: ComponentFixture<CRUDComponent>;
+describe('CrudComponent', () => {
+  let component: CrudComponent;
+  let fixture: ComponentFixture<CrudComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CRUDComponent],
+      imports: [CrudComponent],
       providers: [provideRouter([])],
     });
-    fixture = TestBed.createComponent(CRUDComponent);
+    fixture = TestBed.createComponent(CrudComponent);
     component = fixture.componentInstance;
   });
 
@@ -52,36 +55,21 @@ describe('CRUDComponent', () => {
   });
 
   it('defaultOptions() returns empty partials for all sections', () => {
-    const defaults = component.defaultOptions();
-    expect(defaults).toEqual({
+    expect(component.defaultOptions()).toEqual({
       list: {},
       addUpdate: {},
       delete: {},
-      upload: {},
-      download: {},
     });
   });
 
-  it('ngAfterViewInit calls manager.init() with a CRUDContext', () => {
+  it('ngAfterViewInit calls manager.init() with a CrudContext', () => {
     const mockManager = makeMockManager();
     fixture.componentRef.setInput('manager', mockManager);
     fixture.detectChanges();
 
-    expect(
-      (mockManager as unknown as { _initSpy: ReturnType<typeof vi.fn> })
-        ._initSpy,
-    ).toHaveBeenCalledOnce();
-    const ctx: CRUDContext = (
-      mockManager as unknown as { _initSpy: ReturnType<typeof vi.fn> }
-    )._initSpy.mock.calls[0][0];
-    expect(ctx).toBeDefined();
+    expect(mockManager._initSpy).toHaveBeenCalledOnce();
+    const ctx: CrudContext = mockManager._initSpy.mock.calls[0][0];
     expect(typeof ctx.config).toBe('function');
-    expect(ctx.config()).toMatchObject({
-      list: {},
-      addUpdate: {},
-      delete: {},
-      upload: {},
-      download: {},
-    });
+    expect(ctx.config()).toMatchObject({ list: {}, addUpdate: {}, delete: {} });
   });
 });

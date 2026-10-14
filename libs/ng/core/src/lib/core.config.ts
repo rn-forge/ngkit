@@ -11,8 +11,6 @@ import { InjectionToken, makeEnvironmentProviders } from '@angular/core';
 export interface RnForgeCoreConfig {
   /** Application name; used as the localStorage key namespace. */
   appName: string;
-  /** Base URL for API calls (consumed by `@rn-forge/ng/http`). */
-  apiBasePath?: string;
 }
 
 export const RN_FORGE_APP_CONFIG_TOKEN = new InjectionToken<RnForgeCoreConfig>(
@@ -35,7 +33,7 @@ export const RN_FORGE_APP_CONFIG_TOKEN = new InjectionToken<RnForgeCoreConfig>(
  * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
- *   providers: [provideRnForgeCoreConfig({ appName: 'my-app', apiBasePath: '/api' })]
+ *   providers: [provideRnForgeCoreConfig({ appName: 'my-app' })]
  * });
  * ```
  */

@@ -1,3 +1,4 @@
+# ci-template: repository-agnostic. Reads only the declarations in docs/architecture/ci-template.md.
 name: Release
 
 on:
@@ -32,6 +33,7 @@ on:
 permissions:
   contents: write # push release commit + tags, create GitHub Releases
   id-token: write # npm OIDC trusted publishing
+  actions: read # read ci.yml runs for the gate
 
 concurrency:
   group: release
@@ -41,68 +43,157 @@ jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      tag: ${{ steps.tag.outputs.name }}
     steps:
+      # The release commit is pushed to a protected branch, so git runs as the release
+      # GitHub App (a bypass actor on the branch ruleset); GITHUB_TOKEN cannot bypass it.
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 0 # full history required for git-tag version resolution
           filter: tree:0
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      # npm >= 11.5.1 is required for OIDC publishing (Node version from .nvmrc)
+      - uses: ./.github/actions/setup
         with:
-          run_install: false
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24 # npm >= 11.5.1 required for OIDC publishing
-          cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: pnpm install --frozen-lockfile
+      # A release commit's own ci.yml run may not have finished (or may be absent),
+      # so a resumed release gates on the commit it was cut from (HEAD^).
+      - name: Gate on a green CI run
+        run: |
+          if [ -n "$(git tag --points-at HEAD --list 'v*')" ]; then
+            sha=$(git rev-parse HEAD^)
+          else
+            sha=$(git rev-parse HEAD)
+          fi
+          count=$(gh run list --workflow ci.yml --commit "$sha" --status success --json databaseId --jq length)
+          if [ "$count" -ge 1 ]; then
+            echo "Found a successful ci.yml run for $sha"
+            exit 0
+          fi
+          msg="No successful ci.yml run for $sha"
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "::warning::$msg"
+          else
+            echo "::error::$msg"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ inputs.dry-run }}
+
+      # The checkout fetched tags from origin, so a tag at HEAD is a pushed tag.
+      # A version counts as shipped only when its GitHub Release is published.
+      - name: Detect release state
+        id: state
+        run: |
+          tag=$(git tag --points-at HEAD --list 'v*')
+          if [ -z "$tag" ]; then
+            mode=new
+          elif [ "$(wc -l <<<"$tag")" -ne 1 ]; then
+            echo "::error::More than one v* tag at HEAD: $tag"
+            exit 1
+          elif [ "$(gh release view "$tag" --json isDraft --jq .isDraft 2>/dev/null)" = false ]; then
+            mode=released
+          else
+            mode=resume
+          fi
+          echo "::notice::Release mode: $mode${tag:+ ($tag)}"
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Configure git author
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Validate (lint, test, build)
-        run: pnpm exec nx run-many -t lint test build --projects=ng,ng-bootstrap
-
-      # Version + changelog + git commit/tag/push + GitHub Release. Publishing
-      # is deliberately excluded here (--skip-publish) because the combined
-      # `nx release` command has no way to pass a custom npm dist-tag; that's
-      # done as a separate `nx release publish` step below, which resolves
-      # the version from the tag/commit this step just created.
-      - name: Version and changelog
-        if: ${{ !inputs.dry-run }}
-        run: >
-          pnpm exec nx release
-          "${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}"
-          --skip-publish
-          ${{ inputs.first-release && '--first-release' || '' }}
+      # Commits and tags locally only; nothing is pushed until the checks pass.
+      # Publishing is excluded (--skip-publish) because the combined command
+      # cannot pass a custom npm dist-tag; the Publish step below does that.
+      - name: Version locally
+        if: ${{ !inputs.dry-run && steps.state.outputs.mode == 'new' }}
+        run: |
+          args=(release "$VERSION_SPEC" --skip-publish)
+          if [ "$FIRST_RELEASE" = "true" ]; then args+=(--first-release); fi
+          pnpm exec nx "${args[@]}"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for createRelease: github
+          VERSION_SPEC: ${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}
+          FIRST_RELEASE: ${{ inputs.first-release }}
+
+      # In resume and released modes HEAD already carries the tag, so this resolves it too.
+      - name: Resolve release tag
+        if: ${{ !inputs.dry-run }}
+        id: tag
+        run: |
+          tags=$(git tag --points-at HEAD --list 'v*')
+          if [ -z "$tags" ] || [ "$(wc -l <<<"$tags")" -ne 1 ]; then
+            echo "::error::Expected exactly one v* tag at HEAD, found: ${tags:-none}"
+            exit 1
+          fi
+          echo "name=$tags" >> "$GITHUB_OUTPUT"
 
       # Dry runs deliberately do NOT use the combined `nx release` command
       # as it does not write files when dry-run flag is present.
       # so dist manifests still carry workspace:* references that pnpm publish rejects
       - name: Version (dry-run simulation)
         if: ${{ inputs.dry-run }}
-        run: >
-          pnpm exec nx release version
-          "${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}"
-          --git-commit=false
-          --git-tag=false
-          --stage-changes=false
-          ${{ inputs.first-release && '--first-release' || '' }}
+        run: |
+          args=(release version "$VERSION_SPEC" --git-commit=false --git-tag=false --stage-changes=false)
+          if [ "$FIRST_RELEASE" = "true" ]; then args+=(--first-release); fi
+          pnpm exec nx "${args[@]}"
+        env:
+          VERSION_SPEC: ${{ inputs.exact-version != '' && inputs.exact-version || inputs.specifier }}
+          FIRST_RELEASE: ${{ inputs.first-release }}
 
-      # Both paths above rewrite workspace:* peer deps to exact pins in the dist
-      # manifest roots, so this guards the real release and the dry run alike.
-      - name: Verify publishable dist manifests
-        run: node tools/scripts/verify-dist-manifests.mjs
+      # Both version paths rewrite workspace:* peer deps to exact pins in the dist
+      # manifest roots. --excludeTaskDependencies packs the versioned dist/ rather
+      # than rebuilding it.
+      - name: Verify
+        if: ${{ inputs.dry-run || steps.state.outputs.mode == 'new' }}
+        run: |
+          pnpm exec nx run-many -t pack -p tag:publishable --excludeTaskDependencies
+          pnpm exec nx run-many -t verify-dist -p tag:publishable --excludeTaskDependencies
+          pnpm exec nx run-many -t verify-consumer -p tag:publishable --excludeTaskDependencies
+
+      # Resume: preVersionCommand does not run, so dist/ is rebuilt from the tagged
+      # source (with task dependencies) and pack stamps the exact internal pins.
+      - name: Rebuild and verify (resume)
+        if: ${{ !inputs.dry-run && steps.state.outputs.mode == 'resume' }}
+        run: pnpm exec nx run-many -t pack verify-dist verify-consumer -p tag:publishable
+
+      - name: Push release commit and tag
+        if: ${{ !inputs.dry-run && steps.state.outputs.mode == 'new' }}
+        run: git push --atomic origin "HEAD:refs/heads/$GITHUB_REF_NAME" "refs/tags/$TAG"
+        env:
+          TAG: ${{ steps.tag.outputs.name }}
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry-run && steps.state.outputs.mode != 'released' }}
+        run: |
+          tag="$TAG"
+          # Only a draft can reach this step (published means released mode); keeps the tag.
+          if gh release view "$tag" --json isDraft --jq .isDraft >/dev/null 2>&1; then
+            gh release delete "$tag" --yes
+          fi
+          node tools/ci/release-notes.mjs "${tag#v}" > "$RUNNER_TEMP/notes.md"
+          gh release create "$tag" dist/tarballs/*.tgz --verify-tag --title "$tag" --notes-file "$RUNNER_TEMP/notes.md"
+        env:
+          TAG: ${{ steps.tag.outputs.name }}
+          GH_TOKEN: ${{ github.token }}
 
       # --excludeTaskDependencies to not invalidate cache and use already prepped version in dist/
       # step's preVersionCommand.
       - name: Publish
+        if: ${{ inputs.dry-run || steps.state.outputs.mode != 'released' }}
         run: >
           pnpm exec nx release publish
           --tag="$DIST_TAG"
@@ -112,25 +203,6 @@ jobs:
         env:
           DIST_TAG: ${{ inputs.dist-tag }}
 
-      # Same reason as above - pack the dist/ that was versioned, don't rebuild it.
-      - name: Pack publishable tarballs
-        if: ${{ !inputs.dry-run }}
-        run: pnpm exec nx run-many -t pack --projects=ng,ng-bootstrap --excludeTaskDependencies
-
-      - name: Resolve release tag
-        if: ${{ !inputs.dry-run }}
-        id: tag
-        run: echo "name=v$(node -p "require('./dist/libs/ng/package.json').version")" >> "$GITHUB_OUTPUT"
-
-      # `nx release`'s `changelog.workspaceChangelog.createRelease: "github"` (nx.json)
-      # already created the GitHub Release for this tag in the "Version and changelog"
-      # step above; this just attaches the packed tarballs to it as downloadable assets.
-      - name: Attach tarballs to versioned release
-        if: ${{ !inputs.dry-run }}
-        run: gh release upload ${{ steps.tag.outputs.name }} dist/tarballs/*.tgz --clobber
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       # Rolling pointer so consumers can depend on a stable, version-less URL
       # (.../releases/download/latest/<pkg>.tgz) instead of tracking exact tags.
       # Only moves on main - hotfix releases from release/** branches keep their
@@ -138,9 +210,55 @@ jobs:
       - name: Update rolling "latest" release
         if: ${{ !inputs.dry-run && github.ref_name == 'main' }}
         run: |
+          # Skip when the remote "latest" tag already sits on this tag's commit and
+          # the release carries the same assets. (targetCommitish is a branch name,
+          # so the tag's ref is what records the commit.)
+          list='[.assets[].name] | sort | join(",")'
+          want=$(git rev-parse "$TAG^{commit}")
+          refs=$(git ls-remote origin refs/tags/latest 'refs/tags/latest^{}')
+          have=$(echo "$refs" | awk '/\^\{\}$/ {p=$1} {l=$1} END {print p ? p : l}')
+          if [ "$have" = "$want" ] &&
+            [ "$(gh release view latest --json assets --jq "$list")" = "$(gh release view "$TAG" --json assets --jq "$list")" ]; then
+            echo "::notice::latest already points at $TAG"
+            exit 0
+          fi
+          # Released mode has no local tarballs; fetch them from the published release.
+          if ! compgen -G 'dist/tarballs/*.tgz' >/dev/null; then
+            gh release download "$TAG" --dir dist/tarballs --pattern '*.tgz'
+          fi
           gh release delete latest --yes --cleanup-tag || true
           git tag -f latest
           git push origin latest --force
-          gh release create latest dist/tarballs/*.tgz --title "Latest" --notes "Rolling pointer to ${{ steps.tag.outputs.name }}"
+          gh release create latest dist/tarballs/*.tgz --title "Latest" --notes "Rolling pointer to $TAG"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.name }}
+
+      - name: Already released
+        if: ${{ !inputs.dry-run && steps.state.outputs.mode == 'released' }}
+        run: echo "::notice::$TAG is already released"
+        env:
+          TAG: ${{ steps.tag.outputs.name }}
+
+  # Installs what consumers download, not what the release runner built.
+  published-install:
+    needs: release
+    if: ${{ !inputs.dry-run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - uses: ./.github/actions/setup
+
+      - name: Verify the released tarballs
+        run: |
+          gh release download "$TAG" --dir dist/tarballs --pattern '*.tgz'
+          pnpm exec nx run-many -t verify-consumer --excludeTaskDependencies
+        env:
+          TAG: ${{ needs.release.outputs.tag }}
+          GH_TOKEN: ${{ github.token }}
