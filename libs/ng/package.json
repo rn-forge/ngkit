@@ -1,6 +1,6 @@
 {
   "name": "@rn-forge/ng",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Core Angular utilities for the rn-forge toolkit.",
   "license": "MIT",
   "repository": {
