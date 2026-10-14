@@ -7,6 +7,6 @@ export class DemoErrorHandler implements ErrorHandler {
 
   handleError(error: unknown): void {
     console.error('Uncaught error:', error);
-    this.router.navigate(['/error']);
+    void this.router.navigate(['/error']);
   }
 }

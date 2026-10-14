@@ -76,7 +76,7 @@ const CSV_HEADER = 'id,name,category,price,active\n';
 
 /** Query parameters whether they came from `params` or were written into the URL. */
 const queryOf = (req: HttpRequest<unknown>) =>
-  new URL(req.urlWithParams, 'http://mock').searchParams;
+  new URL(req.urlWithParams, 'https://mock').searchParams;
 
 function listProducts(req: HttpRequest<unknown>) {
   if (req.headers.get('Accept')?.includes('text/csv')) {
