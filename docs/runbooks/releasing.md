@@ -90,4 +90,4 @@ Open: an internal registry instead of vendored tarballs (a `.verdaccio` config e
 ## 5. One-time repository setup
 
 - **GitHub Pages.** Repo Settings → Pages → Source: **GitHub Actions**. The `docs` job in CI handles the rest.
-- **Branch protection.** If `main` has branch protection or rulesets blocking direct pushes, add a bypass for the `github-actions` app (or the `github-actions[bot]` actor) so the release commit can be pushed. Do not switch to a personal access token to route around this. Branch protection on `main` and `release/**` requires the `ci-ok` status check and nothing else.
+- **Branch protection.** If `main` has branch protection or rulesets blocking direct pushes, add the release GitHub App (Contents read & write, installed on the repository) as an `Always` bypass actor so the release commit can be pushed, and declare `RELEASE_APP_ID` and `RELEASE_APP_PRIVATE_KEY` at organization or repository level. Use no deploy key or personal access token. Branch protection on `main` and `release/**` requires the `ci-ok` status check and nothing else.

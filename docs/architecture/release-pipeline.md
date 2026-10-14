@@ -62,7 +62,7 @@ Playwright e2e uses the atomized `e2e-ci` target (`@nx/playwright/plugin`'s defa
 
 `release.yml` is a manual `workflow_dispatch` with two jobs, `release` and `published-install`.
 
-**CI gate.** The first step requires a successful `ci.yml` run for the commit being released: `HEAD`, or `HEAD^` when `HEAD` carries a `v*` tag (a release commit is pushed with `GITHUB_TOKEN`, which starts no workflow, so `HEAD^` is the commit CI checked). Without one, a real release fails; a dry run warns and continues. The workflow runs no lint, test or e2e of its own.
+**CI gate.** The first step requires a successful `ci.yml` run for the commit being released: `HEAD`, or `HEAD^` when `HEAD` carries a `v*` tag (the release commit's own `ci.yml` run may not have finished, so `HEAD^` is the commit CI checked). Without one, a real release fails; a dry run warns and continues. The workflow runs no lint, test or e2e of its own.
 
 **Order.** Version locally (`nx release … --skip-publish`: version, changelog, commit, tag, no push) → `pack`, `verify-dist` and `verify-consumer` on the built `dist/` → push the commit and tag atomically → create the GitHub Release with its tarballs and `CHANGELOG.md` notes in one `gh release create` → `nx release publish --tag=<dist-tag> --excludeTaskDependencies` (a dry run while npm is disabled) → move the rolling `latest` release. The combined `nx release` command has no `--tag` flag, which is why publish is a separate step. A dry run uses `nx release version` with no commit or tag instead, because the combined command writes no files under `--dry-run`, and dist manifests would keep their `workspace:*` references; it verifies and previews the publish but creates nothing.
 
