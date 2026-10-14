@@ -308,7 +308,7 @@ export class RouteService {
    */
   navigateByUrl(url: string, extras: NavigationExtras = {}): void {
     if (isDebugMode()) console.debug('RouteService.navigateByUrl:', url);
-    this.router.navigateByUrl(url, {
+    void this.router.navigateByUrl(url, {
       onSameUrlNavigation: 'reload',
       replaceUrl: true,
       ...extras,
