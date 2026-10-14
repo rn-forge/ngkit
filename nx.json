@@ -101,7 +101,8 @@
   "release": {
     "projects": ["tag:publishable"],
     "version": {
-      "preVersionCommand": "pnpm exec nx run-many -t build patch-package-exports -p tag:publishable"
+      "preVersionCommand": "pnpm exec nx run-many -t build patch-package-exports -p tag:publishable",
+      "adjustSemverBumpsForZeroMajorVersion": false
     },
     "changelog": {
       "workspaceChangelog": {

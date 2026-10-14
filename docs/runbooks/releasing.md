@@ -8,7 +8,7 @@ Run from the Actions tab: **Release** → Run workflow, from ref `main`. The inp
 
 | Input           | Meaning                                                                                  |
 | --------------- | ---------------------------------------------------------------------------------------- |
-| `specifier`     | Version bump: `patch`, `minor` or `major`.                                               |
+| `specifier`     | Version bump: `patch`, `minor` or `major`, applied as given, also below `1.0.0`.         |
 | `exact-version` | Overrides the bump; leave empty normally.                                                |
 | `dist-tag`      | `latest` for releases from `main`; `v<major>-lts` for hotfixes to older majors.          |
 | `dry-run`       | Default `true`: no commit, tag or publish.                                               |
@@ -33,7 +33,7 @@ A breaking change reaches `CHANGELOG.md` only if `nx release` finds it in a comm
 
 So, before a release that carries breaking changes, **do one of these** and check the dry-run changelog preview shows them:
 
-- put a `BREAKING CHANGE:` footer in a conventional commit that lands on the release branch; or
+- put a `BREAKING CHANGE:` footer in a `feat`, `fix` or `perf` commit that lands on the release branch (Nx hides other types, such as `ci`, `chore`, `docs` and `refactor`, from the changelog, with their footers); or
 - edit `CHANGELOG.md` and the GitHub Release notes by hand after the release (the notes come from `CHANGELOG.md` at release time).
 
 The release page ([Release 1](../releases/release-1/index.md#breaking-changes-to-announce)) lists what each release must announce.
