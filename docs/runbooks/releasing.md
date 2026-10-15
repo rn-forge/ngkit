@@ -23,7 +23,7 @@ Run from the Actions tab: **Release** → Run workflow, from ref `main`. The inp
    - the rolling `latest` release points at it (main releases only);
    - `CHANGELOG.md` has an entry for it (see [Breaking changes](#2-breaking-changes));
    - `libs/ng/package.json` and `libs/ng-bootstrap/package.json` on `main` both show the new version;
-   - `ng-bootstrap`'s `peerDependencies["@rn-forge/ng"]`, in source and in the tarball, is pinned to the exact new version, not a `^` range.
+   - `ng-bootstrap`'s `peerDependencies["@rn-forge/ng"]` in the tarball is pinned to the exact new version, not a `^` range; in source it stays `workspace:*`.
 
 If a release fails, rerun **Release** from the same ref with the same inputs. A failure before the push leaves nothing public, and the rerun starts the same version again. After the push, the rerun finds the tag on `HEAD` and finishes that version (rebuild, GitHub Release, `latest`) instead of bumping; once the release is published, a rerun only repairs `latest`. If `published-install` fails, the release is already public: fix forward with a new release.
 
@@ -90,4 +90,4 @@ Open: an internal registry instead of vendored tarballs (a `.verdaccio` config e
 ## 5. One-time repository setup
 
 - **GitHub Pages.** Repo Settings → Pages → Source: **GitHub Actions**. The `docs` job in CI handles the rest.
-- **Branch protection.** If `main` has branch protection or rulesets blocking direct pushes, add the release GitHub App (Contents read & write, installed on the repository) as an `Always` bypass actor so the release commit can be pushed, and declare `RELEASE_APP_ID` and `RELEASE_APP_PRIVATE_KEY` at organization or repository level. Use no deploy key or personal access token. Branch protection on `main` and `release/**` requires the `ci-ok` status check and nothing else.
+- **Branch protection.** If `main` has branch protection or rulesets blocking direct pushes, add the release GitHub App (Contents read & write, installed on the repository) as an `Always` bypass actor so the release commit can be pushed, and declare `RELEASE_APP_CLIENT_ID` and `RELEASE_APP_PRIVATE_KEY` at organization or repository level. Use no deploy key or personal access token. Branch protection on `main` and `release/**` requires the `ci-ok` status check and nothing else.
