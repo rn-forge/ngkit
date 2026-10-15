@@ -1,0 +1,17 @@
+{
+  "name": "ng-demo-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/ng-demo-api",
+  "tags": ["scope:ngkit", "type:app"],
+  "targets": {
+    "serve": {
+      "continuous": true,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "uv run --project apps/ng-demo-api python apps/ng-demo-api/manage.py serve_fixture localhost:8100"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+[project]
+name = "ng-demo-api"
+version = "0.0.0"
+description = "Backend fixture serving ng-demo's products resource over the wire standards"
+requires-python = ">=3.14"
+dependencies = [
+  "rn-forge-django[drf,transfer] @ git+https://github.com/rn-forge/pykit@rn-forge-django-v0.4.0#subdirectory=packages/rn-forge-django",
+]
+
+[tool.uv]
+package = false

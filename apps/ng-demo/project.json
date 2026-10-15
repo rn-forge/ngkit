@@ -52,6 +52,17 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true
+        },
+        "fixture": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "apps/ng-demo/src/environments/environment.ts",
+              "with": "apps/ng-demo/src/environments/environment.fixture.ts"
+            }
+          ]
         }
       }
     },
@@ -65,6 +76,10 @@
         },
         "development": {
           "buildTarget": "ng-demo:build:development"
+        },
+        "fixture": {
+          "buildTarget": "ng-demo:build:fixture",
+          "proxyConfig": "apps/ng-demo/proxy.fixture.json"
         }
       }
     },

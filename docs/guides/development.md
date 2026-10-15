@@ -23,6 +23,17 @@ Prefer `nx affected`/`nx run-many` over running a single project's target when w
 
 [More about running tasks in the docs »](https://nx.dev/features/run-tasks)
 
+### Backend fixture
+
+`ng-demo-api` is a Django fixture for the resource screen's wire acceptance ([F4.3](../specs/epics/E4-standard-resource-screen/F4.3-wire-acceptance.md)). It needs [`uv`](https://docs.astral.sh/uv/), which provides the Python it declares. Run it beside the demo built for it:
+
+```sh
+pnpm nx run ng-demo-api:serve       # http://localhost:8100, fresh seeded SQLite on each start
+pnpm nx run ng-demo:serve:fixture   # http://localhost:4200, /api proxied to the fixture
+```
+
+`POST /api/_test/reset` restores the seed data. The plain `pnpm nx serve ng-demo` keeps the in-browser mock.
+
 ### Scaffolding projects
 
 Use an [Nx plugin](https://nx.dev/concepts/nx-plugins) generator to scaffold new projects:
