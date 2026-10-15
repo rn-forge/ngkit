@@ -24,3 +24,11 @@ launch-templates:
         uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/install-node-modules/main.yaml'
       - name: Install Browsers
         uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/install-browsers/main.yaml'
+      - name: Install uv
+        script: |
+          # A committed uv.lock turns this on; uv then downloads the Python version the project declares
+          if [ -n "$(git ls-files '*uv.lock')" ]; then
+            curl -LsSf https://astral.sh/uv/0.13.1/install.sh | UV_NO_MODIFY_PATH=1 sh
+            echo "PATH=$HOME/.local/bin:$PATH" >> $NX_CLOUD_ENV
+            "$HOME/.local/bin/uv" --version
+          fi

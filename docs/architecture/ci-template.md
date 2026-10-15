@@ -17,18 +17,18 @@ Which CI files are portable and what a repository must declare for them to work.
 
 Each carries the marker `ci-template: repository-agnostic` on its first line (second, after a shebang), and none contains a repository-specific value ([How to check a copy](#how-to-check-a-copy)).
 
-| File                                       | Role                                                                                 |
-| ------------------------------------------ | ------------------------------------------------------------------------------------ |
-| `.github/actions/setup/action.yml`         | pnpm, Node, optional `nx start-ci-run`, `pnpm install --frozen-lockfile`             |
-| `.github/workflows/ci.yml`                 | `ci-cloud`/`ci-local`, `sonar`, `package`, `docs`, `template`, `ci-ok`               |
-| `.github/workflows/release.yml`            | Gate, version, verify, push, release, publish, rolling `latest`, `published-install` |
-| `.github/dependabot.yml`                   | Weekly grouped `github-actions` updates                                              |
-| `.nx/workflows/agents.yaml`                | Nx Cloud launch template `linux-medium`                                              |
-| `tools/ci/resolve-dist-workspace-deps.mjs` | Rewrites `workspace:` ranges in one dist manifest                                    |
-| `tools/ci/verify-dist-manifest.mjs`        | Checks one dist manifest                                                             |
-| `tools/ci/assemble-site.mjs`               | Builds `dist/site/` from the projects that declare doc targets                       |
-| `tools/ci/release-notes.mjs`               | Prints one version's section of `CHANGELOG.md`                                       |
-| `tools/ci/check-template.mjs`              | Fails when a template file contains a repository-specific value                      |
+| File                                       | Role                                                                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `.github/actions/setup/action.yml`         | pnpm, Node, uv (when a `uv.lock` is committed), optional `nx start-ci-run`, `pnpm install --frozen-lockfile` |
+| `.github/workflows/ci.yml`                 | `ci-cloud`/`ci-local`, `sonar`, `package`, `docs`, `template`, `ci-ok`                                       |
+| `.github/workflows/release.yml`            | Gate, version, verify, push, release, publish, rolling `latest`, `published-install`                         |
+| `.github/dependabot.yml`                   | Weekly grouped `github-actions` updates                                                                      |
+| `.nx/workflows/agents.yaml`                | Nx Cloud launch template `linux-medium`, with uv when a `uv.lock` is committed                               |
+| `tools/ci/resolve-dist-workspace-deps.mjs` | Rewrites `workspace:` ranges in one dist manifest                                                            |
+| `tools/ci/verify-dist-manifest.mjs`        | Checks one dist manifest                                                                                     |
+| `tools/ci/assemble-site.mjs`               | Builds `dist/site/` from the projects that declare doc targets                                               |
+| `tools/ci/release-notes.mjs`               | Prints one version's section of `CHANGELOG.md`                                                               |
+| `tools/ci/check-template.mjs`              | Fails when a template file contains a repository-specific value                                              |
 
 One known exception: the Nx Cloud image in `.nx/workflows/agents.yaml` (`ubuntu22.04-node24.14-v1`) names the Node version. Nx Cloud selects a prebuilt image by name, so it cannot follow `.nvmrc`, and the whole-token check does not catch a version inside a longer identifier. A repository on a different Node major edits that one line.
 
@@ -50,6 +50,7 @@ What a repository supplies so the template files can run.
 | `sonar-project.properties`: project key, organization, sources, exclusions; no coverage paths                                                                                                                    | `sonar`                          |
 | Repository variables `USE_NX_CLOUD`, `NX_CLOUD_AGENTS`; secrets `NX_CLOUD_ACCESS_TOKEN`, `SONAR_TOKEN`                                                                                                           | `ci.yml`                         |
 | Variable `RELEASE_APP_CLIENT_ID` and secret `RELEASE_APP_PRIVATE_KEY` (repository or organization level): the release GitHub App                                                                                 | `release.yml`                    |
+| A committed `uv.lock` (with its `.python-version`) anywhere outside `node_modules`: turns on uv, which downloads the declared Python                                                                             | setup action, Nx Cloud agents    |
 | A `CHANGELOG.md` kept by `nx release`                                                                                                                                                                            | `release-notes.mjs`              |
 
 The release push and tag pushes run as a GitHub App, through a token from `actions/create-github-app-token`; `gh` calls (releases, run lookup) still use `GITHUB_TOKEN`.
