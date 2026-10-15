@@ -49,7 +49,7 @@ What a repository supplies so the template files can run.
 | The implementation behind `verify-consumer` (here `tools/scripts/verify-consumer.mjs`) and any other repository tooling, reached only through its Nx target                                                      | `verify-consumer` target         |
 | `sonar-project.properties`: project key, organization, sources, exclusions; no coverage paths                                                                                                                    | `sonar`                          |
 | Repository variables `USE_NX_CLOUD`, `NX_CLOUD_AGENTS`; secrets `NX_CLOUD_ACCESS_TOKEN`, `SONAR_TOKEN`                                                                                                           | `ci.yml`                         |
-| Variable `RELEASE_APP_ID` and secret `RELEASE_APP_PRIVATE_KEY` (repository or organization level): the release GitHub App                                                                                        | `release.yml`                    |
+| Variable `RELEASE_APP_CLIENT_ID` and secret `RELEASE_APP_PRIVATE_KEY` (repository or organization level): the release GitHub App                                                                                 | `release.yml`                    |
 | A `CHANGELOG.md` kept by `nx release`                                                                                                                                                                            | `release-notes.mjs`              |
 
 The release push and tag pushes run as a GitHub App, through a token from `actions/create-github-app-token`; `gh` calls (releases, run lookup) still use `GITHUB_TOKEN`.
@@ -64,8 +64,8 @@ The release push and tag pushes run as a GitHub App, through a token from `actio
 
 - **Pages.** Settings, Pages, Source: **GitHub Actions**. The `docs` job deploys from `main`.
 - **Required check.** Branch protection (or rulesets) on `main` and `release/**` requires the `ci-ok` status check and nothing else.
-- **Release push.** Create a GitHub App with Contents read & write, install it on the repository, and add it as an `Always` bypass actor on any ruleset that blocks direct pushes. Declare `RELEASE_APP_ID` and `RELEASE_APP_PRIVATE_KEY` at organization or repository level. Use no deploy key or personal access token (organization policy may disallow deploy keys).
-- **Variables.** `RELEASE_APP_ID` for `release.yml`; `USE_NX_CLOUD` (set to `false` to run `ci-local` instead of `ci-cloud`; unset means Nx Cloud) and `NX_CLOUD_AGENTS` (agent count; optional, default 3).
+- **Release push.** Create a GitHub App with Contents read & write, install it on the repository, and add it as an `Always` bypass actor on any ruleset that blocks direct pushes. Declare `RELEASE_APP_CLIENT_ID` and `RELEASE_APP_PRIVATE_KEY` at organization or repository level. Use no deploy key or personal access token (organization policy may disallow deploy keys).
+- **Variables.** `RELEASE_APP_CLIENT_ID` for `release.yml`; `USE_NX_CLOUD` (set to `false` to run `ci-local` instead of `ci-cloud`; unset means Nx Cloud) and `NX_CLOUD_AGENTS` (agent count; optional, default 3).
 - **Secrets.** `NX_CLOUD_ACCESS_TOKEN` for `ci-cloud`, `SONAR_TOKEN` for `sonar`, `RELEASE_APP_PRIVATE_KEY` for `release.yml`.
 
 ## How to check a copy
