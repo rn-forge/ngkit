@@ -34,6 +34,14 @@ pnpm nx run ng-demo:serve:fixture   # http://localhost:4200, /api proxied to the
 
 `POST /api/_test/reset` restores the seed data. `pnpm nx e2e ng-demo-e2e` starts both servers itself, so it needs `uv` too. The plain `pnpm nx serve ng-demo` keeps the in-browser mock.
 
+`ng-demo-api-fastapi` serves the same resource and routes on the same port from FastAPI, so run it instead of `ng-demo-api` (`pnpm nx run ng-demo-api-fastapi:serve`). To run the e2e suite against it, set `NG_DEMO_BACKEND`; unset or `django` selects the Django fixture:
+
+```sh
+NG_DEMO_BACKEND=fastapi pnpm nx e2e ng-demo-e2e
+```
+
+CI runs the Django backend only (see [F4.3](../specs/epics/E4-standard-resource-screen/F4.3-wire-acceptance.md)).
+
 ### Scaffolding projects
 
 Use an [Nx plugin](https://nx.dev/concepts/nx-plugins) generator to scaffold new projects:

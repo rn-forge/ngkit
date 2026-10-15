@@ -6,6 +6,26 @@ import { workspaceRoot } from '@nx/devkit';
 const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
 
 /**
+ * The fixture backend, chosen by `NG_DEMO_BACKEND`: `django` (the default) or
+ * `fastapi`. Both serve the same routes on port 8100, so the suite and the
+ * demo's proxy are the same for either. `uv` is run directly, not through
+ * `nx run <project>:serve`: under Nx the server survives Playwright's
+ * shutdown and keeps port 8100.
+ */
+const backends: Record<string, string> = {
+  django:
+    'uv run --project apps/ng-demo-api python apps/ng-demo-api/manage.py serve_fixture localhost:8100',
+  fastapi:
+    'uv run --project apps/ng-demo-api-fastapi python apps/ng-demo-api-fastapi/serve.py localhost:8100',
+};
+const backend = process.env['NG_DEMO_BACKEND'] || 'django';
+if (!Object.hasOwn(backends, backend)) {
+  throw new Error(
+    `NG_DEMO_BACKEND must be one of ${Object.keys(backends).join(', ')}; got "${backend}".`,
+  );
+}
+
+/**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
@@ -35,10 +55,7 @@ export default defineConfig({
   /* The fixture backend, then the demo built for it (dev-server compile is slow). */
   webServer: [
     {
-      // `uv` directly, not `nx run ng-demo-api:serve`: under Nx the server
-      // survives Playwright's shutdown and keeps port 8100.
-      command:
-        'uv run --project apps/ng-demo-api python apps/ng-demo-api/manage.py serve_fixture localhost:8100',
+      command: backends[backend],
       url: 'http://localhost:8100/api/products',
       reuseExistingServer: !process.env['CI'],
       cwd: workspaceRoot,
