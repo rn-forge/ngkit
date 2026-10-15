@@ -32,7 +32,7 @@ pnpm nx run ng-demo-api:serve       # http://localhost:8100, fresh seeded SQLite
 pnpm nx run ng-demo:serve:fixture   # http://localhost:4200, /api proxied to the fixture
 ```
 
-`POST /api/_test/reset` restores the seed data. The plain `pnpm nx serve ng-demo` keeps the in-browser mock.
+`POST /api/_test/reset` restores the seed data. `pnpm nx e2e ng-demo-e2e` starts both servers itself, so it needs `uv` too. The plain `pnpm nx serve ng-demo` keeps the in-browser mock.
 
 ### Scaffolding projects
 

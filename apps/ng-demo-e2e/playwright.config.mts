@@ -29,13 +29,29 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'pnpm exec nx run ng-demo:serve-static',
-    url: 'http://localhost:4200',
-    reuseExistingServer: !process.env['CI'],
-    cwd: workspaceRoot,
-  },
+  /* The fixture's database is shared, so tests run one at a time. */
+  workers: 1,
+  fullyParallel: false,
+  /* The fixture backend, then the demo built for it (dev-server compile is slow). */
+  webServer: [
+    {
+      // `uv` directly, not `nx run ng-demo-api:serve`: under Nx the server
+      // survives Playwright's shutdown and keeps port 8100.
+      command:
+        'uv run --project apps/ng-demo-api python apps/ng-demo-api/manage.py serve_fixture localhost:8100',
+      url: 'http://localhost:8100/api/products',
+      reuseExistingServer: !process.env['CI'],
+      cwd: workspaceRoot,
+      timeout: 180_000,
+    },
+    {
+      command: 'pnpm exec nx run ng-demo:serve:fixture',
+      url: 'http://localhost:4200',
+      reuseExistingServer: !process.env['CI'],
+      cwd: workspaceRoot,
+      timeout: 180_000,
+    },
+  ],
   projects: [
     {
       name: 'chromium',

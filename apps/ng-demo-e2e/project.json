@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "sourceRoot": "apps/ng-demo-e2e/src",
-  "implicitDependencies": ["ng-demo"],
+  "implicitDependencies": ["ng-demo", "ng-demo-api"],
   "// targets": "to see all targets run: nx show project ng-demo-e2e --web",
   "targets": {
     "e2e": {
