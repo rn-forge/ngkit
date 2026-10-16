@@ -12,6 +12,10 @@
   - AuthBackendService requires backend.baseUrl when used.
   - FormUtil validators run on pristine values; DATE_RANGE(start?, end?) is a group validator; the old DATE_RANGE(formGroup, …) form is removed.
   - ObjectUtil.diff compares scalars strictly and arrays and dates structurally.
+  - CrudDataSource and its types moved from @rn-forge/ng-bootstrap/crud to @rn-forge/ng/crud and changed shape (AIP-158 lists; get, delete and Versioned added; count/next/previous/results, BulkDeleteResponse, UploadResponse and upload removed).
+  - The ng-bootstrap/crud mode 'upload' is now 'import', and 'download' is removed (export is a direct GET).
+  - The permission keys .upload/.download are now .import/.export.
+  - The CRUD table renders one server page with token paging; there are no numbered pages.
 
 ### ❤️ Thank You
 
