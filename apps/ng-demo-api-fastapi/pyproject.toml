@@ -1,0 +1,15 @@
+[project]
+name = "ng-demo-api-fastapi"
+version = "0.0.0"
+description = "FastAPI backend fixture serving ng-demo's products resource over the wire standards"
+requires-python = ">=3.14"
+dependencies = [
+  "rn-forge-fastapi[transfer] @ git+https://github.com/rn-forge/pykit@rn-forge-fastapi-v0.2.0#subdirectory=packages/rn-forge-fastapi",
+  "rn-forge-sqlalchemy @ git+https://github.com/rn-forge/pykit@rn-forge-sqlalchemy-v0.2.0#subdirectory=packages/rn-forge-sqlalchemy",
+  # The ASGI server and the SQLite driver; neither library declares them.
+  "uvicorn>=0.30",
+  "aiosqlite>=0.20",
+]
+
+[tool.uv]
+package = false

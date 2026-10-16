@@ -1,6 +1,6 @@
 # ci-template: repository-agnostic. Reads only the declarations in docs/architecture/ci-template.md.
 name: Setup
-description: Install pnpm and Node, optionally start an Nx Cloud CI run, and install dependencies. Run after actions/checkout.
+description: Install pnpm and Node, uv when the repository commits a uv.lock, optionally start an Nx Cloud CI run, and install dependencies. Run after actions/checkout.
 
 inputs:
   start-ci-run:
@@ -31,3 +31,10 @@ runs:
 
     - run: pnpm install --frozen-lockfile
       shell: bash
+
+    - if: ${{ hashFiles('**/uv.lock', '!**/node_modules/**') != '' }}
+      uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      with:
+        version: 0.13.1
+        enable-cache: true
+        cache-dependency-glob: '**/uv.lock'

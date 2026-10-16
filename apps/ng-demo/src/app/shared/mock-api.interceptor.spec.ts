@@ -10,6 +10,7 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { getJwtForEmail } from './demo-jwt';
 import { mockApiInterceptor, resetMockApi } from './mock-api.interceptor';
 
@@ -57,6 +58,20 @@ describe('mockApiInterceptor', () => {
     const req = controller.expectOne('/assets/config.json');
     expect(req.request.method).toBe('GET');
     req.flush({});
+  });
+
+  it('passes /api/products through to the backend when mockProducts is off', () => {
+    const { http, controller } = setup();
+    environment.mockProducts = false;
+    try {
+      http.get('/api/products').subscribe();
+
+      const req = controller.expectOne('/api/products');
+      expect(req.request.method).toBe('GET');
+      req.flush([]);
+    } finally {
+      environment.mockProducts = true;
+    }
   });
 
   it('simulates a server error when the X-Demo-Error header is set', async () => {

@@ -50,7 +50,7 @@ Each publishable library's `project.json` sets `release.version.manifestRootsToU
 - **`template`**: runs `tools/ci/check-template.mjs`, which fails when a file carrying the `ci-template: repository-agnostic` marker contains a repository-specific value (project name or root, repository name, Nx Cloud id, Node or pnpm version, Sonar key or organization). It has no `needs`, so it runs in parallel with the other paths.
 - **`ci-ok`**: the one check branch protection requires. It runs last (`always()`, `needs:` every other job) and fails when any needed job failed or was cancelled, or when neither `ci-cloud` nor `ci-local` succeeded; skipped jobs (Sonar on Dependabot and fork PRs, `docs` off `main`, the unused `ci-*` path) pass.
 
-Every job except `ci-ok` checks out the repository, then uses the shared `.github/actions/setup` action, which installs pnpm (version from `package.json#packageManager`) and Node (version from `.nvmrc`) and runs `pnpm install --frozen-lockfile`.
+Every job except `ci-ok` checks out the repository, then uses the shared `.github/actions/setup` action, which installs pnpm (version from `package.json#packageManager`) and Node (version from `.nvmrc`), installs uv when the repository commits a `uv.lock` (the Python e2e fixture; uv downloads the Python it declares), and runs `pnpm install --frozen-lockfile`. The Nx Cloud agents install the same uv version in an init step under the same condition.
 
 Distributed versus local execution is a toggle, not two pipelines to maintain in parallel.
 

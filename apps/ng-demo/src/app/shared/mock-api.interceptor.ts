@@ -7,6 +7,7 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { getJwtForEmail } from './demo-jwt';
 
 interface MockProduct {
@@ -222,6 +223,10 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
     return respond(200, {
       access_token: getJwtForEmail(body?.user ?? 'admin@example.com'),
     });
+  }
+
+  if (!environment.mockProducts) {
+    return next(req);
   }
 
   return handleProductsRoute(method, path, req) ?? next(req);

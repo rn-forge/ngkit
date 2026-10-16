@@ -15,6 +15,7 @@ import { provideRnForgeBootstrapConfig } from '@rn-forge/ng-bootstrap';
 import { provideRnForgeShellConfig } from '@rn-forge/ng-bootstrap/shell';
 
 // internal imports
+import { environment } from '../environments/environment';
 import { appRoutes } from './app.routes';
 import { DEMO_API_URL } from './shared/api.tokens';
 import { DemoErrorHandler } from './shared/global-error.handler';
@@ -40,7 +41,11 @@ export const appConfig: ApplicationConfig = {
       },
       backend: {
         baseUrl: '/api',
-        ignoreBackendURLs: ['/api/auth/'],
+        // The fixture backend has no auth; the demo's anonymous credentials
+        // would otherwise redirect every unmocked call to login.
+        ignoreBackendURLs: environment.mockProducts
+          ? ['/api/auth/']
+          : ['/api/'],
       },
     }),
 
