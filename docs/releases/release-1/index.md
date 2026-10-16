@@ -1,6 +1,6 @@
 # Release 1
 
-**Status:** planned
+**Status:** shipped (2026-10-14)
 
 [Back to releases](../index.md) · [Releasing](../../runbooks/releasing.md)
 
@@ -10,15 +10,15 @@ Every scope story is done, and the owner approves.
 
 ## Scope
 
-| Feature                                                                                                                 | Epic                                                         | Status      |
-| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------- |
-| [F4.1 — CRUD entry point](../../specs/epics/E4-standard-resource-screen/F4.1-crud-entry-point.md)                       | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done        |
-| [F4.2 — Bootstrap renderer and demo](../../specs/epics/E4-standard-resource-screen/F4.2-bootstrap-renderer-and-demo.md) | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done        |
-| [F13.1 — Discovered projects](../../specs/epics/E13-portable-ci/F13.1-discovered-projects.md)                           | [E13](../../specs/epics/E13-portable-ci/index.md)            | done        |
-| [F13.2 — One gate](../../specs/epics/E13-portable-ci/F13.2-one-gate.md)                                                 | [E13](../../specs/epics/E13-portable-ci/index.md)            | done        |
-| [F13.3 — Docs job](../../specs/epics/E13-portable-ci/F13.3-docs-job.md)                                                 | [E13](../../specs/epics/E13-portable-ci/index.md)            | in progress |
-| [F13.4 — Safe release](../../specs/epics/E13-portable-ci/F13.4-safe-release.md)                                         | [E13](../../specs/epics/E13-portable-ci/index.md)            | in progress |
-| [F13.5 — Template contract](../../specs/epics/E13-portable-ci/F13.5-template-contract.md)                               | [E13](../../specs/epics/E13-portable-ci/index.md)            | done        |
+| Feature                                                                                                                 | Epic                                                         | Status |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------ |
+| [F4.1 — CRUD entry point](../../specs/epics/E4-standard-resource-screen/F4.1-crud-entry-point.md)                       | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done   |
+| [F4.2 — Bootstrap renderer and demo](../../specs/epics/E4-standard-resource-screen/F4.2-bootstrap-renderer-and-demo.md) | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done   |
+| [F13.1 — Discovered projects](../../specs/epics/E13-portable-ci/F13.1-discovered-projects.md)                           | [E13](../../specs/epics/E13-portable-ci/index.md)            | done   |
+| [F13.2 — One gate](../../specs/epics/E13-portable-ci/F13.2-one-gate.md)                                                 | [E13](../../specs/epics/E13-portable-ci/index.md)            | done   |
+| [F13.3 — Docs job](../../specs/epics/E13-portable-ci/F13.3-docs-job.md)                                                 | [E13](../../specs/epics/E13-portable-ci/index.md)            | done   |
+| [F13.4 — Safe release](../../specs/epics/E13-portable-ci/F13.4-safe-release.md)                                         | [E13](../../specs/epics/E13-portable-ci/index.md)            | done   |
+| [F13.5 — Template contract](../../specs/epics/E13-portable-ci/F13.5-template-contract.md)                               | [E13](../../specs/epics/E13-portable-ci/index.md)            | done   |
 
 ### Done before this release
 
@@ -47,7 +47,7 @@ How a breaking change reaches the changelog is in [Releasing](../../runbooks/rel
 
 ## Progress
 
-E2, E3, F4.1–F4.2 and F13.1, F13.2 and F13.5 are done; the work is ready to merge. What remains can only happen on GitHub, after the merge, and is the shipping procedure: F13.3 is done once the docs site deploys from a push to `main`, and F13.4 once the first real release passes its owner-run checks (the gate, resume, `latest` and `published-install`). Running those checks is how release-1 is cut, so the entry criterion "every scope story is done" is met by the cut itself for those two features. F4.3 (the wire-acceptance e2e against a backend fixture) is not part of this release; it moved to [Release 2](../release-2/index.md).
+Shipped as `v0.2.0` on 2026-10-14. Nothing remains. F4.3 (the wire-acceptance e2e against a backend fixture) is not part of this release; it moved to [Release 2](../release-2/index.md), together with two F13.4 owner checks (the gate's negative check and the resume rerun) that run at the next real release.
 
 ## Commits
 
@@ -84,7 +84,13 @@ F4.1 and F4.2 landed before commit subjects named story IDs, so they do not appe
 
 ## Exit criteria
 
-- The tag exists.
-- The GitHub Release exists with both tarballs.
-- `CHANGELOG.md` has an entry that names each breaking change above.
-- `verify-consumer` passes on the released tarballs (evidence: the `published-install` job in `release.yml`).
+- The tag exists. Met: `v0.2.0`.
+- The GitHub Release exists with both tarballs. Met: `rn-forge-ng-0.2.0.tgz` and `rn-forge-ng-bootstrap-0.2.0.tgz`.
+- `CHANGELOG.md` has an entry that names each breaking change above. Met: the `0.2.0` entry names all eight; the release run generated entries 1–4 and breaking changes 5–8 were added by hand on 2026-10-16.
+- `verify-consumer` passes on the released tarballs (evidence: the `published-install` job in `release.yml`). Met: it succeeded in Release run `38650165030`.
+
+## Shipped
+
+| Version  | Date       | Release                                                         | Evidence                                                                                                                                                                                                                                                                                                                  |
+| -------- | ---------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `v0.2.0` | 2026-10-14 | [v0.2.0](https://github.com/rn-forge/ngkit/releases/tag/v0.2.0) | Release run `38650165030` from `main` (`dry-run: false`): `release` and `published-install` succeeded; the rolling `latest` release points at `v0.2.0` with both tarballs. The docs site deployed from `main` in CI runs `38650259627`, `38679358440` and `38963621276`. `libs/` is unchanged between the tag and `main`. |
