@@ -10,9 +10,18 @@
 
 ## Scope
 
-| Feature                                                                                                                  | Epic                                                         | Status |
-| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ------ |
-| [F4.3 — Accept the screen against a real backend](../../specs/epics/E4-standard-resource-screen/F4.3-wire-acceptance.md) | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done   |
+| Feature                                                                                                                  | Epic                                                         | Status      |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ----------- |
+| [F4.3 — Accept the screen against a real backend](../../specs/epics/E4-standard-resource-screen/F4.3-wire-acceptance.md) | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done        |
+| [F5.1 — Client model and wire contract](../../specs/epics/E5-session-client-auth/F5.1-client-model.md)                   | [E5](../../specs/epics/E5-session-client-auth/index.md)      | elaborating |
+| [F5.2 — `@rn-forge/ng/auth` session client](../../specs/epics/E5-session-client-auth/F5.2-auth-wrapper.md)               | [E5](../../specs/epics/E5-session-client-auth/index.md)      | elaborating |
+| [F5.3 — Bootstrap auth UI](../../specs/epics/E5-session-client-auth/F5.3-bootstrap-auth-ui.md)                           | [E5](../../specs/epics/E5-session-client-auth/index.md)      | elaborating |
+| [F5.4 — Acceptance against a session backend](../../specs/epics/E5-session-client-auth/F5.4-auth-acceptance.md)          | [E5](../../specs/epics/E5-session-client-auth/index.md)      | elaborating |
+| [F11.1 — `@rn-forge/ng-plugin`](../../specs/epics/E11-workspace-generators/F11.1-ng-plugin.md)                           | [E11](../../specs/epics/E11-workspace-generators/index.md)   | planned     |
+| [F11.2 — `@rn-forge/nx-plugin`](../../specs/epics/E11-workspace-generators/F11.2-nx-plugin.md)                           | [E11](../../specs/epics/E11-workspace-generators/index.md)   | planned     |
+| [F11.3 — `create-rn-forge-ng-workspace` CLI](../../specs/epics/E11-workspace-generators/F11.3-create-workspace-cli.md)   | [E11](../../specs/epics/E11-workspace-generators/index.md)   | planned     |
+
+Excluded: S11.2.6 (`setup-agentic-coding`) is deferred inside F11.2. [F5.5](../../specs/epics/E5-session-client-auth/F5.5-situational-client-extensions.md) is deferred; each extension becomes a story only when an application needs it. F5.4 cannot start until a released server library serves the auth routes (its entry criterion).
 
 ### Owner checks carried from Release 1
 
@@ -23,26 +32,32 @@
 
 ## Decisions
 
-None yet.
+- [ADR-0006](../../adr/ADR-0006.md): the browser holds a backend session, never a token. Proposed; accepted by [S5.1.1](../../specs/epics/E5-session-client-auth/F5.1-client-model.md).
+- [E11 Decisions](../../specs/epics/E11-workspace-generators/index.md#decisions) (owner decision, 2026-10-17): the three new packages join the [ADR-0003](../../adr/ADR-0003.md) fixed group, tagged `publishable`.
 
 ## Breaking changes
 
-None.
+None from E11: new packages are not breaks. Expected, from [E5](../../specs/epics/E5-session-client-auth/index.md) (the release must announce them):
+
+- `@rn-forge/ng/auth`: the configuration (`provideRnForgeAuthConfig`, `RnForgeAuthConfig`, `RN_FORGE_AUTH_CONFIG_TOKEN`, replaced by `provideRnForgeAuth`), the credentials types and services (`LoginResponse`, `UserProfile`, `JwtCredentials`, `JwtToken`, the `refreshToken` hook, `disableAuth`), the guard (`authRouteGuard`, `ignoreAppRoutes`, replaced by `authGuard` and `permissionGuard`), and the `jwt-decode` dependency.
+- `@rn-forge/ng-bootstrap/auth`: the whole surface, including `AuthComponent`'s login and logout modes and `UserComponent`'s use of `UserProfile`.
 
 ## Progress
 
-F4.3 is done (2026-10-17): the fixtures and e2e suite pass on both CI paths. The work adds test code only; no published library changes. What remains for the cut: the two owner checks carried from Release 1, and a library scope still to be chosen by the owner.
+F4.3 is done (2026-10-17): the fixtures and e2e suite pass on both CI paths. The work adds test code only; no published library changes. The owner added E5 and E11 to this release (2026-10-17). E5 starts with the S5.1.1 decision (accept ADR-0006); F5.4 waits for a released server library. What remains for the cut: the two owner checks carried from Release 1, E5 and E11. E11 is planned: build F11.2 first, then F11.1, then F11.3.
 
 ## Commits
 
 ```console
-$ git log --oneline -E --grep 'F4\.3|S4\.3\.[0-9]'
+$ git log --oneline -E --grep 'F4\.3|S4\.3\.[0-9]|F5\.[0-9]|S5\.[0-9]\.[0-9]|F11\.[0-9]|S11\.[0-9]\.[0-9]'
 (not refreshed until the cut)
 ```
 
 ## Exit criteria
 
 - F4.3 is done.
+- F5.1–F5.4 are done, and ADR-0006 is `accepted`.
+- F11.1–F11.3 are done (S11.2.6 stays deferred), and the three new packages release with the group.
 - The two owner checks above have run and passed, or the owner has waived them.
 - The tag exists and the GitHub Release exists with both tarballs.
 - `CHANGELOG.md` has an entry for the version.

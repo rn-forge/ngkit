@@ -1,6 +1,6 @@
 # E5 — Session client auth
 
-**Status:** elaborating · **Owner:** ngkit
+**Status:** elaborating · **Owner:** ngkit · **Release:** [Release 2](../../../releases/release-2/index.md)
 
 **Source:** former roadmap item H5; redefined by the owner on 2026-10-16 around a backend-for-frontend session model.
 
