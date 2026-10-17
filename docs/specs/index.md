@@ -4,7 +4,7 @@ What ngkit is made of and what is left to do. The board says what is next; the e
 says how; its ADRs say why. `done` means implemented; the
 [release pages](../releases/index.md) record what shipped.
 
-As of 2026-10-16, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). Wire acceptance of the resource screen against a real backend (F4.3) has its fixtures and e2e suite and moved to [Release 2](../releases/release-2/index.md), waiting only on its CI runs. OIDC client auth has stories but waits on its client-model decision, and the workspace generators have open questions to answer; everything else is deferred.
+As of 2026-10-16, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). Wire acceptance of the resource screen against a real backend (F4.3) has its fixtures and e2e suite and moved to [Release 2](../releases/release-2/index.md), waiting only on its CI runs. Session client auth is redefined around a same-origin backend session and has stories, waiting on its client-model ADR and wire contract, and the workspace generators have open questions to answer; everything else is deferred.
 
 ## Board
 
@@ -16,10 +16,10 @@ As of 2026-10-16, the libraries' packaging, the retired HTTP entry point, core c
 
 ### To elaborate
 
-| Epic                                                                  | Next step                                                           |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| [E5 — OIDC client auth](epics/E5-oidc-client-auth/index.md)           | Decide S5.1.1 (browser client or BFF), then choose the OIDC library |
-| [E11 — Workspace generators](epics/E11-workspace-generators/index.md) | Answer the open questions, then write stories with acceptance       |
+| Epic                                                                  | Next step                                                      |
+| --------------------------------------------------------------------- | -------------------------------------------------------------- |
+| [E5 — Session client auth](epics/E5-session-client-auth/index.md)     | Accept ADR-0006 (S5.1.1) and settle the wire contract (S5.1.2) |
+| [E11 — Workspace generators](epics/E11-workspace-generators/index.md) | Answer the open questions, then write stories with acceptance  |
 
 ### Deferred
 
