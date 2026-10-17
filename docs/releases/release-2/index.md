@@ -10,9 +10,9 @@
 
 ## Scope
 
-| Feature                                                                                                                  | Epic                                                         | Status      |
-| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ----------- |
-| [F4.3 — Accept the screen against a real backend](../../specs/epics/E4-standard-resource-screen/F4.3-wire-acceptance.md) | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | in progress |
+| Feature                                                                                                                  | Epic                                                         | Status |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ------ |
+| [F4.3 — Accept the screen against a real backend](../../specs/epics/E4-standard-resource-screen/F4.3-wire-acceptance.md) | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done   |
 
 ### Owner checks carried from Release 1
 
@@ -31,7 +31,7 @@ None.
 
 ## Progress
 
-F4.3's fixtures and e2e suite are written (S4.3.1–S4.3.4 and S4.3.6). S4.3.5 waits on a CI run of the e2e job on each path (owner, on GitHub). The work adds test code only; no published library changes.
+F4.3 is done (2026-10-17): the fixtures and e2e suite pass on both CI paths. The work adds test code only; no published library changes. What remains for the cut: the two owner checks carried from Release 1, and a library scope still to be chosen by the owner.
 
 ## Commits
 
