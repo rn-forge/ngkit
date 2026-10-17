@@ -4,15 +4,13 @@ What ngkit is made of and what is left to do. The board says what is next; the e
 says how; its ADRs say why. `done` means implemented; the
 [release pages](../releases/index.md) record what shipped.
 
-As of 2026-10-16, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). Wire acceptance of the resource screen against a real backend (F4.3) has its fixtures and e2e suite and moved to [Release 2](../releases/release-2/index.md), waiting only on its CI runs. Session client auth is redefined around a same-origin backend session and has stories, waiting on its client-model ADR and wire contract, and the workspace generators have open questions to answer; everything else is deferred.
+As of 2026-10-17, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). Wire acceptance of the resource screen against a real backend (F4.3) is done, which closes E4; it is in [Release 2](../releases/release-2/index.md), which still needs its library scope. Next: the owner chooses that scope, either E5 (accept ADR-0006, S5.1.1) or E11 (answer its open questions). Session client auth is redefined around a same-origin backend session and has stories, waiting on its client-model ADR and wire contract, and the workspace generators have open questions to answer; everything else is deferred.
 
 ## Board
 
 ### In progress
 
-| Epic                                                                        | Release                                                                                                      | Next step                                           |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
-| [E4 — Standard resource screen](epics/E4-standard-resource-screen/index.md) | [Release 1](../releases/release-1/index.md) (F4.1, F4.2); [Release 2](../releases/release-2/index.md) (F4.3) | F4.3: S4.3.5 first CI run on both paths (Release 2) |
+None.
 
 ### To elaborate
 
@@ -40,6 +38,7 @@ As of 2026-10-16, the libraries' packaging, the retired HTTP entry point, core c
 | [E2 — Retire the HTTP entry point](epics/E2-retire-http-entry-point/index.md)     | 2026-09-23 (`c30d63a`) |
 | [E3 — Core correctness](epics/E3-core-correctness/index.md)                       | 2026-09-23 (`1f54842`) |
 | [E13 — Portable CI](epics/E13-portable-ci/index.md)                               | 2026-10-14 (`d1e026c`) |
+| [E4 — Standard resource screen](epics/E4-standard-resource-screen/index.md)       | 2026-10-17 (`1fc3c8d`) |
 
 ## Conventions
 

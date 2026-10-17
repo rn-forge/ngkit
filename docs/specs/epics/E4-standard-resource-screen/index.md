@@ -1,6 +1,6 @@
 # E4 — Standard resource screen
 
-**Status:** in progress · **Owner:** ngkit · **Release:** [Release 1](../../../releases/release-1/index.md) (F4.1, F4.2), [Release 2](../../../releases/release-2/index.md) (F4.3)
+**Status:** done · **Implemented:** 2026-10-17 (`1fc3c8d`) · **Owner:** ngkit · **Release:** [Release 1](../../../releases/release-1/index.md) (F4.1, F4.2), [Release 2](../../../releases/release-2/index.md) (F4.3)
 
 **Source:** former roadmap item H4.
 
