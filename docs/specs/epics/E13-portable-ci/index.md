@@ -22,7 +22,7 @@ The target shape, the template/repository split and the principles every feature
 
 **Order.** F13.1 first: every other feature consumes its discovery. F13.2 and F13.3 can follow in either order. F13.4 needs F13.1 and F13.2 (`ci-ok`). F13.5 closes the epic.
 
-**Relationship to E11.** F11.2's `setup-ci` and `setup-release` generators, when elaborated, would write this epic's template files into a workspace. This epic does not depend on E11 and does not elaborate it.
+**Copying the template.** E11's F11.2 would have written this epic's template files into a workspace with `setup-ci` and `setup-release`; it is retired, and kiln's `node-lib` archetype renders these files instead (kiln E9, F9.1; [ADR-0007](../../../adr/ADR-0007.md)). This epic depends on neither.
 
 ## Acceptance
 

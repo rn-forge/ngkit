@@ -4,7 +4,7 @@ What ngkit is made of and what is left to do. The board says what is next; the e
 says how; its ADRs say why. `done` means implemented; the
 [release pages](../releases/index.md) record what shipped.
 
-As of 2026-10-17, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). Wire acceptance of the resource screen against a real backend (F4.3) is done, which closes E4. [Release 2](../releases/release-2/index.md) scope is F4.3 (done), E5 and E11. Next: F11.2 first (the generators E11's other features build on), and accept ADR-0006 (S5.1.1). Session client auth is redefined around a same-origin backend session and has stories, waiting on its client-model ADR and wire contract; the workspace generators are planned with stories; everything else is deferred.
+As of 2026-10-17, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). Wire acceptance of the resource screen against a real backend (F4.3) is done, which closes E4. [Release 2](../releases/release-2/index.md) scope is F4.3 (done), E5 and E11. Next: F11.1 (`@rn-forge/ng-plugin`), and accept ADR-0006 (S5.1.1). E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are retired: kiln owns repository-level setup. Session client auth is redefined around a same-origin backend session and has stories, waiting on its client-model ADR and wire contract; the Angular app generators are planned with stories; everything else is deferred.
 
 ## Board
 
@@ -14,9 +14,9 @@ None.
 
 ### Planned
 
-| Epic                                                                  | Next step                                            |
-| --------------------------------------------------------------------- | ---------------------------------------------------- |
-| [E11 — Workspace generators](epics/E11-workspace-generators/index.md) | Start F11.2 (F11.1 and F11.3 build on it); Release 2 |
+| Epic                                                                  | Next step              |
+| --------------------------------------------------------------------- | ---------------------- |
+| [E11 — Workspace generators](epics/E11-workspace-generators/index.md) | Start F11.1; Release 2 |
 
 ### To elaborate
 
