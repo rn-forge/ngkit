@@ -11,7 +11,7 @@ Order of authority ([ADR-0001](../adr/ADR-0001.md)): the published standard (RFC
 | List and pagination        | AIP-158: `pageSize`, `pageToken` → `items`, `nextPageToken` (`null` on last), `totalSize` opt-in                                                                                                         |
 | Sorting                    | AIP-132 `orderBy` (`name desc`), allow-listed; a changed order with an old token is 400                                                                                                                  |
 | Filtering                  | Per-field query parameters (AIP-160's filter language rejected)                                                                                                                                          |
-| Errors and validation      | RFC 9457 problem+json; `errors[].{pointer, detail}`                                                                                                                                                      |
+| Errors and validation      | RFC 9457 `application/problem+json` (recognized by media type, not body shape); `errors[].{pointer, detail}`                                                                                             |
 | Update and concurrency     | `PATCH` = RFC 7396 merge patch; `ETag` + `If-Match` → 412                                                                                                                                                |
 | Create retries             | `Idempotency-Key` (IETF draft); same key + different body 422, in flight 409                                                                                                                             |
 | Delete                     | 204; already absent is 404                                                                                                                                                                               |
@@ -41,7 +41,7 @@ Presentation-free state and behavior are in `ng` ([ADR-0002](../adr/ADR-0002.md)
 
 - `crud.types.ts`: the contract and types (`CrudDataSource`, `ListRequest`, `ListResponse`, `Versioned`, `ImportReport`, `CrudFileDownload`, `CrudFilter`, `WriteModel`, `ReadModel`).
 - `crud.list.ts`: `createCrudList()`, a list controller on Angular's `rxResource`: page-token stack (previous/next, reset on `orderBy`, filter or page-size change), `orderBy` state, selection keyed by `$K`, latest-request-wins.
-- `crud.errors.ts`: `problemToFormErrors(problem, form)`, which maps RFC 9457 `errors[].pointer` (JSON Pointer, RFC 6901) to controls, with unmatched entries as a form-level error; `crudErrorKind()` (a 412 is a `conflict`); `problemOf()`; `SERVER_ERROR_KEY`. It is hand-rolled under [ADR-0001](../adr/ADR-0001.md) exemption 1: npm was searched 2026-09-23 and no maintained package maps RFC 9457 pointers onto Angular forms. The pointer parse is a few lines, so it takes no JSON Pointer dependency.
+- `crud.errors.ts`: `problemToFormErrors(error, form)`, which takes the `HttpErrorResponse` and maps RFC 9457 `errors[].pointer` (JSON Pointer, RFC 6901) to controls, with unmatched entries as a form-level error; `crudErrorKind()` (a 412 is a `conflict`; any other 4xx is a `problem` only when its media type is `application/problem+json`, so a 422 `application/json` body with `errors` is `other`); `ProblemFieldError`; `SERVER_ERROR_KEY`. It reads problems through `problemOf` and `Problem` from `@rn-forge/ng/core` ([E14](../specs/epics/E14-problem-client/index.md)). It is hand-rolled under [ADR-0001](../adr/ADR-0001.md) exemption 1: npm was searched 2026-09-23 and no maintained package maps RFC 9457 pointers onto Angular forms. The pointer parse is a few lines, so it takes no JSON Pointer dependency.
 - `crud.files.ts`: `fileNameFrom(response)`, which reads `Content-Disposition` through the `content-disposition` package's `parse()` (jshttp, ESM, no dependencies; RFC 6266 and RFC 8187 `filename*`); it is a `dependency` of `ng` through `allowedNonPeerDependencies`. Also `IdempotencyKey` (one `crypto.randomUUID()` per submit attempt, reused on retry) and `crudFeatures()` (optional-method feature detection).
 - `crud.standard.ts`: `standardDataSource(config)`.
 
@@ -87,7 +87,7 @@ Rules:
 - **No numbered pages, and no total by default.** Next/previous (token stack) or "load more". `totalSize` shows only when the backend sends it.
 - **Column sort writes `orderBy`**, only for columns the app marks sortable, since the server allow-lists them.
 - **Filters are named query parameters** the app declares; there is no expression builder.
-- **Server validation lands on the form** through `problemToFormErrors`.
+- **Server validation lands on the form** through `problemToFormErrors`, for responses with media type `application/problem+json`.
 - **412 on save** offers reload; it never silently overwrites.
 - **Import is two steps.** Upload with `validateOnly=true`, show the report or 422 row errors, then commit. A backend may answer an import with 200 and an `errors` list (partial save); the screen shows those errors.
 - **Export is a `GET` download** (`Accept` negotiation), not `POST …/download`.

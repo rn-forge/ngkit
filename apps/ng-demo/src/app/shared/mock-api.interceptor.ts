@@ -61,6 +61,9 @@ function problem(status: number, title: string, errors?: unknown[]) {
       new HttpErrorResponse({
         status,
         statusText: title,
+        headers: new HttpHeaders({
+          'Content-Type': 'application/problem+json',
+        }),
         error: { title, status, ...(errors ? { errors } : {}) },
       }),
   );

@@ -32,7 +32,7 @@ no such method. Permission keys are `<permissionKey>.list|create|update|delete|i
 
 `AbstractCrudManager` exposes an abstract `dataSource`, an optional
 `filterFields()`, and a protected `errorMessage(error)` hook (default: the
-problem's `detail`/`title`, else the error's `message`). See
+`detail`/`title` of an `application/problem+json` error, else the error's `message`). See
 `apps/ng-demo/src/app/products/` for the canonical implementation
 (`products.types.ts`, `products.manager.ts`, `products.page.*`) over
 `standardDataSource()`.
