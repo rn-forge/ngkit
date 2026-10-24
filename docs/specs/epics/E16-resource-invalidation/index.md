@@ -1,6 +1,6 @@
 # E16 — Key invalidation for `httpResource`
 
-**Status:** elaborating · **Owner:** ngkit
+**Status:** done · **Implemented:** 2026-10-24 · **Owner:** ngkit · **Release:** [Release 2](../../../releases/release-2/index.md)
 
 **Source:** owner request, 2026-10-21, moved out of [E6](../E6-asynchronous-resource/index.md) 2026-10-23: an application rewrite that reads all its data through `httpResource` needs one place to refetch every reader of a kind of data after a write, and builds it in the application first so it can be swapped for this one later.
 
@@ -8,9 +8,9 @@ Angular's `httpResource` refetches when a signal its request function reads chan
 
 [Back to the board](../../index.md)
 
-| Feature                                         | Status      | Scope                                                          |
-| ----------------------------------------------- | ----------- | -------------------------------------------------------------- |
-| [F16.1 — `Invalidation`](F16.1-invalidation.md) | elaborating | The service, its typed accessor, and its `httpResource` tests. |
+| Feature                                         | Status  | Scope                                                          |
+| ----------------------------------------------- | ------- | -------------------------------------------------------------- |
+| [F16.1 — `Invalidation`](F16.1-invalidation.md) | planned | The service, its typed accessor, and its `httpResource` tests. |
 
 ## Design
 
