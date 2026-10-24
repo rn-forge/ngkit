@@ -37,6 +37,8 @@ Requirements:
 4. Default timing values may be 300/1000/10000/30000 ms; validate ordering and permit configuration. No HTTP or product copy in the timing mechanism.
 5. Fake-timer tests: fast response; each threshold; retry; retained value; changed key; error then success; one error then an unrelated error (no leftover metadata); disable while pending; destroyed resource; stale late emission; synchronous throw; empty completion. No real sleeps. Confirm cancelled timers do not mutate state.
 
+Key invalidation for `httpResource` is not part of this epic: it does not depend on `createAsyncResource`, so it is [E16](../E16-resource-invalidation/index.md) in `@rn-forge/ng/core`.
+
 ## Open questions
 
 - Reconcile the entry point with `@rn-forge/ng/crud`, which already uses `rxResource` ([Resource screen](../../../architecture/resource-screen.md)).

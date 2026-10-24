@@ -94,7 +94,8 @@ export interface CollectionQueryOptions<$T> {
   comparators?: Partial<Record<string, (a: $T, b: $T) => number>>;
   /** Stable tiebreak comparator applied after the active sort. */
   tiebreak?: (a: $T, b: $T) => number;
-  initialSort?: SortState<$T>;
+  /** One entry or several; earlier entries sort first. */
+  initialSort?: SortState<$T> | readonly SortState<$T>[];
   pageSize?: number;
 }
 
@@ -102,7 +103,7 @@ export interface CollectionQuery<$T> {
   readonly rawSearch: Signal<string>; // immediate: bind to the input's value
   readonly search: Signal<string>; // debounced: drives filtering
   readonly filters: Signal<Record<string, unknown>>;
-  readonly sort: Signal<SortState<$T> | undefined>;
+  readonly sort: Signal<readonly SortState<$T>[]>; // empty: source order
   readonly result: Signal<$T[]>; // filtered + sorted
   readonly page: Signal<$T[]>; // result windowed by pageSize/pageIndex
   readonly total: Signal<number>; // source.length
@@ -113,7 +114,7 @@ export interface CollectionQuery<$T> {
   counts(name: string, values: readonly unknown[]): Signal<Record<string, number>>;
   setSearch(value: string): void;
   setFilter(name: string, value: unknown): void;
-  toggleSort(key: keyof $T & string): void; // asc → desc → asc
+  toggleSort(key: keyof $T & string, options?: SortToggleOptions): void; // toggleSortState on `sort`
   clearFilters(): void;
   setPageIndex(index: number): void;
 }
@@ -126,13 +127,49 @@ Requirements:
 1. Implement with `signal` and `computed` only.
 2. The debounce clears its timer through `DestroyRef.onDestroy`; the surveyed screens leaked their `setTimeout` on destroy. `createCollectionQuery` therefore runs in an injection context (assert with `assertInInjectionContext`) or accepts an optional `injector`.
 3. Order of stages: `filters` (all enabled predicates, AND), then search (OR across `searchFields`, case-insensitive through `toLocaleLowerCase`), then sort, then page. Each stage is its own `computed()`, so a sort change doesn't re-run filtering.
-4. Sorting uses `comparators[key]` if present, else `localeCompare` for strings and numeric subtraction for numbers. `tiebreak` is always applied last, so sorting is stable and deterministic. Non-finite numbers sort last regardless of direction (the survey found a computed ratio that can be infinite, which needed this).
+4. Sorting applies each `sort` entry in order, the next entry breaking ties of the one before. Each uses `comparators[key]` if present, else `localeCompare` for strings and numeric subtraction for numbers. `tiebreak` is always applied last, so sorting is stable and deterministic. Non-finite numbers sort last regardless of direction (the survey found a computed ratio that can be infinite, which needed this).
 5. `counts()` returns a memoized `computed()` keyed on the filter name, used for chip counters.
 6. Ship ready-made predicate factories, since every screen re-writes them: `dateWindow(days, key)`, `oneOf(key)`, `equals(key)` and `includesAny(key)`.
 
 Tests, targeting above 90% coverage because this is the load-bearing piece: filter, search and sort composed; debounce timing with fake timers; timer cleared on destroy; stable sort through `tiebreak`; `Infinity` and `NaN` ordering; `counts()` correctness; pagination edges (`pageIndex` clamped when `result` shrinks); an empty source.
 
 Docs: a "Collection query" section in the app-building guide, and a demo screen in `apps/ng-demo` that filters a list without `rnf-table` (the "I have data but not a jQuery table" story). Done when a screen's roughly 90 lines of filter and sort code can be expressed in about 15 lines against this API, shown as a snippet in the PR description.
+
+### Sort state and range selection
+
+A keyboard-first application with a virtualized grid, which sorts on the server and keeps its sort in the URL, hand-rolls two more generic primitives that this entry point should own, so they are not tied to `createCollectionQuery`. Both are pure, immutable and carry no query language.
+
+```ts
+// Sort state: one type for single- and multi-key sorting, client or server side.
+export interface SortToggleOptions {
+  /** Append or flip in place instead of replacing the sort. Default false. */
+  readonly additive?: boolean;
+  /** `tri`: asc → desc → unsorted (default); `bi`: asc → desc → asc. */
+  readonly cycle?: 'tri' | 'bi';
+}
+export function toggleSortState<$K extends string>(sorts: readonly SortState<Record<$K, unknown>>[], key: $K, options?: SortToggleOptions): SortState<Record<$K, unknown>>[];
+export function sortDirection(sorts: readonly SortState<object>[], key: string): SortDirection | null;
+export function ariaSort(sorts: readonly SortState<object>[], key: string): 'ascending' | 'descending' | 'none';
+
+// Range selection: the range modifier extends from the anchor, the toggle modifier flips one row.
+export interface RangeSelection<$K> {
+  readonly selected: ReadonlySet<$K>;
+  readonly anchor: number | null;
+}
+export function rangeSelect<$T, $K>(selection: RangeSelection<$K>, items: readonly $T[], keyOf: (item: $T) => $K, index: number, modifiers: { readonly toggle: boolean; readonly range: boolean }): RangeSelection<$K>;
+```
+
+Requirements:
+
+7. `toggleSortState`: a key not in `sorts` becomes `asc`. A key in `sorts` at `asc` becomes `desc`. At `desc`, `cycle: 'tri'` removes it and `cycle: 'bi'` makes it `asc`. Without `additive` the result holds only that key (or nothing, when it was removed); with `additive` an absent key is appended and a present one changes in place, order kept. The default cycle is `tri` so that a table can return to its natural order; `aria-sort="none"` is the ARIA state for it. It builds no query string: a server-sorted table formats the array itself.
+8. `ariaSort` returns the WAI-ARIA `aria-sort` value for a header. `CollectionQuery.toggleSort` is `toggleSortState` applied to its `sort` signal.
+9. `rangeSelect`: with `range` and an anchor, adds every item between the anchor and `index` inclusive to a new set and keeps the anchor; with `toggle`, flips one key and sets the anchor to `index`; with neither, returns the selection unchanged (the caller owns a plain click). Out-of-range indexes are ignored. It indexes `items`, not DOM rows, so it works under virtual scrolling.
+10. Tests: `toggleSortState` on a new, `asc` and `desc` key in both cycles, with and without `additive`, order kept; `ariaSort` for each state; `rangeSelect` forward and backward ranges, the anchor kept, toggle on and off, no modifier, empty items, and no mutation of the input set; a `CollectionQuery` with two sort entries applies the second as the tiebreak of the first.
+
+### Not added
+
+- **URL query parameter signals.** ngxtension's `linkedQueryParam` is a maintained writable signal over a query parameter, with parse and stringify, merged and batched navigation ([ADR-0001](../../../adr/ADR-0001.md) principle 1). It is one call already, so a wrapper would standardize nothing. The app-building guide shows it when this row is built; ngkit takes no dependency on it.
+- **Persisted column layout.** The only consumer keeps a layout bound to its own column catalogue. Reconsider when a second application persists a column layout; it would build on `LocalStorageService.tryGetJSON` and `trySetJSON`, normalize against a catalogue, and include show and hide as well as move and reset.
 
 ## F12.5 — `@rn-forge/ng-charts`
 
@@ -202,26 +239,49 @@ The survey found a command palette whose matching and ranking logic (navigation 
 
 ```ts
 export interface Command {
-  id: string;
-  label: string;
-  icon?: string;
-  group?: string;
-  keywords?: string;
-  run: () => void;
-  enabled?: () => boolean;
+  readonly id: string;
+  readonly label: string;
+  readonly group?: string;
+  readonly hint?: string;
+  readonly icon?: string;
+  readonly keywords?: readonly string[];
+  /** Key binding in the shortcut library's syntax, for example `'$mod+k'` (`meta` on macOS, `ctrl` elsewhere). */
+  readonly shortcut?: string;
+  /** Fire the shortcut while focus is in an editable element. Default false. */
+  readonly allowInEditable?: boolean;
+  readonly enabled?: () => boolean;
+  run(): void;
+}
+export interface CommandGroup {
+  readonly group: string;
+  readonly commands: readonly Command[];
 }
 @Injectable({ providedIn: 'root' })
 export class CommandRegistry {
-  register(...commands: Command[]): void;
-  unregister(...ids: string[]): void;
-  readonly groups: Signal<{ group: string; commands: Command[] }[]>;
-  match(query: string): Signal<{ group: string; commands: Command[] }[]>;
-  /** Flat index for arrow-key navigation across groups. */
-  flat(query: string): Signal<Command[]>;
+  readonly commands: Signal<readonly Command[]>;
+  readonly groups: Signal<readonly CommandGroup[]>;
+  /** Returns an unregister function; with `destroyRef`, also unregisters on destroy. */
+  register(commands: readonly Command[], destroyRef?: DestroyRef): () => void;
+  /** Runs an enabled command; false when the id is unknown or disabled. */
+  run(id: string): boolean;
+  match(query: Signal<string>): Signal<readonly CommandGroup[]>;
+  /** Flat order of `match(query)`, for arrow-key navigation across groups. */
+  flat(query: Signal<string>): Signal<readonly Command[]>;
 }
 ```
 
-Keyboard shortcut registration must be scoped through `DestroyRef`: the surveyed palette attached a permanent `window` keydown listener with no removal.
+The surveyed palette attached a permanent `window` keydown listener with no removal; shortcut registration is scoped through `DestroyRef` instead.
+
+### Consumer ready
+
+A concrete consumer now exists, so the row's work is no longer speculative. A keyboard-first desktop-style application has a command palette opened with `⌘K`: its destinations come from the same model its sidebar renders, so the two cannot drift; pages register contextual actions that appear in an Actions group while the page is open and disappear when it is left; and pages register keyboard shortcuts the same way. The shape above is the one it builds against.
+
+**Consumer ready; recommend scheduling.** The entry criterion is the owner scheduling the row, so this does not change F12.8's status, and no code starts before the owner schedules it and the row becomes a feature with stories and acceptance ([E12](index.md)). When it does:
+
+- **Scoped registration.** A page passes its `DestroyRef` to `register`, so its commands and shortcuts never outlive it; a duplicate `id` replaces the earlier entry until that one's unregister runs.
+- **Shortcuts.** Key-binding parsing comes from a maintained library rather than a hand-rolled parser ([ADR-0001](../../../adr/ADR-0001.md) principle 1); `tinykeys` is the candidate to check. One registry-owned listener is attached through `DestroyRef` and dispatches by `shortcut`, ignoring events from editable targets unless `allowInEditable` is set. Adding the dependency is decided when the row is scheduled.
+- **Matching.** Case-insensitive: label prefix, then label substring, then `keywords`; disabled commands are left out, with `enabled()` read at match time. Fuzzy matching is not part of the first version.
+- **Split of work.** The registry is headless and lives in `@rn-forge/ng/core`; the palette dialog, input and arrow-key wiring is a presentation component in `@rn-forge/ng-tailwind` ([E8](../E8-tailwind-package/index.md)), built on `@angular/cdk/dialog` and `@angular/aria`'s combobox and listbox, or in F12.10 for a Material kit.
 
 ## F12.9 — `ConfigurableComponent` into `ng/core`
 

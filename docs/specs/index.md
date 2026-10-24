@@ -20,9 +20,12 @@ None.
 
 ### To elaborate
 
-| Epic                                                              | Next step                                                                 |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| [E5 — Session client auth](epics/E5-session-client-auth/index.md) | Accept ADR-0006 (S5.1.1) and settle the wire contract (S5.1.2); Release 2 |
+| Epic                                                                                  | Next step                                                                 |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [E5 — Session client auth](epics/E5-session-client-auth/index.md)                     | Accept ADR-0006 (S5.1.1) and settle the wire contract (S5.1.2); Release 2 |
+| [E14 — RFC 9457 problem client support](epics/E14-problem-client/index.md)            | Amend ADR-0004 (S14.1.1); proposed for Release 3                          |
+| [E15 — Server-sent event stream](epics/E15-event-stream/index.md)                     | Check npm prior art; proposed for Release 3                               |
+| [E16 — Key invalidation for `httpResource`](epics/E16-resource-invalidation/index.md) | Proposed for Release 3                                                    |
 
 ### Deferred
 
