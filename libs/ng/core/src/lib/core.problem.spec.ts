@@ -1,4 +1,16 @@
-import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+  httpResource,
+  provideHttpClient,
+} from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
+import { ApplicationRef, Injector } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import {
   hasProblemType,
   PROBLEM_MEDIA_TYPE,
@@ -6,6 +18,8 @@ import {
   problemOf,
   problemTypeOf,
 } from './core.problem';
+
+const problemHeaders = { 'Content-Type': PROBLEM_MEDIA_TYPE };
 
 const failure = (
   status: number,
@@ -154,5 +168,55 @@ describe('problemTypeOf and hasProblemType', () => {
     expect(problemTypeOf(error)).toBeUndefined();
     expect(hasProblemType(error, '/p')).toBe(false);
     expect(hasProblemType(new Error('x'), 'about:blank')).toBe(false);
+  });
+});
+
+describe('problem helpers with Angular HTTP', () => {
+  let http: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => http.verify());
+
+  const notFound = {
+    type: '/problems/track-missing',
+    title: 'Not Found',
+    detail: 'No track 7',
+  };
+  const init = {
+    status: 404,
+    statusText: 'Not Found',
+    headers: problemHeaders,
+  };
+
+  it('reads httpResource().error()', async () => {
+    const resource = httpResource(() => '/v1/tracks/7', {
+      injector: TestBed.inject(Injector),
+    });
+    TestBed.tick();
+    http.expectOne('/v1/tracks/7').flush(notFound, init);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(problemMessage(resource.error())).toBe('No track 7');
+    expect(hasProblemType(resource.error(), '/problems/track-missing')).toBe(
+      true,
+    );
+  });
+
+  it('reads the error of an HttpClient call', () => {
+    let caught: unknown;
+    TestBed.inject(HttpClient)
+      .get('/v1/tracks/7')
+      .subscribe({ error: (e: unknown) => (caught = e) });
+    http.expectOne('/v1/tracks/7').flush(notFound, init);
+
+    expect(caught).toBeInstanceOf(HttpErrorResponse);
+    expect(problemMessage(caught)).toBe('No track 7');
+    expect(hasProblemType(caught, '/problems/track-missing')).toBe(true);
   });
 });

@@ -4,7 +4,7 @@ What ngkit is made of and what is left to do. The board says what is next; the e
 says how; its ADRs say why. `done` means implemented; the
 [release pages](../releases/index.md) record what shipped.
 
-As of 2026-10-17, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). Wire acceptance of the resource screen against a real backend (F4.3) is done, which closes E4. [Release 2](../releases/release-2/index.md) scope is F4.3 (done), E5 and E11. Next: F11.1 (`@rn-forge/ng-plugin`), and accept ADR-0006 (S5.1.1). E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are retired: kiln owns repository-level setup. Session client auth is redefined around a same-origin backend session and has stories, waiting on its client-model ADR and wire contract; the Angular app generators are planned with stories; everything else is deferred.
+As of 2026-10-24, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). Wire acceptance of the resource screen against a real backend (F4.3) is done, which closes E4. [Release 2](../releases/release-2/index.md) scope is F4.3 (done), E5, E11, E14, E15 and E16 (the last three added by the owner, 2026-10-24). E14 (RFC 9457 problem helpers, with ADR-0004 amended), E15 (`createEventStream`) and E16 (`Invalidation`) are done in `@rn-forge/ng/core`. Next: F11.1 (`@rn-forge/ng-plugin`), and accept ADR-0006 (S5.1.1). E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are retired: kiln owns repository-level setup. Session client auth is redefined around a same-origin backend session and has stories, waiting on its client-model ADR and wire contract; the Angular app generators are planned with stories; everything else is deferred.
 
 ## Board
 
@@ -20,12 +20,9 @@ None.
 
 ### To elaborate
 
-| Epic                                                                                  | Next step                                                                 |
-| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| [E5 — Session client auth](epics/E5-session-client-auth/index.md)                     | Accept ADR-0006 (S5.1.1) and settle the wire contract (S5.1.2); Release 2 |
-| [E14 — RFC 9457 problem client support](epics/E14-problem-client/index.md)            | Amend ADR-0004 (S14.1.1); proposed for Release 3                          |
-| [E15 — Server-sent event stream](epics/E15-event-stream/index.md)                     | Check npm prior art; proposed for Release 3                               |
-| [E16 — Key invalidation for `httpResource`](epics/E16-resource-invalidation/index.md) | Proposed for Release 3                                                    |
+| Epic                                                              | Next step                                                                 |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [E5 — Session client auth](epics/E5-session-client-auth/index.md) | Accept ADR-0006 (S5.1.1) and settle the wire contract (S5.1.2); Release 2 |
 
 ### Deferred
 
@@ -40,13 +37,16 @@ None.
 
 ### Done
 
-| Epic                                                                              | Implemented            |
-| --------------------------------------------------------------------------------- | ---------------------- |
-| [E1 — Packaging and compatibility](epics/E1-packaging-and-compatibility/index.md) | 2026-09-20 (`c30d63a`) |
-| [E2 — Retire the HTTP entry point](epics/E2-retire-http-entry-point/index.md)     | 2026-09-23 (`c30d63a`) |
-| [E3 — Core correctness](epics/E3-core-correctness/index.md)                       | 2026-09-23 (`1f54842`) |
-| [E13 — Portable CI](epics/E13-portable-ci/index.md)                               | 2026-10-14 (`d1e026c`) |
-| [E4 — Standard resource screen](epics/E4-standard-resource-screen/index.md)       | 2026-10-17 (`1fc3c8d`) |
+| Epic                                                                                  | Implemented            |
+| ------------------------------------------------------------------------------------- | ---------------------- |
+| [E1 — Packaging and compatibility](epics/E1-packaging-and-compatibility/index.md)     | 2026-09-20 (`c30d63a`) |
+| [E2 — Retire the HTTP entry point](epics/E2-retire-http-entry-point/index.md)         | 2026-09-23 (`c30d63a`) |
+| [E3 — Core correctness](epics/E3-core-correctness/index.md)                           | 2026-09-23 (`1f54842`) |
+| [E13 — Portable CI](epics/E13-portable-ci/index.md)                                   | 2026-10-14 (`d1e026c`) |
+| [E4 — Standard resource screen](epics/E4-standard-resource-screen/index.md)           | 2026-10-17 (`1fc3c8d`) |
+| [E16 — Key invalidation for `httpResource`](epics/E16-resource-invalidation/index.md) | 2026-10-24             |
+| [E15 — Server-sent event stream](epics/E15-event-stream/index.md)                     | 2026-10-24             |
+| [E14 — RFC 9457 problem client support](epics/E14-problem-client/index.md)            | 2026-10-24             |
 
 ## Conventions
 

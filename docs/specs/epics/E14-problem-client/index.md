@@ -1,6 +1,6 @@
 # E14 — RFC 9457 problem client support
 
-**Status:** elaborating · **Owner:** ngkit
+**Status:** done · **Implemented:** 2026-10-24 · **Owner:** ngkit · **Release:** [Release 2](../../../releases/release-2/index.md)
 
 **Source:** owner request, 2026-10-21, revised 2026-10-23: an application rewrite on the current published release reads RFC 9457 problems from its backend, and builds the pieces in the application first so they can be swapped for these later. Revised so that ngkit types only what RFC 9457 defines and leaves Angular's error type unchanged.
 
@@ -10,10 +10,10 @@ It is **not** the client [E2](../E2-retire-http-entry-point/index.md) rejected: 
 
 [Back to the board](../../index.md)
 
-| Feature                                                        | Status      | Scope                                                                                                        |
-| -------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------ |
-| [F14.1 — `Problem` and its helpers](F14.1-problem-types.md)    | elaborating | The ADR-0004 decision, the `Problem` type, `problemOf`, `problemMessage`, `problemTypeOf`, `hasProblemType`. |
-| [F14.2 — `ng/crud` and the HTTP guide](F14.2-crud-adoption.md) | elaborating | `ng/crud` and `ng-bootstrap/crud` read problems through the core helpers; the HTTP guide shows them.         |
+| Feature                                                        | Status  | Scope                                                                                                        |
+| -------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------ |
+| [F14.1 — `Problem` and its helpers](F14.1-problem-types.md)    | planned | The ADR-0004 decision, the `Problem` type, `problemOf`, `problemMessage`, `problemTypeOf`, `hasProblemType`. |
+| [F14.2 — `ng/crud` and the HTTP guide](F14.2-crud-adoption.md) | planned | `ng/crud` and `ng-bootstrap/crud` read problems through the core helpers; the HTTP guide shows them.         |
 
 ## Placement
 
