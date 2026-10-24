@@ -4,7 +4,7 @@ What ngkit is made of and what is left to do. The board says what is next; the e
 says how; its ADRs say why. `done` means implemented; the
 [release pages](../releases/index.md) record what shipped.
 
-As of 2026-10-24, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). Wire acceptance of the resource screen against a real backend (F4.3) is done, which closes E4. [Release 2](../releases/release-2/index.md) scope is F4.3 (done), E5, E11, E14, E15 and E16 (the last three added by the owner, 2026-10-24). E14 (RFC 9457 problem helpers, with ADR-0004 amended), E15 (`createEventStream`) and E16 (`Invalidation`) are done in `@rn-forge/ng/core`. Next: F11.1 (`@rn-forge/ng-plugin`), and accept ADR-0006 (S5.1.1). E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are retired: kiln owns repository-level setup. Session client auth is redefined around a same-origin backend session and has stories, waiting on its client-model ADR and wire contract; the Angular app generators are planned with stories; E6 is elaborated (2026-10-24) down to loading timings in `ng/core`, waiting on one open question and a release; everything else is deferred.
+As of 2026-10-24, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). Wire acceptance of the resource screen against a real backend (F4.3) is done, which closes E4. [Release 2](../releases/release-2/index.md) scope is F4.3 (done), E5, E11, E14, E15 and E16 (the last three added by the owner, 2026-10-24). E14 (RFC 9457 problem helpers, with ADR-0004 amended), E15 (`createEventStream`) and E16 (`Invalidation`) are done in `@rn-forge/ng/core`. Next: F11.1 (`@rn-forge/ng-plugin`), and accept ADR-0006 (S5.1.1). E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are retired: kiln owns repository-level setup. Session client auth is redefined around a same-origin backend session and has stories, waiting on its client-model ADR and wire contract; the Angular app generators are planned with stories; E6 is elaborated (2026-10-24) down to loading timings in `ng/core`, waiting on one open question and a release; E8 (`@rn-forge/ng-tailwind`) is elaborated (2026-10-24) into four features against a survey of three applications to be rebuilt on kiln's Angular baseline, with ADR-0008 accepted (2026-10-24), waiting on the selector prefix and a release; everything else is deferred.
 
 ## Board
 
@@ -20,20 +20,20 @@ None.
 
 ### To elaborate
 
-| Epic                                                                  | Next step                                                                 |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| [E5 — Session client auth](epics/E5-session-client-auth/index.md)     | Accept ADR-0006 (S5.1.1) and settle the wire contract (S5.1.2); Release 2 |
-| [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md) | Owner answers F6.1's open question and assigns a release                  |
+| Epic                                                                       | Next step                                                                 |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [E5 — Session client auth](epics/E5-session-client-auth/index.md)          | Accept ADR-0006 (S5.1.1) and settle the wire contract (S5.1.2); Release 2 |
+| [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md)      | Owner answers F6.1's open question and assigns a release                  |
+| [E8 — `@rn-forge/ng-tailwind` package](epics/E8-tailwind-package/index.md) | Owner answers the selector-prefix question and assigns a release          |
 
 ### Deferred
 
-| Epic                                                                       | Entry criteria                               |
-| -------------------------------------------------------------------------- | -------------------------------------------- |
-| [E7 — Theme controller](epics/E7-theme-controller/index.md)                | The owner schedules it (depends on E3, done) |
-| [E8 — `@rn-forge/ng-tailwind` package](epics/E8-tailwind-package/index.md) | The owner schedules it                       |
-| [E9 — Presentation primitives](epics/E9-presentation-primitives/index.md)  | E8 is done and the owner schedules it        |
-| [E10 — Connected menu](epics/E10-connected-menu/index.md)                  | E8 is done and the owner schedules it        |
-| [E12 — On-demand features](epics/E12-on-demand-features/index.md)          | The row's trigger occurs                     |
+| Epic                                                                      | Entry criteria                               |
+| ------------------------------------------------------------------------- | -------------------------------------------- |
+| [E7 — Theme controller](epics/E7-theme-controller/index.md)               | The owner schedules it (depends on E3, done) |
+| [E9 — Presentation primitives](epics/E9-presentation-primitives/index.md) | E8 is done and the owner schedules it        |
+| [E10 — Connected menu](epics/E10-connected-menu/index.md)                 | E8 is done and the owner schedules it        |
+| [E12 — On-demand features](epics/E12-on-demand-features/index.md)         | The row's trigger occurs                     |
 
 ### Done
 
