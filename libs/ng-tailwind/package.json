@@ -1,6 +1,6 @@
 {
   "name": "@rn-forge/ng-tailwind",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Token-driven, Tailwind-compatible presentation components for the rn-forge toolkit.",
   "license": "MIT",
   "repository": {
