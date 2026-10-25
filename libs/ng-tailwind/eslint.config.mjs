@@ -16,8 +16,9 @@ export default [
         {
           ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
           // tailwindcss is read only by the optional bridge stylesheet; @angular/core
-          // is imported once the first component lands (S8.3.1).
-          ignoredDependencies: ['tailwindcss', '@angular/core'],
+          // is imported once the first component lands (S8.3.1); postcss is read only by
+          // the CSS contract spec (a root devDependency, not a runtime dependency).
+          ignoredDependencies: ['tailwindcss', '@angular/core', 'postcss'],
         },
       ],
     },

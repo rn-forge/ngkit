@@ -1,1 +1,59 @@
-/* Design tokens: filled by S8.2.2. */
+@layer rnf {
+  :root {
+    /* Surfaces */
+    --rnf-surface-0: light-dark(#ffffff, #0b1120);
+    --rnf-surface-1: light-dark(#f8fafc, #111827);
+    --rnf-surface-2: light-dark(#f1f5f9, #1f2937);
+    --rnf-surface-3: light-dark(#ffffff, #273244);
+
+    /* Text */
+    --rnf-text: light-dark(#0f172a, #f1f5f9);
+    --rnf-text-muted: light-dark(#475569, #cbd5e1);
+    --rnf-text-subtle: light-dark(#566275, #a3adbd);
+
+    /* Lines */
+    --rnf-border: light-dark(#e2e8f0, #334155);
+    --rnf-border-strong: light-dark(#64748b, #7d8aa0);
+    --rnf-focus: light-dark(#2563eb, #60a5fa);
+
+    /* Accent */
+    --rnf-accent: light-dark(#1d4ed8, #60a5fa);
+    --rnf-accent-muted: light-dark(#dbeafe, #172554);
+    --rnf-on-accent: light-dark(#ffffff, #0b1120);
+
+    /* Tones */
+    --rnf-neutral: light-dark(#475569, #94a3b8);
+    --rnf-info: light-dark(#075985, #38bdf8);
+    --rnf-success: light-dark(#166534, #4ade80);
+    --rnf-warning: light-dark(#92400e, #fbbf24);
+    --rnf-danger: light-dark(#b91c1c, #f87171);
+
+    /* Shape */
+    --rnf-radius-control: 0.25rem;
+    --rnf-radius: 0.375rem;
+    --rnf-radius-lg: 0.625rem;
+    --rnf-radius-pill: 9999px;
+
+    /* Type */
+    --rnf-font-ui: inherit;
+    --rnf-font-data: ui-monospace, monospace;
+    --rnf-text-xs: 0.75rem;
+    --rnf-text-sm: 0.8125rem;
+    --rnf-text-md: 0.875rem;
+
+    /* Density */
+    --rnf-control-sm: 1.75rem;
+    --rnf-control-md: 2.25rem;
+
+    /* Motion */
+    --rnf-duration-fast: 120ms;
+    --rnf-duration: 200ms;
+    --rnf-ease: cubic-bezier(0.2, 0, 0, 1);
+
+    /* Elevation */
+    --rnf-shadow-raised:
+      0 1px 2px rgb(0 0 0 / 0.16), 0 1px 3px rgb(0 0 0 / 0.12);
+    --rnf-shadow-overlay:
+      0 8px 24px rgb(0 0 0 / 0.24), 0 2px 6px rgb(0 0 0 / 0.16);
+  }
+}
