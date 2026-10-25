@@ -14,7 +14,7 @@ A new presentation library alongside `ng-bootstrap`, with the same packaging pat
 | ------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------- |
 | [F8.1 — The package and its release wiring](F8.1-package.md)        | done    | `libs/ng-tailwind`, the fixed release group, CSS exports, Compodoc and Storybook.     |
 | [F8.2 — Tokens, tones, base sheet and bridge](F8.2-css-contract.md) | done    | `tokens.css`, `base.css`, `tailwind.css`, under [ADR-0008](../../../adr/ADR-0008.md). |
-| [F8.3 — `rnfButton`](F8.3-button.md)                                | planned | The first component, on `<button>` and `<a>`.                                         |
+| [F8.3 — `rnfButton`](F8.3-button.md)                                | done    | The first component, on `<button>` and `<a>`.                                         |
 | [F8.4 — Consumer and accessibility acceptance](F8.4-acceptance.md)  | planned | Plain and Tailwind consumers from the tarball; WCAG AA in both schemes, in a browser. |
 
 ## Design

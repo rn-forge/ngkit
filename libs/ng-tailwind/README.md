@@ -75,3 +75,28 @@ A component's tone is the custom property `--rnf-tone`. For a hue the package do
 ## Visually hidden text
 
 Use the CDK's `cdk-visually-hidden` class. The package adds no `sr-only` class.
+
+## Components
+
+### `rnfButton`
+
+Put the attribute on a native `<button>` or `<a>`; the element keeps its tag, its `type` and any `routerLink`.
+
+```ts
+import { RnfButton } from '@rn-forge/ng-tailwind';
+```
+
+```html
+<button rnfButton variant="primary" (click)="save()">Save</button>
+<a rnfButton routerLink="/orders" shape="pill" size="sm">Orders</a>
+```
+
+| Input      | Values                                                   | Default     |
+| ---------- | -------------------------------------------------------- | ----------- |
+| `variant`  | `secondary`, `primary`, `accent`, `ghost`, `danger`      | `secondary` |
+| `shape`    | `default`, `pill`                                        | `default`   |
+| `size`     | `md`, `sm`                                               | `md`        |
+| `disabled` | boolean attribute                                        | `false`     |
+| `busy`     | boolean attribute; sets `aria-busy` and disables as above | `false`     |
+
+A disabled or busy `<button>` gets the native `disabled` attribute. A disabled or busy `<a>` gets `aria-disabled="true"` and `tabindex="-1"`, and its clicks are swallowed: neither `routerLink` nor a `(click)` handler on it runs.
