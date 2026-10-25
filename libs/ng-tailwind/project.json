@@ -83,6 +83,7 @@
       "options": {
         "configDir": "libs/ng-tailwind/.storybook",
         "tsConfig": "libs/ng-tailwind/.storybook/tsconfig.json",
+        "styles": ["libs/ng-tailwind/assets/tokens.css"],
         "port": 4401
       }
     },
@@ -91,6 +92,7 @@
       "options": {
         "configDir": "libs/ng-tailwind/.storybook",
         "tsConfig": "libs/ng-tailwind/.storybook/tsconfig.json",
+        "styles": ["libs/ng-tailwind/assets/tokens.css"],
         "outputDir": "dist/storybook/ng-tailwind"
       },
       "configurations": {
