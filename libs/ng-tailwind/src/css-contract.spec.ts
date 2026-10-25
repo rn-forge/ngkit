@@ -129,3 +129,129 @@ describe('css contract: tokens.css (F8.2, S8.2.2)', () => {
     }
   });
 });
+
+describe('css contract: base.css (F8.2, S8.2.3)', () => {
+  const root = parseAsset('base.css');
+  const layer = root.nodes.find(
+    (node): node is AtRule => node.type === 'atrule' && node.name === 'layer',
+  );
+  const reducedMotion = '(prefers-reduced-motion: reduce)';
+  const colourNames = [
+    'black',
+    'white',
+    'red',
+    'green',
+    'blue',
+    'yellow',
+    'orange',
+    'purple',
+    'pink',
+    'brown',
+    'gray',
+    'grey',
+    'cyan',
+    'magenta',
+    'silver',
+    'gold',
+    'navy',
+    'teal',
+    'lime',
+    'maroon',
+    'olive',
+    'aqua',
+    'fuchsia',
+    'indigo',
+    'violet',
+    'crimson',
+    'coral',
+    'salmon',
+    'tomato',
+    'beige',
+    'ivory',
+  ];
+  const rules: Rule[] = [];
+  root.walkRules((rule) => {
+    rules.push(rule);
+  });
+  const decls: Declaration[] = [];
+  root.walkDecls((decl) => {
+    decls.push(decl);
+  });
+
+  it('has only @layer rnf at the top level', () => {
+    const nodes = root.nodes.filter((node) => node.type !== 'comment');
+    expect(nodes).toHaveLength(1);
+    expect(nodes[0]).toBe(layer);
+    expect(layer?.params).toBe('rnf');
+  });
+
+  it('puts every rule inside the layer, or its reduced-motion block', () => {
+    expect(rules.length).toBeGreaterThan(0);
+    for (const rule of rules) {
+      const parent = rule.parent as AtRule;
+      expect(parent.type).toBe('atrule');
+      if (parent.name === 'layer') {
+        expect(parent).toBe(layer);
+      } else {
+        expect(parent.name).toBe('media');
+        expect(parent.params).toBe(reducedMotion);
+        expect(parent.parent).toBe(layer);
+      }
+    }
+  });
+
+  it('styles exactly body, :focus-visible, :root and table in the layer', () => {
+    const selectors = (layer?.nodes ?? [])
+      .filter((node): node is Rule => node.type === 'rule')
+      .map((rule) => rule.selector);
+    expect([...selectors].sort()).toEqual(
+      ['body', ':focus-visible', ':root', 'table'].sort(),
+    );
+  });
+
+  it('has only the prefers-reduced-motion: reduce media query', () => {
+    const medias: AtRule[] = [];
+    root.walkAtRules('media', (atRule) => {
+      medias.push(atRule);
+    });
+    expect(medias).toHaveLength(1);
+    expect(medias[0].params).toBe(reducedMotion);
+  });
+
+  it('declares no box-sizing, margin or color-scheme', () => {
+    for (const decl of decls) {
+      expect(decl.prop).not.toBe('box-sizing');
+      expect(decl.prop).not.toMatch(/^margin/);
+      expect(decl.prop).not.toBe('color-scheme');
+    }
+  });
+
+  it('declares font-family only as var(--rnf-font-ui)', () => {
+    for (const decl of decls.filter((d) => d.prop === 'font-family')) {
+      expect(decl.value).toBe('var(--rnf-font-ui)');
+    }
+  });
+
+  it('contains no colour literal', () => {
+    for (const decl of decls) {
+      const value = decl.value;
+      expect(value, decl.prop).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+      expect(value, decl.prop).not.toMatch(
+        /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/i,
+      );
+      for (const word of value.split(/[\s,]+/)) {
+        expect(colourNames, `${decl.prop}: ${word}`).not.toContain(
+          word.toLowerCase(),
+        );
+      }
+    }
+  });
+
+  it('references only --rnf-* custom properties', () => {
+    for (const decl of decls) {
+      for (const match of decl.value.matchAll(/var\(\s*(--[\w-]+)/g)) {
+        expect(match[1]).toMatch(/^--rnf-/);
+      }
+    }
+  });
+});

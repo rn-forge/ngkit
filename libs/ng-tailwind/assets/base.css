@@ -1,1 +1,31 @@
-/* Base sheet: filled by S8.2.3. */
+@layer rnf {
+  body {
+    background-color: var(--rnf-surface-0);
+    color: var(--rnf-text);
+    font-family: var(--rnf-font-ui);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--rnf-focus);
+    outline-offset: 2px;
+  }
+
+  :root {
+    scrollbar-color: var(--rnf-border-strong) var(--rnf-surface-0);
+  }
+
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
