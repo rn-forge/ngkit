@@ -1,46 +1,46 @@
 # E11 — Workspace generators
 
-**Status:** elaborating · **Owner:** ngkit
+**Status:** planned · **Owner:** ngkit · **Release:** [Release 3](../../../releases/release-3/index.md)
 
-**Source:** former plan item "Workspace Setup Tooling".
+**Source:** former plan item "Workspace Setup Tooling"; owner decisions, 2026-10-17.
 
-Workspace setup tooling is split into focused packages so runtime libraries, Angular-specific generators, and generic Nx workspace generators remain independently maintainable.
+**Retired:** F11.2 (`@rn-forge/nx-plugin`) and F11.3 (`create-rn-forge-ng-workspace` CLI), owner decision, 2026-10-17. Both created or standardized the repository itself, and [kiln](https://github.com/rn-forge/kiln) now owns that work ([ADR-0007](../../../adr/ADR-0007.md)): `kiln new` creates the repository and `kiln apply` keeps it in line, including its pnpm/Nx workspace (kiln ADR-0005). kiln's `node-lib` archetype renders ngkit's CI, release workflow and fixed-group `v<version>` release (kiln E9, F9.1, ADR-0015). A second generator writing the same files would compete with kiln for them.
+
+`@rn-forge/ng-plugin` configures an Angular app in an existing workspace to use ngkit's libraries. kiln knows nothing about those libraries, so that wiring stays here. The plugin is kept separate from the runtime libraries, so the libraries and the generators stay independently maintainable.
 
 [Back to the board](../../index.md)
 
 ```text
-Scenario A — configure an Angular app in an existing workspace
+Configure an Angular app in an existing workspace
   pnpm nx g @rn-forge/ng-plugin:setup --project=my-app
   pnpm nx g @rn-forge/ng-plugin:add-bootstrap-table --project=my-app
   pnpm nx g @rn-forge/ng-plugin:configure-theme --project=my-app
-
-Scenario B — scaffold or standardize an existing Nx workspace
-  pnpm nx g @rn-forge/nx-plugin:setup-workspace
-  pnpm nx g @rn-forge/nx-plugin:create-publishable-lib --name=my-ui --importPath=@acme/my-ui
-  pnpm nx g @rn-forge/nx-plugin:setup-boundaries
-
-Scenario C — greenfield Angular workspace
-  pnpm dlx create-rn-forge-ng-workspace@latest --name=acme --appName=portal
 ```
 
 The shared design, package map and implementation standards are in [design.md](design.md).
 
-| Feature                                                                     | Status      | Scope                                                                                                                                       |
-| --------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [F11.1 — `@rn-forge/ng-plugin`](F11.1-ng-plugin.md)                         | elaborating | Angular-specific generators: `setup`, `add-bootstrap-table`, `configure-theme`, `scaffold-component`, `configure-testing`                   |
-| [F11.2 — `@rn-forge/nx-plugin`](F11.2-nx-plugin.md)                         | elaborating | Generic Nx generators: `setup-workspace`, `create-publishable-lib`, `setup-ci`, `setup-release`, `setup-boundaries`, `setup-agentic-coding` |
-| [F11.3 — `create-rn-forge-ng-workspace` CLI](F11.3-create-workspace-cli.md) | elaborating | Greenfield CLI wrapper around `create-nx-workspace` that runs the plugin generators                                                         |
+| Feature                                             | Status  | Scope                                                                                                                                       |
+| --------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| [F11.1 — `@rn-forge/ng-plugin`](F11.1-ng-plugin.md) | planned | Angular-specific generators: `setup`, `add-bootstrap-table`, `configure-theme`, `scaffold-component`, `configure-testing`, `create-library` |
+
+## Decisions
+
+Recorded by S11.1.6 (owner decision, 2026-10-17). The design pages record each with its rejected options.
+
+- **Release:** `@rn-forge/ng-plugin` joins the ADR-0003 fixed group, tagged `publishable`, built once, exact pins ([design.md](design.md#release-model)).
+- **Ownership:** repository-level setup belongs to kiln (see **Retired** above). Angular library scaffolding is `ng-plugin:create-library`, which writes the project's own publishable settings ([F11.1](F11.1-ng-plugin.md#design)).
+- **`setup` wiring:** packages, theme `@use`, `allowedCommonJsDependencies`, `provideRnForgeBootstrapConfig()`; no `scripts`, `polyfills`, `assets` or path-alias patching ([F11.1](F11.1-ng-plugin.md#design)).
 
 ## Open questions
 
-1. **Published package path aliases** — validate whether consumer workspaces need `tsconfig.base.json` aliases for published `@rn-forge/ng` packages. Default should be no aliases unless local-linking requires them.
-2. **Generator ownership for Angular library scaffolding** — decide whether `create-publishable-lib --framework=angular` should remain in `nx-plugin` or move to `ng-plugin` as `create-library`.
-3. **Bootstrap Table support scope** — define the exact initial script/style/extension list before implementing `add-bootstrap-table`.
-4. **Storybook and Compodoc** — decide whether these are flags on `create-publishable-lib` or separate generators.
-5. **pnpm v10/v11 compatibility** — CLI should detect pnpm version and either warn or select compatible workspace creation flow.
-6. **CI provider scope** — implement GitHub first, or include Azure DevOps templates from day one.
-7. **Agentic coding scope** — decide whether this belongs in `@rn-forge/nx-plugin` v1 or a later `@rn-forge/devfoundry` package.
-8. `ng-plugin:setup` steps 4 and 6 add polyfills, scripts and assets to the build target, but `provideRnForgeBootstrapConfig()` now loads all vendor scripts at runtime and `ng-bootstrap` needs no `scripts`/`polyfills` entries (`libs/ng-bootstrap/README.md`). What does `setup` still need to patch?
-9. The file-patching example uses `@rn-forge/ng-bootstrap/styles`; the real entry is `@rn-forge/ng-bootstrap/assets/theme`.
-10. `libs/ng-bootstrap/README.md` promises a generator will add `allowedCommonJsDependencies`; no generator in this epic does.
-11. The build and publish order runs `nx release --projects=…` over five packages, while [ADR-0003](../../../adr/ADR-0003.md) releases `ng` and `ng-bootstrap` as one fixed group, as tarballs. How do the plugins version and ship?
+One, on [F11.1](F11.1-ng-plugin.md#open-questions): whether `setup` must add the `@angular/localize/init` polyfill.
+
+## Acceptance
+
+E11 is done when F11.1's acceptance block passes and the package releases with the group.
+
+```bash
+set -euo pipefail
+pnpm exec nx run-many -t test build -p ng-plugin
+test "$(pnpm exec nx show project ng-plugin --json | jq -r '.tags | index("publishable") != null')" = true
+```

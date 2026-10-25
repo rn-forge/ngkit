@@ -1,0 +1,128 @@
+{
+  "name": "ng-tailwind",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ng-tailwind/src",
+  "prefix": "rnf",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": [
+        "{projectRoot}",
+        {
+          "path": "dist/{projectRoot}",
+          "preserveLocalDependencyProtocols": false
+        }
+      ],
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
+  "tags": ["scope:ngkit", "type:ui", "publishable"],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:package",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "project": "libs/ng-tailwind/ng-package.json",
+        "tsConfig": "libs/ng-tailwind/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/ng-tailwind/tsconfig.lib.prod.json"
+        },
+        "development": {}
+      }
+    },
+    "patch-package-exports": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node tools/scripts/patch-package-exports.mjs libs/ng-tailwind ./tokens.css=./assets/tokens.css ./base.css=./assets/base.css ./tailwind.css=./assets/tailwind.css"
+      }
+    },
+    "pack": {
+      "dependsOn": ["patch-package-exports"]
+    },
+    "verify-dist": {},
+    "verify-consumer": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["pack"],
+      "cache": false,
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node tools/scripts/verify-consumer.mjs ng-tailwind"
+      }
+    },
+    "consumer-fixture": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["pack"],
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/tools/scripts/verify-consumer.mjs"
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/consumer-fixtures/ng-tailwind-tailwind-angular-22.1-zoneless"
+      ],
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node tools/scripts/verify-consumer.mjs ng-tailwind --only tailwind --cell 22.1-zoneless"
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}",
+        "dryRun": true
+      }
+    },
+    "test": {
+      "executor": "@nx/angular:unit-test",
+      "options": {
+        "watch": false
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "compodoc": {
+      "executor": "@twittwer/compodoc:compodoc",
+      "options": {
+        "tsConfig": "libs/ng-tailwind/tsconfig.compodoc.json",
+        "outputPath": "dist/compodoc/ng-tailwind"
+      },
+      "configurations": {
+        "json": {
+          "exportFormat": "json"
+        },
+        "serve": {
+          "serve": true,
+          "watch": true
+        }
+      },
+      "outputs": ["{workspaceRoot}/dist/compodoc/ng-tailwind"]
+    },
+    "storybook": {
+      "executor": "@storybook/angular:start-storybook",
+      "options": {
+        "configDir": "libs/ng-tailwind/.storybook",
+        "tsConfig": "libs/ng-tailwind/.storybook/tsconfig.json",
+        "styles": ["libs/ng-tailwind/assets/tokens.css"],
+        "port": 4401
+      }
+    },
+    "build-storybook": {
+      "executor": "@storybook/angular:build-storybook",
+      "options": {
+        "configDir": "libs/ng-tailwind/.storybook",
+        "tsConfig": "libs/ng-tailwind/.storybook/tsconfig.json",
+        "styles": ["libs/ng-tailwind/assets/tokens.css"],
+        "outputDir": "dist/storybook/ng-tailwind"
+      },
+      "configurations": {
+        "production": {}
+      }
+    }
+  }
+}

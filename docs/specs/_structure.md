@@ -38,7 +38,8 @@
 - `epics/E<n>-<slug>/` directories; feature files `F<n>.<m>-<slug>.md`.
 - IDs are permanent: never renumber; a moved story keeps its ID. Gaps are fine.
   Work no longer needed is removed and its ID is never reused: a retired story
-  is listed on its feature's `**Retired:**` line, a retired epic on the board.
+  is listed on its feature's `**Retired:**` line, a retired feature on its epic's,
+  a retired epic on the board.
 - Epic and feature status is one of these, and `index.md`'s board lists each
   epic in exactly one group:
 
@@ -130,5 +131,7 @@ the owner asks. When its entry criteria hold it becomes `elaborating`, then
   be observed from outside that repository ("its release-1 tags exist").
 - Another repository's pages, paths, spec IDs and internal status are not cited
   or restated. A requirement or finding that came from elsewhere is written
-  here in full, as this repository's own.
+  here in full, as this repository's own. The exception is kiln, which owns
+  repository-level setup: its specs and ADRs may be cited by ID as the reason
+  work here is retired or out of scope ([ADR-0007](../adr/ADR-0007.md)).
 - No page here is written for another repository to cite.

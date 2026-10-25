@@ -94,7 +94,7 @@
         "include": ["**/*.spec.ts"],
         "coverage": true,
         "coverageReporters": ["text-summary", "lcov"],
-        "coverageInclude": ["apps/ng-demo/src/**"],
+        "coverageInclude": ["apps/ng-demo/src/**/*.ts"],
         "runnerConfig": true
       }
     },

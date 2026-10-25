@@ -4,7 +4,7 @@
 
 **Source:** former roadmap item H3.
 
-Safe browser storage and correctness fixes to the core utilities, each a separate change with focused tests. The behavior is described in [Core](../../../architecture/core.md). CRUD and auth, which this work first covered, moved to [E4](../E4-standard-resource-screen/index.md) and [E5](../E5-oidc-client-auth/index.md); neither was fixed in place.
+Safe browser storage and correctness fixes to the core utilities, each a separate change with focused tests. The behavior is described in [Core](../../../architecture/core.md). CRUD and auth, which this work first covered, moved to [E4](../E4-standard-resource-screen/index.md) and [E5](../E5-session-client-auth/index.md); neither was fixed in place.
 
 [Back to the board](../../index.md)
 

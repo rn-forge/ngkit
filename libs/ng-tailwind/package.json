@@ -1,0 +1,26 @@
+{
+  "name": "@rn-forge/ng-tailwind",
+  "version": "0.2.0",
+  "description": "Token-driven, Tailwind-compatible presentation components for the rn-forge toolkit.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rn-forge/ngkit",
+    "directory": "libs/ng-tailwind"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
+  "peerDependencies": {
+    "@angular/core": "^22.0.6",
+    "tailwindcss": "^4"
+  },
+  "peerDependenciesMeta": {
+    "tailwindcss": {
+      "optional": true
+    }
+  }
+}

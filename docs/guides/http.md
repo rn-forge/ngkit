@@ -1,6 +1,6 @@
 # HTTP
 
-ngkit ships no HTTP client ([ADR-0004](../adr/ADR-0004.md)). This guide is the pattern applications use with Angular's `HttpClient`, and the OpenTelemetry setup that goes with it.
+ngkit ships no HTTP client ([ADR-0004](../adr/ADR-0004.md)); it types only RFC 9457 problems ([Problem responses](#problem-responses)). This guide is the pattern applications use with Angular's `HttpClient`, and the OpenTelemetry setup that goes with it.
 
 ## Application HTTP pattern
 
@@ -53,6 +53,19 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
 **Query strings and downloads.** Pass `params` as a record, since Angular encodes it and repeats array keys (OpenAPI `form`/`explode: true`). Angular's default codec leaves `+` unencoded, so supply an `HttpParameterCodec` when that matters, and drop `undefined` values first. Fetch files with `{ responseType: 'blob', observe: 'response' }`. Saving a Blob is DOM glue: use `AppUtil.saveBlob` from `@rn-forge/ng/core`, or a direct `<a href download>` for large cookie-authenticated files. Cross-origin `Content-Disposition` needs `Access-Control-Expose-Headers`.
 
 **Deployment note.** Browsers calling several origins pay for CORS, one token audience per origin and a trace-propagation allowlist. Prefer a same-origin gateway/BFF (`/api/orders`, `/api/inventory`); the tokens above then hold path prefixes and nothing else changes.
+
+## Problem responses
+
+A backend that answers errors with `application/problem+json` ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)) needs no per-service body parsing. `@rn-forge/ng/core` reads the `HttpErrorResponse` a screen already has: `problemMessage` for the text to show, and `hasProblemType` to branch on the problem `type` URI. A response is a problem by its media type, not its body shape. Use them at the call site or on `httpResource().error()`; the interceptor above keeps rethrowing the original `HttpErrorResponse`, so nothing else changes.
+
+```ts
+const track = httpResource<Track>(() => `/v1/tracks/${id()}`);
+
+readonly message = computed(() => (track.error() ? problemMessage(track.error()) : null));
+readonly missingFile = computed(() => hasProblemType(track.error(), '/problems/file-missing'));
+```
+
+A relative `type` resolves against the response URL. Trace correlation comes from the `traceresponse` header ([Telemetry](#telemetry-versions-checked-2026-09-22)), not from the problem body.
 
 ## Telemetry (versions checked 2026-09-22)
 

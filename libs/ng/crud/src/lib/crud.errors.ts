@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl } from '@angular/forms';
+import { problemOf } from '@rn-forge/ng/core';
 
 /** One RFC 9457 extension entry: `pointer` is an RFC 6901 JSON Pointer into the request body. */
 export interface ProblemFieldError {
@@ -7,14 +8,8 @@ export interface ProblemFieldError {
   readonly detail: string;
 }
 
-/** RFC 9457 `application/problem+json` body, with the `errors` extension the API conventions use. */
-export interface ProblemDetails {
-  readonly type?: string;
-  readonly title?: string;
-  readonly status?: number;
-  readonly detail?: string;
-  readonly errors?: readonly ProblemFieldError[];
-}
+/** The `errors` extension the API conventions use; a problem is read as `Problem<ProblemErrors>`. */
+type ProblemErrors = { readonly errors?: readonly ProblemFieldError[] };
 
 /** What a failed save means for the screen. */
 export type CrudErrorKind = 'conflict' | 'problem' | 'other';
@@ -22,21 +17,10 @@ export type CrudErrorKind = 'conflict' | 'problem' | 'other';
 /** The validation error key set on controls and forms by {@link problemToFormErrors}. */
 export const SERVER_ERROR_KEY = 'server';
 
-/** The problem body of an `HttpErrorResponse` (or a bare body), or `undefined` for anything else. */
-export function problemOf(error: unknown): ProblemDetails | undefined {
-  const body = error instanceof HttpErrorResponse ? error.error : error;
-  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
-    return undefined;
-  }
-  const candidate = body as Record<string, unknown>;
-  const isProblem =
-    Array.isArray(candidate['errors']) ||
-    typeof candidate['title'] === 'string' ||
-    typeof candidate['detail'] === 'string';
-  return isProblem ? (body as ProblemDetails) : undefined;
-}
-
 /**
+ * A problem is a response whose media type is `application/problem+json`,
+ * not a body that merely looks like one.
+ *
  * 412 is the `If-Match` precondition failing: the screen offers reload and
  * reapply, never a silent overwrite. Any other 4xx with a problem body is a
  * `problem` to show on the form.
@@ -65,16 +49,17 @@ function pointerSegments(pointer: string): string[] {
  * `{ server: string[] }` (from `detail`/`title`). Angular clears the errors on
  * the control's next validation, i.e. when the user edits it.
  *
- * Returns `false`, leaving the form untouched, when `problem` isn't a problem
- * body. Hand-rolled: no maintained package maps RFC 9457 pointers onto Angular
- * forms (npm checked 2026-09-23); the pointer parse is a few lines, so it takes
- * no JSON Pointer dependency.
+ * Returns `false`, leaving the form untouched, when `error` isn't an
+ * `HttpErrorResponse` with an `application/problem+json` body. Hand-rolled: no
+ * maintained package maps RFC 9457 pointers onto Angular forms (npm checked
+ * 2026-09-23); the pointer parse is a few lines, so it takes no JSON Pointer
+ * dependency.
  */
 export function problemToFormErrors(
-  problem: unknown,
+  error: unknown,
   form: AbstractControl,
 ): boolean {
-  const details = problemOf(problem);
+  const details = problemOf<ProblemErrors>(error);
   if (!details) return false;
 
   const formLevel: string[] = [];

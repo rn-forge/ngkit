@@ -39,7 +39,7 @@
       "dependsOn": ["build"],
       "options": {
         "cwd": "{workspaceRoot}",
-        "command": "node libs/ng-bootstrap/scripts/patch-package-exports.mjs"
+        "command": "node tools/scripts/patch-package-exports.mjs libs/ng-bootstrap './assets/*=./assets/*'"
       }
     },
     "pack": {

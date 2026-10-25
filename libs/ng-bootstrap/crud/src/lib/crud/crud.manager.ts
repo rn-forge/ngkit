@@ -16,7 +16,12 @@ import { merge } from 'lodash-es';
 import { Observable, forkJoin, map } from 'rxjs';
 
 // internal imports
-import { GenericType, AppUtil, isDebugMode } from '@rn-forge/ng/core';
+import {
+  GenericType,
+  AppUtil,
+  isDebugMode,
+  problemOf,
+} from '@rn-forge/ng/core';
 import {
   CrudDataSource,
   CrudFileDownload,
@@ -29,7 +34,7 @@ import {
   createCrudList,
   crudErrorKind,
   crudFeatures,
-  problemOf,
+  ProblemFieldError,
   problemToFormErrors,
 } from '@rn-forge/ng/crud';
 import { FormOptions } from '@rn-forge/ng-bootstrap/form';
@@ -658,7 +663,7 @@ export abstract class AbstractCrudManager<
 
   /** A 422 lists the failing rows (`pointer = /rows/12/Quantity`); nothing was saved. */
   private handleImportError(error: unknown): void {
-    const problem = problemOf(error);
+    const problem = problemOf<{ errors?: readonly ProblemFieldError[] }>(error);
     const errors = (problem?.errors ?? []).map(
       (e) => `${e.pointer ? `${e.pointer}: ` : ''}${e.detail}`,
     );

@@ -1,4 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -114,8 +114,16 @@ function makeContext(overrides: Partial<CrudContext> = {}) {
   return { ctx: ctx as CrudContext, formGroup };
 }
 
+/** An object body is an RFC 9457 problem, so it carries the problem media type. */
 const http = (status: number, error?: unknown) =>
-  new HttpErrorResponse({ status, error });
+  new HttpErrorResponse({
+    status,
+    error,
+    headers:
+      typeof error === 'object' && error !== null
+        ? new HttpHeaders({ 'Content-Type': 'application/problem+json' })
+        : undefined,
+  });
 
 async function setup(permission?: { hasPermission: (k: string) => boolean }) {
   TestBed.configureTestingModule({
