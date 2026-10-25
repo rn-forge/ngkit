@@ -22,7 +22,7 @@ const types = {
 };
 
 createServer(async (req, res) => {
-  const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  const path = decodeURIComponent(new URL(req.url, 'file:///').pathname);
   const file = join(root, normalize(path === '/' ? '/index.html' : path));
   if (!file.startsWith(root)) {
     res.writeHead(403).end();
