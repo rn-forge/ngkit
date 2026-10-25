@@ -1,6 +1,6 @@
 # E11 — Workspace generators
 
-**Status:** planned · **Owner:** ngkit · **Release:** [Release 2](../../../releases/release-2/index.md)
+**Status:** planned · **Owner:** ngkit · **Release:** [Release 3](../../../releases/release-3/index.md)
 
 **Source:** former plan item "Workspace Setup Tooling"; owner decisions, 2026-10-17.
 
