@@ -46,7 +46,7 @@ apps/ng-demo/src/app/          ← THE reference implementation. Read this befor
 
 - `pack` (`ng`, `ng-bootstrap`): builds the library and writes an installable tarball under `dist/tarballs/`.
 - `verify-consumer` (`ng`): installs the packed tarball into throwaway consumer projects; see [Release pipeline](release-pipeline.md#consumer-verification).
-- `patch-package-exports` (`ng-bootstrap`): fixes the dist `package.json`'s `exports` map so deep asset imports resolve; see [Release pipeline](release-pipeline.md#patch-package-exports).
+- `patch-package-exports` (`ng-bootstrap`, `ng-tailwind`): fixes the dist `package.json`'s `exports` map so asset imports resolve; see [Release pipeline](release-pipeline.md#patch-package-exports).
 - `compodoc` (`ng`, `ng-bootstrap`): generates the API reference published on the docs site.
 - `build-storybook` (`ng-bootstrap`): builds the component catalog published on the docs site.
 - `e2e-ci` (`ng-demo-e2e`): the atomized Playwright target Nx Cloud distributes; see [Release pipeline](release-pipeline.md#ci).
