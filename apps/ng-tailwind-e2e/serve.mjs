@@ -1,9 +1,14 @@
-// A tiny static server for the built Storybook (dist/storybook/ng-tailwind).
+// A tiny static server. ROOT (relative to the workspace root) defaults to the built
+// Storybook; with SPA=1 unknown paths fall back to index.html.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';
 
-const root = resolve(import.meta.dirname, '../../dist/storybook/ng-tailwind');
+const root = resolve(
+  import.meta.dirname,
+  '../..',
+  process.env.ROOT ?? 'dist/storybook/ng-tailwind',
+);
 const port = Number(process.env.PORT ?? 4402);
 const types = {
   '.html': 'text/html',
@@ -24,7 +29,11 @@ createServer(async (req, res) => {
     return;
   }
   try {
-    const body = await readFile(file);
+    const body = await readFile(file).catch((err) => {
+      if (process.env.SPA && !extname(file))
+        return readFile(join(root, 'index.html'));
+      throw err;
+    });
     res.writeHead(200, {
       'content-type': types[extname(file)] ?? 'application/octet-stream',
     });

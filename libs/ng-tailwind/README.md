@@ -49,6 +49,8 @@ Override any `--rnf-*` token in an unlayered rule, which wins over the package's
 In the global stylesheet, in this order (CSS allows `@import` only before other rules, so your token values go in their own file):
 
 ```css
+@layer theme, base, rnf, components, utilities;
+
 @import '@rn-forge/ng-tailwind/tokens.css';
 
 /* your own --rnf-* values and color-scheme, e.g. :root { color-scheme: light dark; } */
@@ -60,7 +62,7 @@ In the global stylesheet, in this order (CSS allows `@import` only before other 
 @import '@rn-forge/ng-tailwind/tailwind.css';
 ```
 
-Importing the package sheets before Tailwind declares the `rnf` layer first, so utilities win over component rules. The bridge clears Tailwind's default palette (`--color-*: initial`), so default-palette utilities such as `bg-blue-500` produce nothing; colour utilities come from the `--rnf-*` tokens.
+The `@layer` statement matters: Tailwind's preflight resets `button` backgrounds in `base`, so declaring `rnf` after `base` keeps component styles over the reset, and `utilities` still beats `rnf`. The bridge clears Tailwind's default palette (`--color-*: initial`), so default-palette utilities such as `bg-blue-500` produce nothing; colour utilities come from the `--rnf-*` tokens.
 
 ## Tones
 

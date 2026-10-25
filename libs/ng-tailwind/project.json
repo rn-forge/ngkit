@@ -55,6 +55,22 @@
         "command": "node tools/scripts/verify-consumer.mjs ng-tailwind"
       }
     },
+    "consumer-fixture": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["pack"],
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/tools/scripts/verify-consumer.mjs"
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/consumer-fixtures/ng-tailwind-tailwind-angular-22.1-zoneless"
+      ],
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node tools/scripts/verify-consumer.mjs ng-tailwind --only tailwind --cell 22.1-zoneless"
+      }
+    },
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}",

@@ -1,6 +1,6 @@
 # E8 — `@rn-forge/ng-tailwind` package
 
-**Status:** in progress · **Owner:** ngkit
+**Status:** done · **Implemented:** 2026-10-24 · **Owner:** ngkit
 
 **Source:** former roadmap item T1; elaborated at the owner's request, 2026-10-24, against a survey of three applications to be rebuilt on kiln's Angular baseline.
 
@@ -10,12 +10,12 @@ A new presentation library alongside `ng-bootstrap`, with the same packaging pat
 
 [Back to the board](../../index.md)
 
-| Feature                                                             | Status      | Scope                                                                                 |
-| ------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------- |
-| [F8.1 — The package and its release wiring](F8.1-package.md)        | done        | `libs/ng-tailwind`, the fixed release group, CSS exports, Compodoc and Storybook.     |
-| [F8.2 — Tokens, tones, base sheet and bridge](F8.2-css-contract.md) | done        | `tokens.css`, `base.css`, `tailwind.css`, under [ADR-0008](../../../adr/ADR-0008.md). |
-| [F8.3 — `rnfButton`](F8.3-button.md)                                | done        | The first component, on `<button>` and `<a>`.                                         |
-| [F8.4 — Consumer and accessibility acceptance](F8.4-acceptance.md)  | in progress | Plain and Tailwind consumers from the tarball; WCAG AA in both schemes, in a browser. |
+| Feature                                                             | Status | Scope                                                                                 |
+| ------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------- |
+| [F8.1 — The package and its release wiring](F8.1-package.md)        | done   | `libs/ng-tailwind`, the fixed release group, CSS exports, Compodoc and Storybook.     |
+| [F8.2 — Tokens, tones, base sheet and bridge](F8.2-css-contract.md) | done   | `tokens.css`, `base.css`, `tailwind.css`, under [ADR-0008](../../../adr/ADR-0008.md). |
+| [F8.3 — `rnfButton`](F8.3-button.md)                                | done   | The first component, on `<button>` and `<a>`.                                         |
+| [F8.4 — Consumer and accessibility acceptance](F8.4-acceptance.md)  | done   | Plain and Tailwind consumers from the tarball; WCAG AA in both schemes, in a browser. |
 
 ## Design
 
@@ -38,7 +38,7 @@ A consumer application builds its own `ui/` folder to these conventions, so this
 - **Selectors.** Element `rnf-<name>`, attribute `button[rnfButton], a[rnfButton]`, host class `rnf-<name>`. An application that builds ahead uses its own prefix in the same positions. The prefix is `rnf` for both packages ([see Design](#design)).
 - **Tokens.** Components read only `--rnf-*` custom properties and contain no colour literal. The list is [F8.2's](F8.2-css-contract.md#tokens); its first names are the ones this section fixed before 2026-10-24, so an application built to them renames a prefix and nothing else.
 - **Defaults.** A neutral, WCAG AA light and dark pair as `light-dark()` values, following the application's `color-scheme`; the package sets no `color-scheme` on `html` and forces no palette. `font-ui` defaults to `inherit` and `font-data` to `ui-monospace, monospace`, so typography stays with the application, which sets both in its one bridge. Contrast is verified from computed CSS.
-- **Tailwind v4 bridge without preflight.** The optional bridge is one `@theme inline` block mapping Tailwind's colour, radius, font and size namespaces onto `var(--rnf-*)` and clearing the default palette. The application imports Tailwind (with or without preflight) and declares its own `@source`. Component templates use no Tailwind utilities, so a consumer without Tailwind renders them.
+- **Tailwind v4 bridge without preflight.** The optional bridge is one `@theme inline` block mapping Tailwind's colour, radius, font and size namespaces onto `var(--rnf-*)` and clearing the default palette. The application imports Tailwind (with or without preflight), declares its own `@source`, and declares the layer order first ([F8.2](F8.2-css-contract.md#tailwindcss-opt-in)) so preflight stays below `rnf`. Component templates use no Tailwind utilities, so a consumer without Tailwind renders them.
 - **Behaviour from Angular.** ARIA roles, keyboard interaction and focus come from `@angular/aria` and `@angular/cdk` ([ADR-0001](../../../adr/ADR-0001.md) principle 1), which become this package's peers; a component adds tokens, styles and inputs on top. Each component styles in its own emulated-encapsulation stylesheet, inside `@layer rnf`, with no `::ng-deep` or `:host-context`.
 
 ## Survey, 2026-10-24
@@ -55,5 +55,6 @@ The component patterns the survey found beyond the button are recorded on [E9](.
 
 ## Open questions
 
+- **ADR-0008 consequence on layer order.** [S8.4.3](F8.4-acceptance.md#s843--application-css-wins-the-cascade) found (2026-10-24) that importing the package sheets before Tailwind puts `rnf` below Tailwind's `base` layer, so preflight resets the components; F8.2 and the README now have the application declare `@layer theme, base, rnf, components, utilities;` first. ADR-0008's Consequences bullet "Tailwind's `utilities` layer wins when Tailwind is imported after the package sheets" is incomplete. Proposed amendment, for the owner to accept: "Unlayered application CSS beats every package rule without specificity tricks. With Tailwind, the application declares `@layer theme, base, rnf, components, utilities;` before its imports, so component styles win over Tailwind's preflight and `utilities` win over component styles."
 - **Angular CSS variable namespacing.** Angular 22.1 compiles every custom property in a component stylesheet to `--%NS%<name>` and, when an application calls `provideCssVarNamespacing()`, replaces `%NS%` with a prefix; by default the prefix is empty. With namespacing on, a component's `var(--rnf-*)` reads no longer match the unprefixed tokens in `tokens.css`. Angular's escape, `--global--<name>`, is not understood by 22.0, which the `^22.0.6` peer range still covers. Found by [S8.4.1](F8.4-acceptance.md#s841--consumers-build-from-the-tarball) (2026-10-24). Until decided, the README tells applications not to enable namespacing. Options: keep that rule; or raise the peer floor to 22.1 and write component token reads as `var(--global--rnf-*)`.
 - **E8 and [F12.10](../E12-on-demand-features/index.md#f1210--rn-forgeng-material) (`ng-material`)** each add a second presentation package. Decide whether both are wanted. Evidence from the 2026-10-24 survey: none of the three applications uses Material; all three use token-driven custom CSS, two with Tailwind. Recommendation: keep E8, and leave F12.10 deferred on its trigger.

@@ -7,7 +7,9 @@
  * reference, or an undeclared runtime import surfaces before it reaches a
  * consumer. See docs/architecture/release-pipeline.md.
  *
- * Usage: node tools/scripts/verify-consumer.mjs [ng|ng-tailwind]   (default: ng)
+ * Usage: node tools/scripts/verify-consumer.mjs [ng|ng-tailwind] [--only plain|tailwind] [--cell <angular>-<zone|zoneless>]
+ * (default target: ng). `--only` and `--cell` narrow the `ng-tailwind` matrix to one
+ * fixture, e.g. `ng-tailwind --only tailwind --cell 22.1-zoneless`, so the e2e can build it alone.
  * `ng-tailwind` builds real Angular applications from the packed tarball, one
  * plain and one with Tailwind v4, and asserts on the built CSS and JS.
  */
@@ -39,7 +41,14 @@ const CHANGE_DETECTION_MODES = ['zone', 'zoneless'];
 /** @type {string[]} */
 const failures = [];
 
-const target = process.argv[2] ?? 'ng';
+const args = process.argv.slice(2);
+const target = args[0] && !args[0].startsWith('--') ? args[0] : 'ng';
+const optionValue = (flag) => {
+  const index = args.indexOf(flag);
+  return index === -1 ? undefined : args[index + 1];
+};
+const onlyFlavour = optionValue('--only');
+const onlyCell = optionValue('--cell');
 if (!['ng', 'ng-tailwind'].includes(target)) {
   console.error(`Unknown target "${target}"; expected ng or ng-tailwind.`);
   process.exit(2);
@@ -244,6 +253,8 @@ const PLAIN_HTML = `<button rnfButton>Save</button>
 `;
 
 const TAILWIND_HTML = `<button rnfButton class="w-full">Save</button>
+<div style="width:400px" data-test="w400"><button rnfButton class="w-full" data-test="wfull">Full</button></div>
+<button rnfButton variant="primary" data-test="primary">Primary</button>
 <a rnfButton href="#">Link</a>
 <div class="bg-surface-1 text-muted rounded-control">Panel</div>
 <div class="bg-slate-500">Default palette</div>
@@ -252,13 +263,26 @@ const TAILWIND_HTML = `<button rnfButton class="w-full">Save</button>
 const PLAIN_CSS = `@import '@rn-forge/ng-tailwind/tokens.css';
 `;
 
-// README order: tokens, the app's own theme file, tailwindcss, then the bridge.
-const TAILWIND_CSS = `@import '@rn-forge/ng-tailwind/tokens.css';
+// README order: the layer statement, tokens, the app's own theme file, tailwindcss, then the
+// bridge. The statement puts `rnf` after Tailwind's preflight (`base`), which would otherwise
+// reset the button's background, and before `utilities`.
+// './override.css' comes next: an unlayered app rule that precedes the package's tokens in
+// source order. The package's rules sit in @layer rnf, so the app rule wins whatever the
+// order; this fixture proves it with the earliest placement.
+const TAILWIND_CSS = `@layer theme, base, rnf, components, utilities;
+@import './override.css';
+@import '@rn-forge/ng-tailwind/tokens.css';
 @import '@rn-forge/ng-tailwind/base.css';
 @import './theme.css';
 @import 'tailwindcss';
 @source './';
 @import '@rn-forge/ng-tailwind/tailwind.css';
+`;
+
+const OVERRIDE_ACCENT = '#ff00ff';
+const OVERRIDE_CSS = `:root {
+  --rnf-accent: ${OVERRIDE_ACCENT};
+}
 `;
 
 const THEME_CSS = `:root {
@@ -359,6 +383,7 @@ function writeAngularApp(
   write('src/styles.css', withTailwind ? TAILWIND_CSS : PLAIN_CSS);
   if (withTailwind) {
     write('src/theme.css', THEME_CSS);
+    write('src/override.css', OVERRIDE_CSS);
     // Angular's esbuild builder reads this file to run PostCSS plugins.
     write('.postcssrc.json', { plugins: { '@tailwindcss/postcss': {} } });
   }
@@ -426,6 +451,7 @@ function assertTailwindBuild(dir) {
 
 function runTailwindFixture(angularKey, angularVersion, changeDetectionMode) {
   for (const flavour of ['plain', 'tailwind']) {
+    if (onlyFlavour && onlyFlavour !== flavour) continue;
     const name = `ng-tailwind-${flavour}-angular-${angularKey}-${changeDetectionMode}`;
     const dir = join(fixturesRoot, name);
     console.log(`\n=== ${name} (Angular ${angularVersion}) ===`);
@@ -459,6 +485,8 @@ function runTailwindFixture(angularKey, angularVersion, changeDetectionMode) {
 
 for (const [angularKey, angularVersion] of Object.entries(ANGULAR_VERSIONS)) {
   for (const changeDetectionMode of CHANGE_DETECTION_MODES) {
+    if (onlyCell && onlyCell !== `${angularKey}-${changeDetectionMode}`)
+      continue;
     if (target === 'ng')
       runFixture(angularKey, angularVersion, changeDetectionMode);
     else runTailwindFixture(angularKey, angularVersion, changeDetectionMode);

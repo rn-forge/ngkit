@@ -48,8 +48,9 @@ apps/ng-demo/src/app/          ← THE reference implementation. Read this befor
 
 - `pack` (`ng`, `ng-bootstrap`, `ng-tailwind`): builds the library and writes an installable tarball under `dist/tarballs/`.
 - `verify-consumer` (`ng`, `ng-tailwind`): installs the packed tarball into throwaway consumer projects; see [Release pipeline](release-pipeline.md#consumer-verification).
+- `consumer-fixture` (`ng-tailwind`): builds the one Tailwind consumer fixture (Angular 22.1, zoneless) from the packed tarball, for the e2e cascade checks; see [Release pipeline](release-pipeline.md#consumer-verification).
 - `patch-package-exports` (`ng-bootstrap`, `ng-tailwind`): fixes the dist `package.json`'s `exports` map so asset imports resolve; see [Release pipeline](release-pipeline.md#patch-package-exports).
 - `compodoc` (`ng`, `ng-bootstrap`, `ng-tailwind`): generates the API reference published on the docs site.
 - `build-storybook` (`ng-bootstrap`, `ng-tailwind`): builds the component catalog published on the docs site.
-- `e2e` and `e2e-ci` (`ng-tailwind-e2e`): the Playwright web server builds `ng-tailwind:build-storybook` and serves `dist/storybook/ng-tailwind` with `apps/ng-tailwind-e2e/serve.mjs`; Chromium only.
+- `e2e` and `e2e-ci` (`ng-tailwind-e2e`): one Playwright web server builds `ng-tailwind:build-storybook` and serves `dist/storybook/ng-tailwind` with `apps/ng-tailwind-e2e/serve.mjs`; a second runs `ng-tailwind:consumer-fixture` and serves the fixture's `out/browser` on port 4403 (`ROOT`, `SPA`); Chromium only.
 - `e2e-ci` (`ng-demo-e2e`): the atomized Playwright target Nx Cloud distributes; see [Release pipeline](release-pipeline.md#ci).
