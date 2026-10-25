@@ -192,6 +192,9 @@ importers:
       storybook:
         specifier: ^10.5.0
         version: 10.5.0(prettier@3.9.5)(react@19.2.7)
+      tailwindcss:
+        specifier: ^4.3.3
+        version: 4.3.3
       ts-node:
         specifier: 10.9.1
         version: 10.9.1(@types/node@26.1.1)(typescript@6.0.3)

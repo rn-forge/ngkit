@@ -255,3 +255,96 @@ describe('css contract: base.css (F8.2, S8.2.3)', () => {
     }
   });
 });
+
+describe('css contract: tailwind.css (F8.2, S8.2.4)', () => {
+  // Tailwind variable -> token. v4 reads the bare `rounded` utility from
+  // `--radius`, so the table's `--radius-DEFAULT` is `--radius` here.
+  const expectedMap: Record<string, string> = {
+    '--color-surface-0': 'surface-0',
+    '--color-surface-1': 'surface-1',
+    '--color-surface-2': 'surface-2',
+    '--color-surface-3': 'surface-3',
+    '--color-fg': 'text',
+    '--color-muted': 'text-muted',
+    '--color-subtle': 'text-subtle',
+    '--color-border': 'border',
+    '--color-border-strong': 'border-strong',
+    '--color-focus': 'focus',
+    '--color-accent': 'accent',
+    '--color-accent-muted': 'accent-muted',
+    '--color-on-accent': 'on-accent',
+    '--color-neutral': 'neutral',
+    '--color-info': 'info',
+    '--color-success': 'success',
+    '--color-warning': 'warning',
+    '--color-danger': 'danger',
+    '--radius-control': 'radius-control',
+    '--radius': 'radius',
+    '--radius-lg': 'radius-lg',
+    '--radius-pill': 'radius-pill',
+    '--font-ui': 'font-ui',
+    '--font-data': 'font-data',
+    '--text-xs': 'text-xs',
+    '--text-sm': 'text-sm',
+    '--text-md': 'text-md',
+    '--ease-rnf': 'ease',
+    '--shadow-raised': 'shadow-raised',
+    '--shadow-overlay': 'shadow-overlay',
+  };
+
+  const tokenNames = new Set<string>();
+  parseAsset('tokens.css').walkDecls(/^--rnf-/, (decl) => {
+    tokenNames.add(decl.prop);
+  });
+
+  const root = parseAsset('tailwind.css');
+  const nodes = root.nodes.filter((node) => node.type !== 'comment');
+  const theme = nodes[0] as AtRule;
+  const decls: Declaration[] = [];
+  root.walkDecls((decl) => {
+    decls.push(decl);
+  });
+
+  it('has exactly one top-level rule, @theme inline', () => {
+    expect(nodes).toHaveLength(1);
+    expect(theme.type).toBe('atrule');
+    expect(theme.name).toBe('theme');
+    expect(theme.params).toBe('inline');
+  });
+
+  it('has no @import, @source, @layer or @tailwind rule', () => {
+    const names: string[] = [];
+    root.walkAtRules((atRule) => {
+      names.push(atRule.name);
+    });
+    for (const banned of ['import', 'source', 'layer', 'tailwind']) {
+      expect(names).not.toContain(banned);
+    }
+  });
+
+  it('starts with --color-*: initial', () => {
+    expect(decls[0].prop).toBe('--color-*');
+    expect(decls[0].value).toBe('initial');
+  });
+
+  it('maps every other variable to a declared var(--rnf-*) token', () => {
+    for (const decl of decls.slice(1)) {
+      expect(decl.prop).toMatch(
+        /^--(?:color|radius|font|text|ease|shadow)(?:-|$)/,
+      );
+      const match = /^var\((--rnf-[\w-]+)\)$/.exec(decl.value);
+      expect(match, `${decl.prop}: ${decl.value}`).not.toBeNull();
+      expect(tokenNames, decl.prop).toContain(match?.[1]);
+    }
+  });
+
+  it('maps exactly the F8.2 table, once each', () => {
+    const mapped = decls.slice(1);
+    expect(new Set(mapped.map((d) => d.prop)).size).toBe(mapped.length);
+    expect(Object.fromEntries(mapped.map((d) => [d.prop, d.value]))).toEqual(
+      Object.fromEntries(
+        Object.entries(expectedMap).map(([k, v]) => [k, `var(--rnf-${v})`]),
+      ),
+    );
+  });
+});

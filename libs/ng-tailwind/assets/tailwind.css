@@ -1,1 +1,44 @@
-/* Tailwind bridge: filled by S8.2.4. */
+/* Tailwind bridge: maps Tailwind v4 theme variables to the --rnf-* tokens. */
+@theme inline {
+  --color-*: initial;
+
+  --color-surface-0: var(--rnf-surface-0);
+  --color-surface-1: var(--rnf-surface-1);
+  --color-surface-2: var(--rnf-surface-2);
+  --color-surface-3: var(--rnf-surface-3);
+
+  --color-fg: var(--rnf-text);
+  --color-muted: var(--rnf-text-muted);
+  --color-subtle: var(--rnf-text-subtle);
+
+  --color-border: var(--rnf-border);
+  --color-border-strong: var(--rnf-border-strong);
+  --color-focus: var(--rnf-focus);
+
+  --color-accent: var(--rnf-accent);
+  --color-accent-muted: var(--rnf-accent-muted);
+  --color-on-accent: var(--rnf-on-accent);
+
+  --color-neutral: var(--rnf-neutral);
+  --color-info: var(--rnf-info);
+  --color-success: var(--rnf-success);
+  --color-warning: var(--rnf-warning);
+  --color-danger: var(--rnf-danger);
+
+  --radius-control: var(--rnf-radius-control);
+  /* Tailwind v4 reads the bare `rounded` utility from --radius, not --radius-DEFAULT. */
+  --radius: var(--rnf-radius);
+  --radius-lg: var(--rnf-radius-lg);
+  --radius-pill: var(--rnf-radius-pill);
+
+  --font-ui: var(--rnf-font-ui);
+  --font-data: var(--rnf-font-data);
+
+  --text-xs: var(--rnf-text-xs);
+  --text-sm: var(--rnf-text-sm);
+  --text-md: var(--rnf-text-md);
+
+  --ease-rnf: var(--rnf-ease);
+  --shadow-raised: var(--rnf-shadow-raised);
+  --shadow-overlay: var(--rnf-shadow-overlay);
+}
