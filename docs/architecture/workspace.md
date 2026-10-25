@@ -46,7 +46,7 @@ apps/ng-demo/src/app/          ← THE reference implementation. Read this befor
 ## Nx targets worth knowing
 
 - `pack` (`ng`, `ng-bootstrap`, `ng-tailwind`): builds the library and writes an installable tarball under `dist/tarballs/`.
-- `verify-consumer` (`ng`): installs the packed tarball into throwaway consumer projects; see [Release pipeline](release-pipeline.md#consumer-verification).
+- `verify-consumer` (`ng`, `ng-tailwind`): installs the packed tarball into throwaway consumer projects; see [Release pipeline](release-pipeline.md#consumer-verification).
 - `patch-package-exports` (`ng-bootstrap`, `ng-tailwind`): fixes the dist `package.json`'s `exports` map so asset imports resolve; see [Release pipeline](release-pipeline.md#patch-package-exports).
 - `compodoc` (`ng`, `ng-bootstrap`, `ng-tailwind`): generates the API reference published on the docs site.
 - `build-storybook` (`ng-bootstrap`, `ng-tailwind`): builds the component catalog published on the docs site.

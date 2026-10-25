@@ -6,6 +6,10 @@
  * no pnpm workspace membership) so a broken peer range, a leaked `workspace:*`
  * reference, or an undeclared runtime import surfaces before it reaches a
  * consumer. See docs/architecture/release-pipeline.md.
+ *
+ * Usage: node tools/scripts/verify-consumer.mjs [ng|ng-tailwind]   (default: ng)
+ * `ng-tailwind` builds real Angular applications from the packed tarball, one
+ * plain and one with Tailwind v4, and asserts on the built CSS and JS.
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -35,15 +39,33 @@ const CHANGE_DETECTION_MODES = ['zone', 'zoneless'];
 /** @type {string[]} */
 const failures = [];
 
-function resolveTarball() {
-  const expectedName = `rn-forge-ng-${ngPackageJson.version}.tgz`;
+const target = process.argv[2] ?? 'ng';
+if (!['ng', 'ng-tailwind'].includes(target)) {
+  console.error(`Unknown target "${target}"; expected ng or ng-tailwind.`);
+  process.exit(2);
+}
+
+// Pinned to the Tailwind version in the root lockfile.
+const TAILWIND_VERSION = '4.3.3';
+
+function resolveTarball(packageName = 'ng') {
+  const version =
+    packageName === 'ng'
+      ? ngPackageJson.version
+      : JSON.parse(
+          readFileSync(
+            join(workspaceRoot, 'libs', packageName, 'package.json'),
+            'utf-8',
+          ),
+        ).version;
+  const expectedName = `rn-forge-${packageName}-${version}.tgz`;
   const tarballPath = join(tarballsDir, expectedName);
   if (!existsSync(tarballPath)) {
     const found = existsSync(tarballsDir)
       ? readdirSync(tarballsDir).join(', ')
       : '(missing dir)';
     throw new Error(
-      `Expected packed tarball at ${tarballPath} (found: ${found}). Run "nx run ng:pack" ` +
+      `Expected packed tarball at ${tarballPath} (found: ${found}). Run "nx run ${packageName}:pack" ` +
         `first (the verify-consumer nx target declares this as a dependency).`,
     );
   }
@@ -187,9 +209,259 @@ function checkNoWorkspaceOrLocalArtifacts(dir) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// ng-tailwind: real Angular application builds from the packed tarball.
+// ---------------------------------------------------------------------------
+
+const APP_TS = (
+  changeDetectionMode,
+) => `import { Component } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import {
+  provideZoneChangeDetection,
+  provideZonelessChangeDetection,
+} from '@angular/core';
+import { RnfButton } from '@rn-forge/ng-tailwind';
+
+@Component({
+  selector: 'app-root',
+  imports: [RnfButton],
+  templateUrl: './app.html',
+})
+class App {}
+
+bootstrapApplication(App, {
+  providers: [${
+    changeDetectionMode === 'zone'
+      ? 'provideZoneChangeDetection()'
+      : 'provideZonelessChangeDetection()'
+  }],
+});
+`;
+
+const PLAIN_HTML = `<button rnfButton>Save</button>
+<a rnfButton href="#">Link</a>
+`;
+
+const TAILWIND_HTML = `<button rnfButton class="w-full">Save</button>
+<a rnfButton href="#">Link</a>
+<div class="bg-surface-1 text-muted rounded-control">Panel</div>
+<div class="bg-slate-500">Default palette</div>
+`;
+
+const PLAIN_CSS = `@import '@rn-forge/ng-tailwind/tokens.css';
+`;
+
+// README order: tokens, the app's own theme file, tailwindcss, then the bridge.
+const TAILWIND_CSS = `@import '@rn-forge/ng-tailwind/tokens.css';
+@import '@rn-forge/ng-tailwind/base.css';
+@import './theme.css';
+@import 'tailwindcss';
+@source './';
+@import '@rn-forge/ng-tailwind/tailwind.css';
+`;
+
+const THEME_CSS = `:root {
+  color-scheme: light dark;
+}
+`;
+
+function writeAngularApp(
+  dir,
+  withTailwind,
+  angularVersion,
+  changeDetectionMode,
+) {
+  const dependencies = {
+    '@angular/common': angularVersion,
+    '@angular/compiler': angularVersion,
+    '@angular/core': angularVersion,
+    '@angular/platform-browser': angularVersion,
+    '@rn-forge/ng-tailwind': `file:${resolveTarball('ng-tailwind')}`,
+    rxjs: rxjsRange,
+    'zone.js': '~0.16.0',
+  };
+  const devDependencies = {
+    '@angular/build': angularVersion,
+    '@angular/cli': angularVersion,
+    '@angular/compiler-cli': angularVersion,
+    typescript: '~6.0.3',
+  };
+  if (withTailwind) {
+    devDependencies.tailwindcss = TAILWIND_VERSION;
+    devDependencies['@tailwindcss/postcss'] = TAILWIND_VERSION;
+  }
+  const write = (file, content) => {
+    mkdirSync(join(dir, file, '..'), { recursive: true });
+    writeFileSync(
+      join(dir, file),
+      typeof content === 'string' ? content : JSON.stringify(content, null, 2),
+    );
+  };
+  write('package.json', {
+    name: `rnf-consumer-fixture-${dir.split('/').pop()}`,
+    private: true,
+    type: 'module',
+    dependencies,
+    devDependencies,
+  });
+  write('angular.json', {
+    $schema: './node_modules/@angular/cli/lib/config/schema.json',
+    version: 1,
+    projects: {
+      app: {
+        projectType: 'application',
+        root: '',
+        sourceRoot: 'src',
+        architect: {
+          build: {
+            builder: '@angular/build:application',
+            options: {
+              browser: 'src/main.ts',
+              tsConfig: 'tsconfig.app.json',
+              styles: ['src/styles.css'],
+              polyfills: changeDetectionMode === 'zone' ? ['zone.js'] : [],
+              outputPath: 'out',
+              index: 'src/index.html',
+            },
+            configurations: {
+              production: { outputHashing: 'none' },
+            },
+            defaultConfiguration: 'production',
+          },
+        },
+      },
+    },
+  });
+  write('tsconfig.json', {
+    compileOnSave: false,
+    compilerOptions: {
+      strict: true,
+      target: 'ES2022',
+      module: 'preserve',
+      moduleResolution: 'bundler',
+      skipLibCheck: true,
+      isolatedModules: true,
+    },
+    angularCompilerOptions: { strictTemplates: true },
+  });
+  write('tsconfig.app.json', {
+    extends: './tsconfig.json',
+    compilerOptions: { types: [] },
+    files: ['src/main.ts'],
+  });
+  write(
+    'src/index.html',
+    '<!doctype html><html><head><meta charset="utf-8"><title>fixture</title><base href="/"></head><body><app-root></app-root></body></html>',
+  );
+  write('src/main.ts', APP_TS(changeDetectionMode));
+  write('src/app.html', withTailwind ? TAILWIND_HTML : PLAIN_HTML);
+  write('src/styles.css', withTailwind ? TAILWIND_CSS : PLAIN_CSS);
+  if (withTailwind) {
+    write('src/theme.css', THEME_CSS);
+    // Angular's esbuild builder reads this file to run PostCSS plugins.
+    write('.postcssrc.json', { plugins: { '@tailwindcss/postcss': {} } });
+  }
+}
+
+function readBuilt(dir, extension) {
+  const outDir = join(dir, 'out', 'browser');
+  return readdirSync(outDir)
+    .filter((file) => file.endsWith(extension))
+    .map((file) => readFileSync(join(outDir, file), 'utf-8'))
+    .join('\n');
+}
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message);
+  console.log(`  ok: ${message}`);
+}
+
+/** Text of every CSS rule whose selector list contains `selector` (escaped class). */
+function rulesFor(css, selector) {
+  const re = new RegExp(
+    `(^|[}\\s,])${selector.replace(/[.\\[\\]()]/g, '\\$&')}\\s*[,{][^}]*}`,
+    'g',
+  );
+  return css.match(re) ?? [];
+}
+
+function assertPlainBuild(dir) {
+  const css = readBuilt(dir, '.css');
+  const js = readBuilt(dir, '.js');
+  assert(css.includes('--rnf-surface-0'), 'plain CSS contains --rnf-surface-0');
+  // Angular 22.1 prefixes component custom properties with a %NS% placeholder.
+  assert(
+    /@layer\s+rnf\s*\{/.test(js) && /--(?:%NS%)?rnf-button-bg/.test(js),
+    'plain build ships the button @layer rnf rules (--rnf-button-bg)',
+  );
+  assert(
+    !existsSync(join(dir, 'node_modules', 'tailwindcss')),
+    'plain fixture has no node_modules/tailwindcss',
+  );
+}
+
+function assertTailwindBuild(dir) {
+  const css = readBuilt(dir, '.css');
+  for (const [utility, token] of [
+    ['.bg-surface-1', '--rnf-surface-1'],
+    ['.text-muted', '--rnf-text-muted'],
+    ['.rounded-control', '--rnf-radius-control'],
+  ]) {
+    const rules = rulesFor(css, utility).join('\n');
+    assert(
+      rules.includes(`var(${token})`),
+      `Tailwind CSS has ${utility} resolving to var(--rnf-*): ${rules.trim().slice(0, 120)}`,
+    );
+  }
+  assert(
+    rulesFor(css, '.w-full').length > 0,
+    'Tailwind CSS has a .w-full rule',
+  );
+  assert(
+    rulesFor(css, '.bg-slate-500').length === 0,
+    'Tailwind CSS has no .bg-slate-500 rule',
+  );
+}
+
+function runTailwindFixture(angularKey, angularVersion, changeDetectionMode) {
+  for (const flavour of ['plain', 'tailwind']) {
+    const name = `ng-tailwind-${flavour}-angular-${angularKey}-${changeDetectionMode}`;
+    const dir = join(fixturesRoot, name);
+    console.log(`\n=== ${name} (Angular ${angularVersion}) ===`);
+    rmSync(dir, {
+      recursive: true,
+      force: true,
+      maxRetries: 3,
+      retryDelay: 200,
+    });
+    mkdirSync(dir, { recursive: true });
+    try {
+      writeAngularApp(
+        dir,
+        flavour === 'tailwind',
+        angularVersion,
+        changeDetectionMode,
+      );
+      execFileSync(
+        'npm',
+        ['install', '--no-audit', '--no-fund', '--loglevel=error'],
+        { cwd: dir, stdio: 'inherit' },
+      );
+      execFileSync('npx', ['ng', 'build'], { cwd: dir, stdio: 'inherit' });
+      if (flavour === 'plain') assertPlainBuild(dir);
+      else assertTailwindBuild(dir);
+    } catch (err) {
+      failures.push(`${name}: ${err.message}`);
+    }
+  }
+}
+
 for (const [angularKey, angularVersion] of Object.entries(ANGULAR_VERSIONS)) {
   for (const changeDetectionMode of CHANGE_DETECTION_MODES) {
-    runFixture(angularKey, angularVersion, changeDetectionMode);
+    if (target === 'ng')
+      runFixture(angularKey, angularVersion, changeDetectionMode);
+    else runTailwindFixture(angularKey, angularVersion, changeDetectionMode);
   }
 }
 

@@ -20,7 +20,7 @@
 | [F8.1 — The package and its release wiring](../../specs/epics/E8-tailwind-package/F8.1-package.md)                       | [E8](../../specs/epics/E8-tailwind-package/index.md)         | done        |
 | [F8.2 — Tokens, tones, base sheet and bridge](../../specs/epics/E8-tailwind-package/F8.2-css-contract.md)                | [E8](../../specs/epics/E8-tailwind-package/index.md)         | done        |
 | [F8.3 — `rnfButton`](../../specs/epics/E8-tailwind-package/F8.3-button.md)                                               | [E8](../../specs/epics/E8-tailwind-package/index.md)         | done        |
-| [F8.4 — Consumer and accessibility acceptance](../../specs/epics/E8-tailwind-package/F8.4-acceptance.md)                 | [E8](../../specs/epics/E8-tailwind-package/index.md)         | planned     |
+| [F8.4 — Consumer and accessibility acceptance](../../specs/epics/E8-tailwind-package/F8.4-acceptance.md)                 | [E8](../../specs/epics/E8-tailwind-package/index.md)         | in progress |
 | [F11.1 — `@rn-forge/ng-plugin`](../../specs/epics/E11-workspace-generators/F11.1-ng-plugin.md)                           | [E11](../../specs/epics/E11-workspace-generators/index.md)   | planned     |
 | [F14.1 — `Problem` and its helpers](../../specs/epics/E14-problem-client/F14.1-problem-types.md)                         | [E14](../../specs/epics/E14-problem-client/index.md)         | done        |
 | [F14.2 — `ng/crud` and the HTTP guide](../../specs/epics/E14-problem-client/F14.2-crud-adoption.md)                      | [E14](../../specs/epics/E14-problem-client/index.md)         | done        |

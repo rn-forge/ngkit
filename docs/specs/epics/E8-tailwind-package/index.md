@@ -10,12 +10,12 @@ A new presentation library alongside `ng-bootstrap`, with the same packaging pat
 
 [Back to the board](../../index.md)
 
-| Feature                                                             | Status  | Scope                                                                                 |
-| ------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------- |
-| [F8.1 — The package and its release wiring](F8.1-package.md)        | done    | `libs/ng-tailwind`, the fixed release group, CSS exports, Compodoc and Storybook.     |
-| [F8.2 — Tokens, tones, base sheet and bridge](F8.2-css-contract.md) | done    | `tokens.css`, `base.css`, `tailwind.css`, under [ADR-0008](../../../adr/ADR-0008.md). |
-| [F8.3 — `rnfButton`](F8.3-button.md)                                | done    | The first component, on `<button>` and `<a>`.                                         |
-| [F8.4 — Consumer and accessibility acceptance](F8.4-acceptance.md)  | planned | Plain and Tailwind consumers from the tarball; WCAG AA in both schemes, in a browser. |
+| Feature                                                             | Status      | Scope                                                                                 |
+| ------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------- |
+| [F8.1 — The package and its release wiring](F8.1-package.md)        | done        | `libs/ng-tailwind`, the fixed release group, CSS exports, Compodoc and Storybook.     |
+| [F8.2 — Tokens, tones, base sheet and bridge](F8.2-css-contract.md) | done        | `tokens.css`, `base.css`, `tailwind.css`, under [ADR-0008](../../../adr/ADR-0008.md). |
+| [F8.3 — `rnfButton`](F8.3-button.md)                                | done        | The first component, on `<button>` and `<a>`.                                         |
+| [F8.4 — Consumer and accessibility acceptance](F8.4-acceptance.md)  | in progress | Plain and Tailwind consumers from the tarball; WCAG AA in both schemes, in a browser. |
 
 ## Design
 
@@ -55,4 +55,5 @@ The component patterns the survey found beyond the button are recorded on [E9](.
 
 ## Open questions
 
+- **Angular CSS variable namespacing.** Angular 22.1 compiles every custom property in a component stylesheet to `--%NS%<name>` and, when an application calls `provideCssVarNamespacing()`, replaces `%NS%` with a prefix; by default the prefix is empty. With namespacing on, a component's `var(--rnf-*)` reads no longer match the unprefixed tokens in `tokens.css`. Angular's escape, `--global--<name>`, is not understood by 22.0, which the `^22.0.6` peer range still covers. Found by [S8.4.1](F8.4-acceptance.md#s841--consumers-build-from-the-tarball) (2026-10-24). Until decided, the README tells applications not to enable namespacing. Options: keep that rule; or raise the peer floor to 22.1 and write component token reads as `var(--global--rnf-*)`.
 - **E8 and [F12.10](../E12-on-demand-features/index.md#f1210--rn-forgeng-material) (`ng-material`)** each add a second presentation package. Decide whether both are wanted. Evidence from the 2026-10-24 survey: none of the three applications uses Material; all three use token-driven custom CSS, two with Tailwind. Recommendation: keep E8, and leave F12.10 deferred on its trigger.

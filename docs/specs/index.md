@@ -10,9 +10,9 @@ As of 2026-10-24, the libraries' packaging, the retired HTTP entry point, core c
 
 ### In progress
 
-| Epic                                                                       | Next step                                            |
-| -------------------------------------------------------------------------- | ---------------------------------------------------- |
-| [E8 — `@rn-forge/ng-tailwind` package](epics/E8-tailwind-package/index.md) | F8.4 (S8.4.1, consumers from the tarball); Release 2 |
+| Epic                                                                       | Next step                                         |
+| -------------------------------------------------------------------------- | ------------------------------------------------- |
+| [E8 — `@rn-forge/ng-tailwind` package](epics/E8-tailwind-package/index.md) | F8.4 (S8.4.2, WCAG AA in both schemes); Release 2 |
 
 ### Planned
 

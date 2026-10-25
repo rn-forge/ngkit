@@ -100,3 +100,7 @@ import { RnfButton } from '@rn-forge/ng-tailwind';
 | `busy`     | boolean attribute; sets `aria-busy` and disables as above | `false`     |
 
 A disabled or busy `<button>` gets the native `disabled` attribute. A disabled or busy `<a>` gets `aria-disabled="true"` and `tabindex="-1"`, and its clicks are swallowed: neither `routerLink` nor a `(click)` handler on it runs.
+
+## CSS variable namespacing
+
+Components read the global `--rnf-*` tokens from their own styles, so do not enable Angular's `provideCssVarNamespacing()` in an application that uses this package: it renames the custom properties inside component styles, and the components would no longer see the tokens from `tokens.css`.
