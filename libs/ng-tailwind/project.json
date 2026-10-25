@@ -1,0 +1,91 @@
+{
+  "name": "ng-tailwind",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ng-tailwind/src",
+  "prefix": "rnf",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": [
+        "{projectRoot}",
+        {
+          "path": "dist/{projectRoot}",
+          "preserveLocalDependencyProtocols": false
+        }
+      ],
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
+  "tags": ["scope:ngkit", "type:ui", "publishable"],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:package",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "project": "libs/ng-tailwind/ng-package.json",
+        "tsConfig": "libs/ng-tailwind/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/ng-tailwind/tsconfig.lib.prod.json"
+        },
+        "development": {}
+      }
+    },
+    "pack": {},
+    "verify-dist": {},
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}",
+        "dryRun": true
+      }
+    },
+    "test": {
+      "executor": "@nx/angular:unit-test",
+      "options": {
+        "watch": false
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "compodoc": {
+      "executor": "@twittwer/compodoc:compodoc",
+      "options": {
+        "tsConfig": "libs/ng-tailwind/tsconfig.compodoc.json",
+        "outputPath": "dist/compodoc/ng-tailwind"
+      },
+      "configurations": {
+        "json": {
+          "exportFormat": "json"
+        },
+        "serve": {
+          "serve": true,
+          "watch": true
+        }
+      },
+      "outputs": ["{workspaceRoot}/dist/compodoc/ng-tailwind"]
+    },
+    "storybook": {
+      "executor": "@storybook/angular:start-storybook",
+      "options": {
+        "configDir": "libs/ng-tailwind/.storybook",
+        "tsConfig": "libs/ng-tailwind/.storybook/tsconfig.json",
+        "port": 4401
+      }
+    },
+    "build-storybook": {
+      "executor": "@storybook/angular:build-storybook",
+      "options": {
+        "configDir": "libs/ng-tailwind/.storybook",
+        "tsConfig": "libs/ng-tailwind/.storybook/tsconfig.json",
+        "outputDir": "dist/storybook/ng-tailwind"
+      },
+      "configurations": {
+        "production": {}
+      }
+    }
+  }
+}
