@@ -37,7 +37,7 @@ function grid(tag: 'button' | 'a', state = ''): string {
       return `<div style="display:flex;gap:0.75rem;align-items:center;margin-block-end:0.75rem">${cells}</div>`;
     })
     .join('');
-  return `<div style="color:var(--rnf-text);padding:1rem;color-scheme:light dark">${rows}</div>`;
+  return `<div style="background-color:var(--rnf-surface-0);color:var(--rnf-text);padding:1rem;color-scheme:light dark">${rows}</div>`;
 }
 
 const story = (tag: 'button' | 'a', state = ''): Story => ({

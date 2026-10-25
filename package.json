@@ -35,6 +35,7 @@
     "@angular/cli": "~22.1.7",
     "@angular/compiler-cli": "~22.1.7",
     "@angular/language-service": "~22.1.7",
+    "@axe-core/playwright": "^4.14.0",
     "@compodoc/compodoc": "^2.0.0",
     "@eslint/js": "^10.0.1",
     "@nx/angular": "23.1.0",

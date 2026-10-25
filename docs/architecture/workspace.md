@@ -4,13 +4,14 @@ The projects, entry points and dependency direction of the ngkit monorepo.
 
 ## Projects
 
-| Project        | Type    | Description                                                                                                                                        |
-| -------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ng`           | library | Core Angular utilities (`libs/ng`), published as `@rn-forge/ng`                                                                                    |
-| `ng-bootstrap` | library | Bootstrap-based UI kit (`libs/ng-bootstrap`), published as `@rn-forge/ng-bootstrap`, depends on `ng`                                               |
-| `ng-tailwind`  | library | Tailwind-friendly UI package (`libs/ng-tailwind`), published as `@rn-forge/ng-tailwind`: `--rnf-*` tokens and prebuilt component CSS, no Bootstrap |
-| `ng-demo`      | app     | Demo/dev app exercising both libraries (`apps/ng-demo`)                                                                                            |
-| `ng-demo-e2e`  | e2e app | Playwright tests for `ng-demo` (`apps/ng-demo-e2e`)                                                                                                |
+| Project           | Type    | Description                                                                                                                                        |
+| ----------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ng`              | library | Core Angular utilities (`libs/ng`), published as `@rn-forge/ng`                                                                                    |
+| `ng-bootstrap`    | library | Bootstrap-based UI kit (`libs/ng-bootstrap`), published as `@rn-forge/ng-bootstrap`, depends on `ng`                                               |
+| `ng-tailwind`     | library | Tailwind-friendly UI package (`libs/ng-tailwind`), published as `@rn-forge/ng-tailwind`: `--rnf-*` tokens and prebuilt component CSS, no Bootstrap |
+| `ng-demo`         | app     | Demo/dev app exercising both libraries (`apps/ng-demo`)                                                                                            |
+| `ng-demo-e2e`     | e2e app | Playwright tests for `ng-demo` (`apps/ng-demo-e2e`)                                                                                                |
+| `ng-tailwind-e2e` | e2e app | Playwright and axe-core checks over the built `ng-tailwind` Storybook (`apps/ng-tailwind-e2e`)                                                     |
 
 Run `pnpm nx show project <name> --web` to see a project's full, resolved target list.
 
@@ -50,4 +51,5 @@ apps/ng-demo/src/app/          ← THE reference implementation. Read this befor
 - `patch-package-exports` (`ng-bootstrap`, `ng-tailwind`): fixes the dist `package.json`'s `exports` map so asset imports resolve; see [Release pipeline](release-pipeline.md#patch-package-exports).
 - `compodoc` (`ng`, `ng-bootstrap`, `ng-tailwind`): generates the API reference published on the docs site.
 - `build-storybook` (`ng-bootstrap`, `ng-tailwind`): builds the component catalog published on the docs site.
+- `e2e` and `e2e-ci` (`ng-tailwind-e2e`): the Playwright web server builds `ng-tailwind:build-storybook` and serves `dist/storybook/ng-tailwind` with `apps/ng-tailwind-e2e/serve.mjs`; Chromium only.
 - `e2e-ci` (`ng-demo-e2e`): the atomized Playwright target Nx Cloud distributes; see [Release pipeline](release-pipeline.md#ci).

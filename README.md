@@ -13,6 +13,7 @@ This workspace uses **pnpm**, not npm/npx. Install it via [Corepack](https://nod
 | `ng-tailwind` | library | Tailwind-friendly UI package (`libs/ng-tailwind`), published as `@rn-forge/ng-tailwind`: `--rnf-*` tokens and prebuilt component CSS, no Bootstrap |
 | `ng-demo`      | app     | Demo/dev app exercising both libraries (`apps/ng-demo`)                                              |
 | `ng-demo-e2e`  | e2e app | Playwright tests for `ng-demo` (`apps/ng-demo-e2e`)                                                  |
+| `ng-tailwind-e2e` | e2e app | Playwright and axe-core checks over the built `ng-tailwind` Storybook (`apps/ng-tailwind-e2e`) |
 | `ng-demo-api`  | app     | Django backend fixture serving `ng-demo`'s `products` over the wire standards (`apps/ng-demo-api`)   |
 | `ng-demo-api-fastapi` | app | FastAPI backend fixture serving the same resource on the same port (`apps/ng-demo-api-fastapi`) |
 
