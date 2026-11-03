@@ -4,7 +4,7 @@ What ngkit is made of and what is left to do. The board says what is next; the e
 says how; its ADRs say why. `done` means implemented; the
 [release pages](../releases/index.md) record what shipped.
 
-As of 2026-10-26, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). [Release 2](../releases/release-2/index.md) (F4.3, E8, E14, E15 and E16) shipped as `v0.3.0` (2026-10-25). The owner moved E5 (F5.1–F5.4) and F11.1 to [Release 3](../releases/release-3/index.md) (2026-10-25): E5 will be refined further once a released server library's auth module is defined, and F11.1 is picked up after ngkit is cut over to kiln. E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are retired: kiln owns repository-level setup. E6 is elaborated (2026-10-24) down to loading timings in `ng/core`, waiting on one open question and a release; everything else is deferred.
+As of 2026-10-26, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). [Release 2](../releases/release-2/index.md) (F4.3, E8, E14, E15 and E16) shipped as `v0.3.0` (2026-10-25). The owner moved E5 (F5.1–F5.4) and F11.1 to [Release 3](../releases/release-3/index.md) (2026-10-25): E5 will be refined further once a released server library's auth module is defined, and F11.1 is picked up after ngkit is cut over to kiln. E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are retired: kiln owns repository-level setup. E6 is elaborated (2026-10-24) down to loading timings in `ng/core`, waiting on one open question and a release; everything else is deferred. E17 (2026-11-02) adopts kiln's `node-lib` archetype: F17.1 converts the docs to kiln's work model, F17.2 cuts the CI over; it is in Release 3 and waits on kiln's release-1 tag.
 
 ## Board
 
@@ -14,9 +14,10 @@ None.
 
 ### Planned
 
-| Epic                                                                  | Next step                                     |
-| --------------------------------------------------------------------- | --------------------------------------------- |
-| [E11 — Workspace generators](epics/E11-workspace-generators/index.md) | Start F11.1 after the kiln cutover; Release 3 |
+| Epic                                                                  | Next step                                                                                   |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| [E17 — kiln adoption](epics/E17-kiln-adoption/index.md)               | Start when kiln's release-1 tag exists: S17.2.1 (`kiln init`), then F17.1, then F17.2; Release 3 |
+| [E11 — Workspace generators](epics/E11-workspace-generators/index.md) | Start F11.1 after the kiln cutover (E17); Release 3                                         |
 
 ### To elaborate
 
