@@ -1,6 +1,11 @@
 # E17 — kiln adoption
 
-**Status:** planned · **Owner:** ngkit · **Release:** [Release 3](../../../releases/release-3/index.md)
+| | |
+| -- | -- |
+| **State** | Active |
+| **Start Date** | 2026-11-03 |
+
+**Release:** [Release 3](../../../releases/release-3/index.md)
 
 **Source:** owner decision, 2026-11-02: ngkit adopts [kiln](https://github.com/rn-forge/kiln)'s `node-lib` archetype, and its docs take the work model every rn-forge repository uses. kiln's labelled comparison of its rendered CI against ngkit's files was approved the same day; the owner reviews the applied change again at the cutover (S17.2.4).
 
@@ -8,10 +13,8 @@ ngkit moves onto kiln's `node-lib` archetype, so that its CI, task surface and d
 
 [Back to the board](../../index.md)
 
-| Feature                                                           | Status  | Scope                                                                                                                                                                       |
-| ----------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [F17.1 — The docs follow kiln's work model](F17.1-docs-model.md)  | planned | Specs, releases and board converted by kiln's adopt prompt and port-docs rules; anchors, out-of-tree links and Markdown formatting fixed; the docs build passes under `--strict` |
-| [F17.2 — Cut over onto kiln](F17.2-cutover.md)                    | planned | `kiln init` as `node-lib`, generated CI and tasks replace ngkit's workflows, setup action and `tools/ci`; the owner reviews the applied diff; repository settings and first runs |
+<!-- BEGIN derived features -->
+<!-- END derived features -->
 
 **Order.** Entry for the whole epic: kiln's release-1 tag exists, and ngkit pins it. On one branch, `feature/kiln-adoption`, in this order: S17.2.1 (`kiln init`, committed alone, because kiln's docs tooling only runs once `init` has written `.rn-forge/kiln/config.toml`); then all of F17.1, which is the first thing ngkit does to itself after `init` and changes no CI; then the rest of F17.2. The branch merges once both features' acceptance holds. [F11.1](../E11-workspace-generators/F11.1-ng-plugin.md) waits on this epic's merge.
 

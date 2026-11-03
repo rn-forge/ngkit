@@ -1,6 +1,12 @@
 # E2 — Retire the HTTP entry point
 
-**Status:** done · **Implemented:** 2026-09-23 (`c30d63a`) · **Owner:** ngkit
+| | |
+| -- | -- |
+| **State** | Closed |
+| **Start Date** | 2026-09-27 |
+| **Closed Date** | 2026-09-23 |
+
+Implemented in commit `c30d63a`.
 
 **Source:** former roadmap item H2R.
 
@@ -8,11 +14,11 @@
 
 [Back to the board](../../index.md)
 
-| ID   | Delivered                                                                                                                                                                                                                                                                                                                                                                                         | Implemented |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| F2.1 | `libs/ng/http/**` (including `/http/crud`) removed, with the `tsconfig.base.json` path, the `ng` test include and `coverageInclude` entries, `RnForgeCoreConfig.apiBasePath`, and the `./http` and `./http/crud` cells in `verify-consumer.mjs`. No import of the removed symbols remains.                                                                                                        | `c30d63a`   |
-| F2.2 | `AuthBackendService` injects `HttpClient` and builds `${backend.baseUrl}${authApiRoot ?? '/auth'}${loginPath ?? '/login'}` (and the same for logout). `backend.baseUrl` is optional in the `AuthBackendConfig` type, so the service enforces it: construction throws `[rn-forge.ng.auth] … backend.baseUrl is not configured` when it is `undefined`, and `''` is accepted as the current origin. | `c30d63a`   |
-| F2.3 | `AppUtil.saveBlob(blob, fileName)` added to `@rn-forge/ng/core`; the demo's `products` resource became a data source over `HttpClient` with an app-owned `DEMO_API_URL` token.                                                                                                                                                                                                                    | `c30d63a`   |
+| ID   | State  | Delivered                                                                                                                                                                                                                                                                                                                                                                                         | Implemented |
+| ---- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| F2.1 | Closed | `libs/ng/http/**` (including `/http/crud`) removed, with the `tsconfig.base.json` path, the `ng` test include and `coverageInclude` entries, `RnForgeCoreConfig.apiBasePath`, and the `./http` and `./http/crud` cells in `verify-consumer.mjs`. No import of the removed symbols remains.                                                                                                        | `c30d63a`   |
+| F2.2 | Closed | `AuthBackendService` injects `HttpClient` and builds `${backend.baseUrl}${authApiRoot ?? '/auth'}${loginPath ?? '/login'}` (and the same for logout). `backend.baseUrl` is optional in the `AuthBackendConfig` type, so the service enforces it: construction throws `[rn-forge.ng.auth] … backend.baseUrl is not configured` when it is `undefined`, and `''` is accepted as the current origin. | `c30d63a`   |
+| F2.3 | Closed | `AppUtil.saveBlob(blob, fileName)` added to `@rn-forge/ng/core`; the demo's `products` resource became a data source over `HttpClient` with an app-owned `DEMO_API_URL` token.                                                                                                                                                                                                                    | `c30d63a`   |
 
 ## Considered and rejected
 

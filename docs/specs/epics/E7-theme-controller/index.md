@@ -1,8 +1,12 @@
 # E7 — Theme controller
 
-**Status:** deferred · **Owner:** ngkit
+| | |
+| -- | -- |
+| **State** | New |
+| **Tags** | deferred |
+| **Entry criteria** | the owner schedules it |
 
-**Entry criteria:** the owner schedules it. It depends on E1 (done) and E3 (done), which supplies `RNF_BROWSER_STORAGE`.
+It depends on E1 (done) and E3 (done), which supplies `RNF_BROWSER_STORAGE`.
 
 **Source:** former roadmap item E2.
 

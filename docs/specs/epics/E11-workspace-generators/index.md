@@ -1,6 +1,10 @@
 # E11 — Workspace generators
 
-**Status:** planned · **Owner:** ngkit · **Release:** [Release 3](../../../releases/release-3/index.md)
+| | |
+| -- | -- |
+| **State** | New |
+
+**Release:** [Release 3](../../../releases/release-3/index.md)
 
 **Source:** former plan item "Workspace Setup Tooling"; owner decisions, 2026-10-17.
 
@@ -19,9 +23,8 @@ Configure an Angular app in an existing workspace
 
 The shared design, package map and implementation standards are in [design.md](design.md).
 
-| Feature                                             | Status  | Scope                                                                                                                                       |
-| --------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [F11.1 — `@rn-forge/ng-plugin`](F11.1-ng-plugin.md) | planned | Angular-specific generators: `setup`, `add-bootstrap-table`, `configure-theme`, `scaffold-component`, `configure-testing`, `create-library` |
+<!-- BEGIN derived features -->
+<!-- END derived features -->
 
 ## Decisions
 

@@ -1,5 +1,34 @@
 # specs/ — what belongs here
 
+> **Interim, 2026-11-03 ([S17.1.2](epics/E17-kiln-adoption/F17.1-docs-model.md)).**
+> Epic, feature and story pages now follow kiln's work model. Where this file
+> describes `**Status:**` lines, `### S…` headings or `**Implemented:**` dates,
+> use this instead, until `kiln init` replaces this file with kiln's
+> `_structure.md`:
+>
+> - An epic or feature page opens with its `# ` title, then a metadata table
+>   (`| | |` / `| -- | -- |` / `| **State** | New |` …). Keys, in this order,
+>   leaving out any that does not apply: epic `State`, `Tags`, `Start Date`,
+>   `Closed Date`, `Entry criteria`; feature `State`, `Parent`, `Iteration`,
+>   `Tags`, `Start Date`, `Closed Date`, `Predecessors`, `Source`,
+>   `Entry criteria`. Values are short, with no trailing period and no commit
+>   hash; reasoning that does not fit a cell goes in the feature's
+>   `## Context`.
+> - States: `New` (agreed, not started; with `Tags` `deferred` and
+>   `Entry criteria` when not scheduled; with an `Iteration` once on a
+>   release), `Active` (a story started; `Start Date`), `Closed` (every
+>   story's acceptance holds; `Closed Date`), `Removed` (retired, kept in
+>   place with one line saying why). A feature's release is its `Iteration`.
+> - Stories are `## S<n>.<m>.<k> — <Title>` headings, with no `## Stories`
+>   heading, each with `**State:** New`, `Active`, `Closed (<date>)` or
+>   `Removed`, optionally followed by `· **Depends on:** <IDs>`. Sections:
+>   `## Context` and `## Design` before the first story; `## Acceptance`,
+>   `## Considered and rejected` and `## Open questions` after the last.
+> - The `BEGIN derived …` / `END derived …` fences on epic and feature pages
+>   stay empty until `task docs:generate` fills them; never write inside them.
+>   Until then, the board in `index.md` and each release page's Scope table
+>   stay hand-kept as below.
+
 ## Belongs here
 
 - Every piece of work as an epic, `epics/E<n>-<slug>/index.md` — done work

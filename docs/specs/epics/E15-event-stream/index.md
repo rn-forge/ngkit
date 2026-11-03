@@ -1,6 +1,12 @@
 # E15 — Server-sent event stream
 
-**Status:** done · **Implemented:** 2026-10-24 · **Owner:** ngkit · **Release:** [Release 2](../../../releases/release-2/index.md)
+| | |
+| -- | -- |
+| **State** | Closed |
+| **Start Date** | 2026-10-24 |
+| **Closed Date** | 2026-10-24 |
+
+**Release:** [Release 2](../../../releases/release-2/index.md)
 
 **Source:** owner request, 2026-10-21, revised 2026-10-23: an application rewrite on the current published release keeps one `EventSource` open for live status and builds the wrapper in the application first, so it can be swapped for this one later. Revised to keep the reconnection behaviour the standard defines.
 
@@ -10,9 +16,8 @@ It is its own epic, not a feature of [E14](../E14-problem-client/index.md): E14 
 
 [Back to the board](../../index.md)
 
-| Feature                                              | Status  | Scope                                                                                          |
-| ---------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------- |
-| [F15.1 — `createEventStream`](F15.1-event-stream.md) | planned | The factory, named handlers, `connected`, backoff after a failed connection, teardown and SSR. |
+<!-- BEGIN derived features -->
+<!-- END derived features -->
 
 ## Design
 

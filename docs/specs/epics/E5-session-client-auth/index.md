@@ -1,6 +1,10 @@
 # E5 — Session client auth
 
-**Status:** elaborating · **Owner:** ngkit · **Release:** [Release 3](../../../releases/release-3/index.md)
+| | |
+| -- | -- |
+| **State** | New |
+
+**Release:** [Release 3](../../../releases/release-3/index.md)
 
 **Source:** former roadmap item H5; redefined by the owner on 2026-10-16 around a backend-for-frontend session model.
 
@@ -24,13 +28,8 @@ The authorization vocabulary already matches the contract: `RNF_PERMISSION` with
 
 [Back to the board](../../index.md)
 
-| Feature                                                                       | Status      | Scope                                                                                                                  |
-| ----------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
-| [F5.1 — Client model and wire contract](F5.1-client-model.md)                 | elaborating | Accept the session model in ADR-0006; settle the wire contract in [Design](design.md).                                 |
-| [F5.2 — `@rn-forge/ng/auth` session client](F5.2-auth-wrapper.md)             | elaborating | Configuration, session bootstrap, login and logout, the 401/403 policy, guards, expiry warning and a testing provider. |
-| [F5.3 — Bootstrap auth UI](F5.3-bootstrap-auth-ui.md)                         | elaborating | Provider chooser with password form, auth error page, forbidden page, user menu and expiry warning.                    |
-| [F5.4 — Acceptance against a session backend](F5.4-auth-acceptance.md)        | elaborating | `ng-demo` e2e against the backend fixture signed in through its development provider.                                  |
-| [F5.5 — Situational client extensions](F5.5-situational-client-extensions.md) | deferred    | Cross-origin credentials, step-up, tenant switching and a browser-client profile, each when an application needs it.   |
+<!-- BEGIN derived features -->
+<!-- END derived features -->
 
 ## Open questions
 

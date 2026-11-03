@@ -1,8 +1,10 @@
 # E12 — On-demand features
 
-**Status:** deferred · **Owner:** ngkit
-
-**Entry criteria:** the row's trigger occurs.
+| | |
+| -- | -- |
+| **State** | New |
+| **Tags** | deferred |
+| **Entry criteria** | the row's trigger occurs |
 
 **Source:** former roadmap item H2R.5 (F12.1, F12.11) and a 2026-09 survey of an existing Angular Material application (F12.2–F12.10).
 
@@ -10,19 +12,19 @@ Proposals that wait for a trigger. When it fires, the row becomes a feature with
 
 [Back to the board](../../index.md)
 
-| ID                                                            | Proposal                                                                 | Trigger                                                                       |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| [F12.1](#f121--telemetry-entry-point)                         | Optional `@rn-forge/ng/telemetry` entry point                            | Two apps need the same OpenTelemetry setup                                    |
-| [F12.2](#f122--csvutil)                                       | `CsvUtil` in `ng/core`                                                   | The owner schedules it                                                        |
-| [F12.3](#f123--dateutilrelative)                              | `DateUtil.relative()`                                                    | The owner schedules it                                                        |
-| [F12.4](#f124--client-side-collection-query)                  | `@rn-forge/ng/data`: client-side collection query                        | The owner schedules it                                                        |
-| [F12.5](#f125--rn-forgeng-charts)                             | `@rn-forge/ng-charts` package                                            | The owner schedules it                                                        |
-| [F12.6](#f126--headless-report-definitions)                   | `@rn-forge/ng/reporting`: headless report definitions                    | A second app needs report definitions                                         |
-| [F12.7](#f127--audittrailservice)                             | `AuditTrailService`                                                      | The owner schedules it                                                        |
-| [F12.8](#f128--commandregistry)                               | `CommandRegistry`: a headless command palette                            | The owner schedules it                                                        |
-| [F12.9](#f129--configurablecomponent-into-ngcore)             | Move `ConfigurableComponent` and `ConfigurerService` into `ng/core`      | A second presentation package is scheduled (E8 or F12.10)                     |
-| [F12.10](#f1210--rn-forgeng-material)                         | `@rn-forge/ng-material`                                                  | The owner decides a Material kit is in scope                                  |
-| [F12.11](#f1211--adapter-package-for-another-wire-convention) | A separately named adapter package for another published wire convention | Several backends share a published, versioned convention other than AIP + RFC |
+| ID                                                            | State | Proposal                                                                 | Trigger                                                                       |
+| ------------------------------------------------------------- | ----- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| [F12.1](#f121--telemetry-entry-point)                         | New | Optional `@rn-forge/ng/telemetry` entry point                            | Two apps need the same OpenTelemetry setup                                    |
+| [F12.2](#f122--csvutil)                                       | New | `CsvUtil` in `ng/core`                                                   | The owner schedules it                                                        |
+| [F12.3](#f123--dateutilrelative)                              | New | `DateUtil.relative()`                                                    | The owner schedules it                                                        |
+| [F12.4](#f124--client-side-collection-query)                  | New | `@rn-forge/ng/data`: client-side collection query                        | The owner schedules it                                                        |
+| [F12.5](#f125--rn-forgeng-charts)                             | New | `@rn-forge/ng-charts` package                                            | The owner schedules it                                                        |
+| [F12.6](#f126--headless-report-definitions)                   | New | `@rn-forge/ng/reporting`: headless report definitions                    | A second app needs report definitions                                         |
+| [F12.7](#f127--audittrailservice)                             | New | `AuditTrailService`                                                      | The owner schedules it                                                        |
+| [F12.8](#f128--commandregistry)                               | New | `CommandRegistry`: a headless command palette                            | The owner schedules it                                                        |
+| [F12.9](#f129--configurablecomponent-into-ngcore)             | New | Move `ConfigurableComponent` and `ConfigurerService` into `ng/core`      | A second presentation package is scheduled (E8 or F12.10)                     |
+| [F12.10](#f1210--rn-forgeng-material)                         | New | `@rn-forge/ng-material`                                                  | The owner decides a Material kit is in scope                                  |
+| [F12.11](#f1211--adapter-package-for-another-wire-convention) | New | A separately named adapter package for another published wire convention | Several backends share a published, versioned convention other than AIP + RFC |
 
 Adding an entry point under `@rn-forge/ng/<name>` follows [Adding a secondary entry point](../../../guides/development.md#adding-a-secondary-entry-point). Adding a library follows [Adding a publishable library](../../../guides/development.md#adding-a-publishable-library).
 

@@ -1,6 +1,8 @@
 # E6 — Asynchronous resource
 
-**Status:** elaborating · **Owner:** ngkit
+| | |
+| -- | -- |
+| **State** | New |
 
 **Source:** former roadmap item E1; elaborated at the owner's request, 2026-10-24, against Angular 22.1.
 
@@ -10,10 +12,8 @@ Loading-UX timings for Angular's resources: signals that say when a load has las
 
 [Back to the board](../../index.md)
 
-| Feature                                            | Status      | Scope                                                                     |
-| -------------------------------------------------- | ----------- | ------------------------------------------------------------------------- |
-| [F6.1 — `loadingTimings`](F6.1-loading-timings.md) | elaborating | Skeleton, slow and stalled signals over any loading signal, in `ng/core`. |
-| [F6.2 — `keepPrevious`](F6.2-keep-previous.md)     | deferred    | A resource that keeps its last value while a changed request loads.       |
+<!-- BEGIN derived features -->
+<!-- END derived features -->
 
 ## Design
 

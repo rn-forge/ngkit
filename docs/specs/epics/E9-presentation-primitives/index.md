@@ -1,8 +1,10 @@
 # E9 — Presentation primitives
 
-**Status:** deferred · **Owner:** ngkit
-
-**Entry criteria:** [E8](../E8-tailwind-package/index.md) is done and the owner schedules it.
+| | |
+| -- | -- |
+| **State** | New |
+| **Tags** | deferred |
+| **Entry criteria** | [E8](../E8-tailwind-package/index.md) is done and the owner schedules it |
 
 **Source:** former roadmap item T2.
 
