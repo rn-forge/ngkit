@@ -84,10 +84,21 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        {
+          "externalDependencies": ["eslint"]
+        }
+      ]
     },
     "compodoc": {
       "executor": "@twittwer/compodoc:compodoc",
+      "outputs": ["{workspaceRoot}/dist/compodoc/ng-bootstrap"],
       "options": {
         "tsConfig": "libs/ng-bootstrap/tsconfig.compodoc.json",
         "outputPath": "dist/compodoc/ng-bootstrap"
@@ -100,11 +111,11 @@
           "serve": true,
           "watch": true
         }
-      },
-      "outputs": ["{workspaceRoot}/dist/compodoc/ng-bootstrap"]
+      }
     },
     "storybook": {
       "executor": "@storybook/angular:start-storybook",
+      "continuous": true,
       "options": {
         "configDir": "libs/ng-bootstrap/.storybook",
         "browserTarget": "ng-demo:build",
@@ -114,6 +125,10 @@
           "./libs/ng-bootstrap/assets/src/ng-bootstrap-styles.scss"
         ],
         "port": 4400
+      },
+      "readyWhen": {
+        "port": "{env.SBCONFIG_PORT ?? options.port ?? 9009}",
+        "host": "{env.SBCONFIG_HOSTNAME ?? options.host ?? localhost}"
       }
     },
     "build-storybook": {

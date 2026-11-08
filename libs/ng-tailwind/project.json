@@ -84,10 +84,21 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        {
+          "externalDependencies": ["eslint"]
+        }
+      ]
     },
     "compodoc": {
       "executor": "@twittwer/compodoc:compodoc",
+      "outputs": ["{workspaceRoot}/dist/compodoc/ng-tailwind"],
       "options": {
         "tsConfig": "libs/ng-tailwind/tsconfig.compodoc.json",
         "outputPath": "dist/compodoc/ng-tailwind"
@@ -100,16 +111,20 @@
           "serve": true,
           "watch": true
         }
-      },
-      "outputs": ["{workspaceRoot}/dist/compodoc/ng-tailwind"]
+      }
     },
     "storybook": {
       "executor": "@storybook/angular:start-storybook",
+      "continuous": true,
       "options": {
         "configDir": "libs/ng-tailwind/.storybook",
         "tsConfig": "libs/ng-tailwind/.storybook/tsconfig.json",
         "styles": ["libs/ng-tailwind/assets/tokens.css"],
         "port": 4401
+      },
+      "readyWhen": {
+        "port": "{env.SBCONFIG_PORT ?? options.port ?? 9009}",
+        "host": "{env.SBCONFIG_HOSTNAME ?? options.host ?? localhost}"
       }
     },
     "build-storybook": {
