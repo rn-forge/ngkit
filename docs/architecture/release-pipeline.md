@@ -6,7 +6,7 @@ How ngkit builds, versions, packs and publishes its libraries. The choices behin
 
 **`dist/` is built once, by `nx.json#release.version.preVersionCommand`, and everything downstream consumes it read-only.** The command is `nx run-many -t build patch-package-exports -p tag:publishable`: it builds every project tagged `publishable` (see [Publishable tag](#publishable-tag)) and runs `patch-package-exports` where a project defines it. The version step then stamps the new version and rewrites `workspace:*` into the _already built_ `dist/libs/*/package.json`. Any later task that rebuilds regenerates those manifests from source and silently undoes it.
 
-That is why the `Verify` and `Publish` steps in `release.yml` pass `--excludeTaskDependencies`, and why `nx-release-publish` carries no `dependsOn`: versioning edits `libs/*/package.json`, which invalidates the build cache, so a task dependency _will_ rebuild. `preVersionCommand` therefore has to produce a fully release-ready `dist/`, including `patch-package-exports`. The one exception is resuming a release, which rebuilds `dist/` from the tag (see [Release workflow](#release-workflow)).
+That is why the release pipeline's verify and publish steps pass `--excludeTaskDependencies`, and why `nx-release-publish` carries no `dependsOn`: versioning edits `libs/*/package.json`, which invalidates the build cache, so a task dependency _will_ rebuild. `preVersionCommand` therefore has to produce a fully release-ready `dist/`, including `patch-package-exports`. The one exception is resuming a release, which rebuilds `dist/` from the tag (see [Release workflow](#release-workflow)).
 
 ## Publishable tag
 

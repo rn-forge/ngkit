@@ -65,7 +65,7 @@ An Nx monorepo publishing two Angular libraries — standalone components, signa
 
 ## 2. Installing it in a new app
 
-**npm publishing is currently disabled** (dry-run only). The intended channel is tarballs attached to GitHub Releases, including a rolling `latest` — see `.github/workflows/release.yml`.
+**npm publishing is currently disabled** (dry-run only). The intended channel is tarballs attached to GitHub Releases, including a rolling `latest` — see the release workflow in `.github/workflows/`.
 
 **Check what actually exists before writing a manifest** — do not fabricate a version or URL:
 
