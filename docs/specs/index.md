@@ -57,7 +57,7 @@ As of 2026-10-26, the libraries' packaging, the retired HTTP entry point, core c
 - **State.** `New`, `Active`, `Closed` or `Removed`, in each page's metadata
   table; deferred work is `New` tagged `deferred`, with entry criteria. Stories
   carry their own `**State:**` line. Interim rules until kiln's `init`:
-  [`_structure.md`](_structure.md).
+  `docs/specs/_structure.md`.
 - **A decision is its own story**, so work can depend on the decision without
   depending on its implementation.
 - **Open questions live on the feature or epic they block.**

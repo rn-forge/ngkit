@@ -1,6 +1,6 @@
 # E5 — Design: the session wire contract
 
-**Epic:** [E5](index.md) · **Settled by:** [S5.1.2](F5.1-client-model.md#s512--settle-the-wire-contract)
+**Epic:** [E5](index.md) · **Settled by:** [S5.1.2](F5.1-client-model.md#s512-settle-the-wire-contract)
 
 The HTTP contract between `@rn-forge/ng/auth` and the application backend, and the client behaviour built on it. It is a proposal until S5.1.2 is done; a change here is a change to every E5 feature. Every URL, cookie and header name below is client configuration with these values as defaults, so a backend that differs needs configuration, not code.
 

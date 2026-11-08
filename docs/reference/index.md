@@ -8,5 +8,13 @@ Generated and per-package reference. How to use one entry point lives in that en
 
 Entry-point READMEs (they ship in each package):
 
-- [`@rn-forge/ng`](../../libs/ng/README.md), [`/core`](../../libs/ng/core/README.md), [`/auth`](../../libs/ng/auth/README.md), [`/crud`](../../libs/ng/crud/README.md)
-- [`@rn-forge/ng-bootstrap`](../../libs/ng-bootstrap/README.md), [`/shell`](../../libs/ng-bootstrap/shell/README.md), [`/form`](../../libs/ng-bootstrap/form/README.md), [`/auth`](../../libs/ng-bootstrap/auth/README.md), [`/crud`](../../libs/ng-bootstrap/crud/README.md), [`/assets`](../../libs/ng-bootstrap/assets/README.md)
+- [`@rn-forge/ng`](https://github.com/rn-forge/ngkit/blob/main/libs/ng/README.md)
+  - [`/core`](https://github.com/rn-forge/ngkit/blob/main/libs/ng/core/README.md)
+  - [`/auth`](https://github.com/rn-forge/ngkit/blob/main/libs/ng/auth/README.md)
+  - [`/crud`](https://github.com/rn-forge/ngkit/blob/main/libs/ng/crud/README.md)
+- [`@rn-forge/ng-bootstrap`](https://github.com/rn-forge/ngkit/blob/main/libs/ng-bootstrap/README.md)
+  - [`/shell`](https://github.com/rn-forge/ngkit/blob/main/libs/ng-bootstrap/shell/README.md)
+  - [`/form`](https://github.com/rn-forge/ngkit/blob/main/libs/ng-bootstrap/form/README.md)
+  - [`/auth`](https://github.com/rn-forge/ngkit/blob/main/libs/ng-bootstrap/auth/README.md)
+  - [`/crud`](https://github.com/rn-forge/ngkit/blob/main/libs/ng-bootstrap/crud/README.md)
+  - [`/assets`](https://github.com/rn-forge/ngkit/blob/main/libs/ng-bootstrap/assets/README.md)

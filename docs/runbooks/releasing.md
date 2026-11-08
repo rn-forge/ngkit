@@ -36,7 +36,7 @@ So, before a release that carries breaking changes, **do one of these** and chec
 - put a `BREAKING CHANGE:` footer in a `feat`, `fix` or `perf` commit that lands on the release branch (Nx hides other types, such as `ci`, `chore`, `docs` and `refactor`, from the changelog, with their footers); or
 - edit `CHANGELOG.md` and the GitHub Release notes by hand after the release (the notes come from `CHANGELOG.md` at release time).
 
-The release page ([Release 1](../releases/release-1/index.md#breaking-changes-to-announce)) lists what each release must announce.
+The release page ([Release 1](../releases/release-1/index.md#breaking-changes)) lists what each release must announce.
 
 ## 3. Hotfixes to an older major
 

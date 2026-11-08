@@ -19,7 +19,7 @@ pnpm nx show project ng-demo   # list all available targets for a project
 
 Targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks) from plugins (`nx.json#plugins`) or defined explicitly in each project's `project.json`.
 
-Prefer `nx affected`/`nx run-many` over running a single project's target when working across the whole workspace; see [.github/workflows/ci.yml](../../.github/workflows/ci.yml) for how CI invokes these.
+Prefer `nx affected`/`nx run-many` over running a single project's target when working across the whole workspace; see [.github/workflows/ci.yml](https://github.com/rn-forge/ngkit/blob/main/.github/workflows/ci.yml) for how CI invokes these.
 
 [More about running tasks in the docs »](https://nx.dev/features/run-tasks)
 
@@ -75,7 +75,7 @@ For `@rn-forge/ng/<name>`, mirror `libs/ng/crud/` or `libs/ng/auth/`. Missing an
 1. `libs/ng/<name>/ng-package.json` → `{ "lib": { "entryFile": "src/index.ts" } }`
 2. `libs/ng/<name>/src/index.ts` → `export * from './lib/<name>.…';`
 3. `tsconfig.base.json#compilerOptions.paths` → `"@rn-forge/ng/<name>": ["./libs/ng/<name>/src/index.ts"]`
-4. [libs/ng/project.json](../../libs/ng/project.json) → add to `targets.test.options.include` (`"../<name>/src/**/*.spec.ts"`) **and** `coverageInclude` (`"libs/ng/<name>/src/**"`). The 80% coverage thresholds are enforced.
+4. [libs/ng/project.json](https://github.com/rn-forge/ngkit/blob/main/libs/ng/project.json) → add to `targets.test.options.include` (`"../<name>/src/**/*.spec.ts"`) **and** `coverageInclude` (`"libs/ng/<name>/src/**"`). The 80% coverage thresholds are enforced.
 5. `libs/ng/package.json` → add any new peer deps to **both** `devDependencies` and `peerDependencies`. Angular packages are the exception to keeping them equal: their peers stay at the tested floor (`^22.0.6`) while `devDependencies` follow the workspace version ([ADR-0002](../adr/ADR-0002.md)). An implementation library goes in `dependencies`, declared in `ng-package.json`'s `allowedNonPeerDependencies`, and in the root `package.json`, like the existing ones.
 6. Verify the packed output: `pnpm nx build ng && ls dist/libs/ng/<name>`.
 7. Add the entry point to `tools/scripts/verify-consumer.mjs`'s matrix.
