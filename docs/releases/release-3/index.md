@@ -38,7 +38,7 @@ None from F11.1: a new package is not a break.
 
 ## Progress
 
-Started 2026-11-03 on `feature/release-3` with F17.1 (owner decision): the owner agreed S17.1.1's mapping as written, and S17.1.2's conversion is under way. F17.1 runs ahead of S17.2.1 and kiln's release-1 tag, so the `kiln` commands its acceptance needs (`task docs:generate`, `kiln doctor`) run once `init` has written `.rn-forge/kiln/config.toml`. E5 starts with the S5.1.1 decision (accept ADR-0006) once a released server library's auth module is defined; F5.4 waits for a released server library serving the auth routes. F11.1 starts after ngkit is cut over to kiln.
+Started 2026-11-03 on `feature/release-3` with F17.1 (owner decision): the owner agreed S17.1.1's mapping as written, and S17.1.2's conversion is under way. F17.1 runs ahead of S17.2.1 and kiln's release-1 tag, so the `kiln` commands its acceptance needs (`task docs:generate`, `kiln doctor`) run once `init` has written `.rn-forge/kiln/config.toml`. E5 starts with the S5.1.1 decision (accept ADR-0006) once a released server library's auth module is defined; F5.4 waits for a released server library serving the auth routes. F11.1 starts after ngkit is cut over to kiln. Revised 2026-11-07 (owner decision, recorded in kiln's S7.2.4): the cutover runs on `feature/kiln-cutover`, cut from and merged back into `feature/release-3`, before kiln tags `v0.1.0`, with `[kiln] ref = "feature/v1"`; the pre-cutover stories (S17.2.6, S17.1.5, S17.2.7) land first, then S17.2.1, and S17.2.8 bumps the pin to the tag.
 
 ## Commits
 

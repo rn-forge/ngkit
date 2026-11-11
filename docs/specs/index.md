@@ -12,7 +12,7 @@ As of 2026-10-26, the libraries' packaging, the retired HTTP entry point, core c
 
 | Epic | Next step |
 | -- | -- |
-| [E17 — kiln adoption](epics/E17-kiln-adoption/index.md) | F17.1 started 2026-11-03 (S17.1.2, the spec conversion); then S17.2.1 (`kiln init`) and the rest of F17.1 and F17.2; Release 3 |
+| [E17 — kiln adoption](epics/E17-kiln-adoption/index.md) | F17.1 started 2026-11-03 (S17.1.2, the spec conversion). Revised 2026-11-07: the pre-cutover stories S17.2.6 (Nx), S17.1.5 (links) and S17.2.7 (prose) first, then S17.2.1 (`kiln init` on kiln's `feature/v1`, one numbered list), then the rest of F17.1 and F17.2; Release 3 |
 
 ### Planned
 
