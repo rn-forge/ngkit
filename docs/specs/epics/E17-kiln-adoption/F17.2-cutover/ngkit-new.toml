@@ -17,8 +17,8 @@ sonar_exclusions = ["apps/ng-demo-api/**", "apps/ng-demo-api-fastapi/**"]
 # Build-time tooling is exercised by the pack pipeline; app wiring and
 # environments by the Playwright suite, which reports no unit coverage.
 sonar_coverage_exclusions = [
-  "tools/scripts/patch-package-exports.mjs",
-  "apps/*-e2e/**",
-  "apps/*/src/environments/**",
-  "apps/*/src/app/app.config.ts",
+    "tools/scripts/patch-package-exports.mjs",
+    "apps/*-e2e/**",
+    "apps/*/src/environments/**",
+    "apps/*/src/app/app.config.ts",
 ]

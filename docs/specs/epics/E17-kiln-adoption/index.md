@@ -39,7 +39,8 @@ current CI, each committed:
 [S17.1.5](F17.1-docs-model.md#s1715-links) (links),
 [S17.2.7](F17.2-cutover.md#s1727-prose-that-is-true-before-and-after-the-cutover)
 (prose) and [S17.2.9](F17.2-cutover.md#s1729-upgrade-pnpm-to-kilns-pin) (pnpm).
-Then [S17.2.10](F17.2-cutover.md#s17210-format-to-kilns-formatters-ahead-of-the-overlay)
+Then
+[S17.2.10](F17.2-cutover.md#s17210-format-to-kilns-formatters-ahead-of-the-overlay)
 formats ngkit's own Markdown, TOML and YAML on `feature/kiln-format`. Then
 [S17.2.1](F17.2-cutover.md#s1721-overlay-the-kiln-reference), the one cutover
 story: an overlay of a `kiln new` reference, a numbered list with commands and
@@ -57,10 +58,10 @@ merge.
   cut over on kiln's branch so that kiln keeps being refined from their
   findings; the tag follows and each repository bumps its ref and runs
   `kiln apply`. The cutover is deterministic: pre-cutover stories first, then
-  one cutover story (F17.2; an overlay). Nx moves to kiln's
-  pinned `24.0.4` before the cutover (S17.2.6), because kiln's Nx never
-  reaches an adopted repository and `pnpm audit` fails on the older Angular
-  and Nx dependency tree.
+  one cutover story (F17.2; an overlay). Nx moves to kiln's pinned `24.0.4`
+  before the cutover (S17.2.6), because kiln's Nx never reaches an adopted
+  repository and `pnpm audit` fails on the older Angular and Nx dependency
+  tree.
 - **Release:** Release 3, because
   [Release 3](../../../releases/release-3/index.md) already says F11.1 is
   picked up after ngkit is cut over to kiln. Assumed 2026-11-02; the owner
@@ -74,8 +75,8 @@ merge.
 - **Not open:** the Pages site becomes MkDocs with Compodoc under `api/` and
   Storybook under `storybook/`; `USE_NX_CLOUD` is set to `true`; Sonar
   exclusions live in `.rn-forge/kiln/config.toml`; the release is a `release`
-  job on a push to `main` (kiln's S15.8.5). Each is a consequence of the owner's approval above,
-  and each is a story's Build, not a question.
+  job on a push to `main` (kiln's S15.8.5). Each is a consequence of the
+  owner's approval above, and each is a story's Build, not a question.
 
 ## Considered and rejected
 
@@ -110,5 +111,5 @@ grep -q '^archetype = "node-lib"' .rn-forge/kiln/config.toml
 ```
 
 Not scriptable, checked on GitHub: a pull-request run where `ci-ok` passes, a
-push to `main` that deploys the docs site and whose `release` job logs its
-mode (F17.2).
+push to `main` that deploys the docs site and whose `release` job logs its mode
+(F17.2).

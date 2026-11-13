@@ -412,7 +412,10 @@ describe('AuthBackendService', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: RN_FORGE_APP_CONFIG_TOKEN, useValue: { appName: 'test-app' } },
+        {
+          provide: RN_FORGE_APP_CONFIG_TOKEN,
+          useValue: { appName: 'test-app' },
+        },
         { provide: RNF_AUTH_CONFIG_TOKEN, useValue: { backend: {} } },
       ],
     });
@@ -426,8 +429,14 @@ describe('AuthBackendService', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: RN_FORGE_APP_CONFIG_TOKEN, useValue: { appName: 'test-app' } },
-        { provide: RNF_AUTH_CONFIG_TOKEN, useValue: { backend: { baseUrl: '' } } },
+        {
+          provide: RN_FORGE_APP_CONFIG_TOKEN,
+          useValue: { appName: 'test-app' },
+        },
+        {
+          provide: RNF_AUTH_CONFIG_TOKEN,
+          useValue: { backend: { baseUrl: '' } },
+        },
       ],
     });
     expect(() => TestBed.inject(AuthBackendService)).not.toThrow();
@@ -441,7 +450,10 @@ describe('AuthBackendService', () => {
         providers: [
           provideHttpClient(),
           provideHttpClientTesting(),
-          { provide: RN_FORGE_APP_CONFIG_TOKEN, useValue: { appName: 'test-app' } },
+          {
+            provide: RN_FORGE_APP_CONFIG_TOKEN,
+            useValue: { appName: 'test-app' },
+          },
           {
             provide: RNF_AUTH_CONFIG_TOKEN,
             useValue: { backend: { baseUrl: '/api' } },
@@ -475,7 +487,10 @@ describe('AuthBackendService', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: RN_FORGE_APP_CONFIG_TOKEN, useValue: { appName: 'test-app' } },
+        {
+          provide: RN_FORGE_APP_CONFIG_TOKEN,
+          useValue: { appName: 'test-app' },
+        },
         {
           provide: RNF_AUTH_CONFIG_TOKEN,
           useValue: {
@@ -498,7 +513,9 @@ describe('AuthBackendService', () => {
       .flush({ access_token: 'token' });
 
     service.logout().subscribe();
-    controller.expectOne('https://api.example.test/identity/signout').flush('ok');
+    controller
+      .expectOne('https://api.example.test/identity/signout')
+      .flush('ok');
 
     controller.verify();
   });

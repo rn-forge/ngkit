@@ -1,91 +1,253 @@
 # Release pipeline
 
-How ngkit builds, versions, packs and publishes its libraries. The choices behind it are [ADR-0003](../adr/ADR-0003.md); the procedure is [Releasing](../runbooks/releasing.md).
+How ngkit builds, versions, packs and publishes its libraries. The choices
+behind it are [ADR-0003](../adr/ADR-0003.md); the procedure is
+[Releasing](../runbooks/releasing.md).
 
 ## Build once
 
-**`dist/` is built once, by `nx.json#release.version.preVersionCommand`, and everything downstream consumes it read-only.** The command is `nx run-many -t build patch-package-exports -p tag:publishable`: it builds every project tagged `publishable` (see [Publishable tag](#publishable-tag)) and runs `patch-package-exports` where a project defines it. The version step then stamps the new version and rewrites `workspace:*` into the _already built_ `dist/libs/*/package.json`. Any later task that rebuilds regenerates those manifests from source and silently undoes it.
+**`dist/` is built once, by `nx.json#release.version.preVersionCommand`, and
+everything downstream consumes it read-only.** The command is
+`nx run-many -t build patch-package-exports -p tag:publishable`: it builds every
+project tagged `publishable` (see [Publishable tag](#publishable-tag)) and runs
+`patch-package-exports` where a project defines it. The version step then stamps
+the new version and rewrites `workspace:*` into the _already built_
+`dist/libs/*/package.json`. Any later task that rebuilds regenerates those
+manifests from source and silently undoes it.
 
-That is why the release pipeline's verify and publish steps pass `--excludeTaskDependencies`, and why `nx-release-publish` carries no `dependsOn`: versioning edits `libs/*/package.json`, which invalidates the build cache, so a task dependency _will_ rebuild. `preVersionCommand` therefore has to produce a fully release-ready `dist/`, including `patch-package-exports`. The one exception is resuming a release, which rebuilds `dist/` from the tag (see [Release workflow](#release-workflow)).
+That is why the release pipeline's verify and publish steps pass
+`--excludeTaskDependencies`, and why `nx-release-publish` carries no
+`dependsOn`: versioning edits `libs/*/package.json`, which invalidates the build
+cache, so a task dependency _will_ rebuild. `preVersionCommand` therefore has to
+produce a fully release-ready `dist/`, including `patch-package-exports`. The
+one exception is resuming a release, which rebuilds `dist/` from the tag (see
+[Release workflow](#release-workflow)).
 
 ## Publishable tag
 
-A library is released when its `project.json` carries the tag `publishable`. `nx.json#release.projects` is `["tag:publishable"]` and `preVersionCommand` and the `release.yml` steps select `-p tag:publishable`, so no project list appears in release config or workflows. Adding a library to the release is tagging it.
+A library is released when its `project.json` carries the tag `publishable`.
+`nx.json#release.projects` is `["tag:publishable"]` and `preVersionCommand` and
+the `release.yml` steps select `-p tag:publishable`, so no project list appears
+in release config or workflows. Adding a library to the release is tagging it.
 
 ## Manifest roots
 
-Each publishable library's `project.json` sets `release.version.manifestRootsToUpdate` to both `{projectRoot}` and `{ "path": "dist/{projectRoot}", "preserveLocalDependencyProtocols": false }`.
+Each publishable library's `project.json` sets
+`release.version.manifestRootsToUpdate` to both `{projectRoot}` and
+`{ "path": "dist/{projectRoot}", "preserveLocalDependencyProtocols": false }`.
 
-- `dist/` is gitignored and ng-packagr regenerates it from source on every build, so without also bumping the source manifest, `libs/*/package.json` on `main` would never reflect the released version.
-- `workspace:*` references must never leak into a published dist manifest. `preserveLocalDependencyProtocols: false` on the dist manifest root is the guard; keep it if a genuine `workspace:*` dependency is ever added between these libraries.
+- `dist/` is gitignored and ng-packagr regenerates it from source on every
+  build, so without also bumping the source manifest, `libs/*/package.json` on
+  `main` would never reflect the released version.
+- `workspace:*` references must never leak into a published dist manifest.
+  `preserveLocalDependencyProtocols: false` on the dist manifest root is the
+  guard; keep it if a genuine `workspace:*` dependency is ever added between
+  these libraries.
 
 ## Pushing the release
 
-`nx.json#release.changelog.workspaceChangelog.createRelease` is `false`, so `nx release` versions, writes `CHANGELOG.md`, commits and tags locally only and pushes nothing. `release.yml` pushes the release commit and tag itself (`git push --atomic`) only after `pack`, `verify-dist` and `verify-consumer` pass on the built `dist/`, so a failed check leaves nothing public. It then creates the GitHub Release with one `gh release create`, which uploads the tarballs and uses the `CHANGELOG.md` section extracted by `tools/ci/release-notes.mjs` as the notes.
+`nx.json#release.changelog.workspaceChangelog.createRelease` is `false`, so
+`nx release` versions, writes `CHANGELOG.md`, commits and tags locally only and
+pushes nothing. `release.yml` pushes the release commit and tag itself
+(`git push --atomic`) only after `pack`, `verify-dist` and `verify-consumer`
+pass on the built `dist/`, so a failed check leaves nothing public. It then
+creates the GitHub Release with one `gh release create`, which uploads the
+tarballs and uses the `CHANGELOG.md` section extracted by
+`tools/ci/release-notes.mjs` as the notes.
 
 ## `patch-package-exports`
 
-The shared script `tools/scripts/patch-package-exports.mjs` takes a project root and `subpath=target` pairs and adds them to the ng-packagr dist `package.json`'s `exports` map, which ng-packagr computes from compiled entry points only. `ng-bootstrap`'s `patch-package-exports` target uses it so deep asset imports (`@rn-forge/ng-bootstrap/assets/*`) resolve at all; `ng-tailwind`'s uses it to export `./tokens.css`, `./base.css` and `./tailwind.css` from `assets/`. The target is a `dependsOn` of each library's `pack` override (the plain `nx pack` path used by `ci.yml`) and is run by `preVersionCommand` on the release path for every publishable project that defines it. It must execute after every build of the library and before versioning stamps the dist manifest. Any new library shipping non-TS assets alongside compiled entry points needs the same pattern.
+The shared script `tools/scripts/patch-package-exports.mjs` takes a project root
+and `subpath=target` pairs and adds them to the ng-packagr dist `package.json`'s
+`exports` map, which ng-packagr computes from compiled entry points only.
+`ng-bootstrap`'s `patch-package-exports` target uses it so deep asset imports
+(`@rn-forge/ng-bootstrap/assets/*`) resolve at all; `ng-tailwind`'s uses it to
+export `./tokens.css`, `./base.css` and `./tailwind.css` from `assets/`. The
+target is a `dependsOn` of each library's `pack` override (the plain `nx pack`
+path used by `ci.yml`) and is run by `preVersionCommand` on the release path for
+every publishable project that defines it. It must execute after every build of
+the library and before versioning stamps the dist manifest. Any new library
+shipping non-TS assets alongside compiled entry points needs the same pattern.
 
 ## Packing
 
-`pack` and `verify-dist` are defined once, in `nx.json#targetDefaults`; each publishable `project.json` declares them as `"pack": {}` and `"verify-dist": {}`. `ng-bootstrap` and `ng-tailwind` override only `"pack": { "dependsOn": ["patch-package-exports"] }`.
+`pack` and `verify-dist` are defined once, in `nx.json#targetDefaults`; each
+publishable `project.json` declares them as `"pack": {}` and
+`"verify-dist": {}`. `ng-bootstrap` and `ng-tailwind` override only
+`"pack": { "dependsOn": ["patch-package-exports"] }`.
 
-- **`pack`** depends on `build`, runs `tools/ci/resolve-dist-workspace-deps.mjs` on the dist manifest, then `npm pack` into `dist/tarballs/`. The script rewrites any `workspace:` protocol dependency to the referenced local package's current version, reading name and version from every project root Nx reports. Plain `nx pack` (the path `ci.yml`'s `package` job uses) never runs `nx release version`, so without it `ng-bootstrap`'s dist `package.json` would carry a literal `"@rn-forge/ng": "workspace:*"` peer that an external `npm` or `pnpm install` cannot resolve. It is a no-op once `nx release version` has already stamped an exact pin, so the real release path is unaffected.
-- **`verify-dist`** depends on `pack` and is never cached. It runs `tools/ci/verify-dist-manifest.mjs dist/<projectRoot>`, which asserts that no `workspace:` protocol remains in the manifest's `dependencies`, `peerDependencies` or `optionalDependencies`, and that the ng-packagr output is complete: `name` and `version` are set, and there is `module` or `exports`, and `typings` or `exports`. It runs from both `ci.yml`'s `package` job and `release.yml`.
+- **`pack`** depends on `build`, runs `tools/ci/resolve-dist-workspace-deps.mjs`
+  on the dist manifest, then `npm pack` into `dist/tarballs/`. The script
+  rewrites any `workspace:` protocol dependency to the referenced local
+  package's current version, reading name and version from every project root
+  Nx reports. Plain `nx pack` (the path `ci.yml`'s `package` job uses) never
+  runs `nx release version`, so without it `ng-bootstrap`'s dist
+  `package.json` would carry a literal `"@rn-forge/ng": "workspace:*"` peer
+  that an external `npm` or `pnpm install` cannot resolve. It is a no-op once
+  `nx release version` has already stamped an exact pin, so the real release
+  path is unaffected.
+- **`verify-dist`** depends on `pack` and is never cached. It runs
+  `tools/ci/verify-dist-manifest.mjs dist/<projectRoot>`, which asserts that
+  no `workspace:` protocol remains in the manifest's `dependencies`,
+  `peerDependencies` or `optionalDependencies`, and that the ng-packagr output
+  is complete: `name` and `version` are set, and there is `module` or
+  `exports`, and `typings` or `exports`. It runs from both `ci.yml`'s
+  `package` job and `release.yml`.
 
 ## Consumer verification
 
-`tools/scripts/verify-consumer.mjs`, run by the `verify-consumer` target (which depends on `pack`), installs the packed `@rn-forge/ng` tarball via `file:` into four throwaway fixtures under `dist/consumer-fixtures/` (outside the pnpm workspace glob): Angular 22.0.6 and 22.1.7, each with and without `zone.js` loaded. It smoke-tests every secondary entry point (`.`, `./core`, `./auth`, `./crud`) plus a `LocalStorageService` round-trip through DI, and asserts the installed manifest carries no `workspace:` protocol dependency. `node tools/scripts/verify-consumer.mjs ng-tailwind` (the `ng-tailwind` target) runs the same Angular matrix with the `@rn-forge/ng-tailwind` tarball, but builds real applications with `ng build`: a plain one importing `tokens.css`, and one with `tailwindcss` and `@tailwindcss/postcss` importing the sheets in the README order. It asserts on the built CSS and JS: the plain build carries `--rnf-surface-0` and the button's `rnf` layer rules and has no `tailwindcss` installed; the Tailwind build emits the mapped utilities resolving to `var(--rnf-*)` and none for the default palette. There is no verdaccio and no workspace fixture. The script also takes `--only plain|tailwind` and `--cell <angular>-<zone|zoneless>`; the `ng-tailwind:consumer-fixture` target uses them (`--only tailwind --cell 22.1-zoneless`) to build the single Tailwind fixture that `ng-tailwind-e2e` serves for its cascade checks, and the full matrix is unchanged. It runs in `ci.yml`'s `package` job.
+`tools/scripts/verify-consumer.mjs`, run by the `verify-consumer` target (which
+depends on `pack`), installs the packed `@rn-forge/ng` tarball via `file:` into
+four throwaway fixtures under `dist/consumer-fixtures/` (outside the pnpm
+workspace glob): Angular 22.0.6 and 22.1.7, each with and without `zone.js`
+loaded. It smoke-tests every secondary entry point (`.`, `./core`, `./auth`,
+`./crud`) plus a `LocalStorageService` round-trip through DI, and asserts the
+installed manifest carries no `workspace:` protocol dependency.
+`node tools/scripts/verify-consumer.mjs ng-tailwind` (the `ng-tailwind` target)
+runs the same Angular matrix with the `@rn-forge/ng-tailwind` tarball, but
+builds real applications with `ng build`: a plain one importing `tokens.css`,
+and one with `tailwindcss` and `@tailwindcss/postcss` importing the sheets in
+the README order. It asserts on the built CSS and JS: the plain build carries
+`--rnf-surface-0` and the button's `rnf` layer rules and has no `tailwindcss`
+installed; the Tailwind build emits the mapped utilities resolving to
+`var(--rnf-*)` and none for the default palette. There is no verdaccio and no
+workspace fixture. The script also takes `--only plain|tailwind` and
+`--cell <angular>-<zone|zoneless>`; the `ng-tailwind:consumer-fixture` target
+uses them (`--only tailwind --cell 22.1-zoneless`) to build the single Tailwind
+fixture that `ng-tailwind-e2e` serves for its cascade checks, and the full
+matrix is unchanged. It runs in `ci.yml`'s `package` job.
 
 ## CI
 
-`.github/workflows/ci.yml` runs on push and pull request to `main` and `release/**`:
+`.github/workflows/ci.yml` runs on push and pull request to `main` and
+`release/**`:
 
-- **`ci-cloud`** (default): distributes `lint`/`test`/`build`/`e2e-ci` across Nx Cloud agents using the `linux-medium` launch template (`.nx/workflows/agents.yaml`); the agent count comes from the repo variable `NX_CLOUD_AGENTS` (optional, default 3).
-- **`ci-local`**: the fallback that runs the same tasks on a single runner, with no Nx Cloud dependency. Playwright browsers install only when a project has an `e2e` target. Select it by setting the repo variable `USE_NX_CLOUD` to `false`, or via `workflow_dispatch` with `use-nx-cloud` unchecked.
-- **`package`**: runs after either path succeeds. It runs `nx run-many -t pack verify-dist verify-consumer` (every project that defines each target) and uploads the tarballs as a `package-tarballs` artifact.
-- **`sonar`**: skipped on Dependabot and fork pull requests (no `SONAR_TOKEN`). Runs `nx run-many -t test`, then finds every `coverage/**/lcov.info` and passes the list to the scanner as `-Dsonar.javascript.lcov.reportPaths`. It fails when none is found. `sonar-project.properties` names no coverage path, so a project with tests is covered without editing config. It passes `-Dsonar.qualitygate.wait=true`, so the job waits for the quality gate and fails when the gate fails.
-- **`docs`**: the docs site, described under [Docs site](#docs-site). It runs only on `main`, after `ci-cloud` or `ci-local` passes.
-- **`template`**: runs `tools/ci/check-template.mjs`, which fails when a file carrying the `ci-template: repository-agnostic` marker contains a repository-specific value (project name or root, repository name, Nx Cloud id, Node or pnpm version, Sonar key or organization). It has no `needs`, so it runs in parallel with the other paths.
-- **`ci-ok`**: the one check branch protection requires. It runs last (`always()`, `needs:` every other job) and fails when any needed job failed or was cancelled, or when neither `ci-cloud` nor `ci-local` succeeded; skipped jobs (Sonar on Dependabot and fork PRs, `docs` off `main`, the unused `ci-*` path) pass.
+- **`ci-cloud`** (default): distributes `lint`/`test`/`build`/`e2e-ci` across Nx
+  Cloud agents using the `linux-medium` launch template
+  (`.nx/workflows/agents.yaml`); the agent count comes from the repo variable
+  `NX_CLOUD_AGENTS` (optional, default 3).
+- **`ci-local`**: the fallback that runs the same tasks on a single runner, with
+  no Nx Cloud dependency. Playwright browsers install only when a project has
+  an `e2e` target. Select it by setting the repo variable `USE_NX_CLOUD` to
+  `false`, or via `workflow_dispatch` with `use-nx-cloud` unchecked.
+- **`package`**: runs after either path succeeds. It runs
+  `nx run-many -t pack verify-dist verify-consumer` (every project that
+  defines each target) and uploads the tarballs as a `package-tarballs`
+  artifact.
+- **`sonar`**: skipped on Dependabot and fork pull requests (no `SONAR_TOKEN`).
+  Runs `nx run-many -t test`, then finds every `coverage/**/lcov.info` and
+  passes the list to the scanner as `-Dsonar.javascript.lcov.reportPaths`. It
+  fails when none is found. `sonar-project.properties` names no coverage path,
+  so a project with tests is covered without editing config. It passes
+  `-Dsonar.qualitygate.wait=true`, so the job waits for the quality gate and
+  fails when the gate fails.
+- **`docs`**: the docs site, described under [Docs site](#docs-site). It runs
+  only on `main`, after `ci-cloud` or `ci-local` passes.
+- **`template`**: runs `tools/ci/check-template.mjs`, which fails when a file
+  carrying the `ci-template: repository-agnostic` marker contains a
+  repository-specific value (project name or root, repository name, Nx Cloud
+  id, Node or pnpm version, Sonar key or organization). It has no `needs`, so
+  it runs in parallel with the other paths.
+- **`ci-ok`**: the one check branch protection requires. It runs last
+  (`always()`, `needs:` every other job) and fails when any needed job failed
+  or was cancelled, or when neither `ci-cloud` nor `ci-local` succeeded;
+  skipped jobs (Sonar on Dependabot and fork PRs, `docs` off `main`, the
+  unused `ci-*` path) pass.
 
-Every job except `ci-ok` checks out the repository, then uses the shared `.github/actions/setup` action, which installs pnpm (version from `package.json#packageManager`) and Node (version from `.nvmrc`), installs uv when the repository commits a `uv.lock` (the Python e2e fixture; uv downloads the Python it declares), and runs `pnpm install --frozen-lockfile`. The Nx Cloud agents install the same uv version in an init step under the same condition.
+Every job except `ci-ok` checks out the repository, then uses the shared
+`.github/actions/setup` action, which installs pnpm (version from
+`package.json#packageManager`) and Node (version from `.nvmrc`), installs uv
+when the repository commits a `uv.lock` (the Python e2e fixture; uv downloads
+the Python it declares), and runs `pnpm install --frozen-lockfile`. The Nx Cloud
+agents install the same uv version in an init step under the same condition.
 
-Distributed versus local execution is a toggle, not two pipelines to maintain in parallel.
+Distributed versus local execution is a toggle, not two pipelines to maintain in
+parallel.
 
-Which of these files are portable and what a repository must declare for them is in [CI template](ci-template.md).
+Which of these files are portable and what a repository must declare for them is
+in [CI template](ci-template.md).
 
-Playwright e2e uses the atomized `e2e-ci` target (`@nx/playwright/plugin`'s default `<targetName>-ci`) so Nx Cloud can distribute individual spec files as separate tasks. Only the cloud path needs it; the local fallback runs plain `e2e`.
+Playwright e2e uses the atomized `e2e-ci` target (`@nx/playwright/plugin`'s
+default `<targetName>-ci`) so Nx Cloud can distribute individual spec files as
+separate tasks. Only the cloud path needs it; the local fallback runs plain
+`e2e`.
 
 ## Release workflow
 
-`release.yml` is a manual `workflow_dispatch` with two jobs, `release` and `published-install`.
+`release.yml` is a manual `workflow_dispatch` with two jobs, `release` and
+`published-install`.
 
-**CI gate.** The first step requires a successful `ci.yml` run for the commit being released: `HEAD`, or `HEAD^` when `HEAD` carries a `v*` tag (the release commit's own `ci.yml` run may not have finished, so `HEAD^` is the commit CI checked). Without one, a real release fails; a dry run warns and continues. The workflow runs no lint, test or e2e of its own.
+**CI gate.** The first step requires a successful `ci.yml` run for the commit
+being released: `HEAD`, or `HEAD^` when `HEAD` carries a `v*` tag (the release
+commit's own `ci.yml` run may not have finished, so `HEAD^` is the commit CI
+checked). Without one, a real release fails; a dry run warns and continues. The
+workflow runs no lint, test or e2e of its own.
 
-**Order.** Version locally (`nx release … --skip-publish`: version, changelog, commit, tag, no push) → `pack`, `verify-dist` and `verify-consumer` on the built `dist/` → push the commit and tag atomically → create the GitHub Release with its tarballs and `CHANGELOG.md` notes in one `gh release create` → `nx release publish --tag=<dist-tag> --excludeTaskDependencies` (a dry run while npm is disabled) → move the rolling `latest` release. The combined `nx release` command has no `--tag` flag, which is why publish is a separate step. A dry run uses `nx release version` with no commit or tag instead, because the combined command writes no files under `--dry-run`, and dist manifests would keep their `workspace:*` references; it verifies and previews the publish but creates nothing.
+**Order.** Version locally (`nx release … --skip-publish`: version, changelog,
+commit, tag, no push) → `pack`, `verify-dist` and `verify-consumer` on the built
+`dist/` → push the commit and tag atomically → create the GitHub Release with
+its tarballs and `CHANGELOG.md` notes in one `gh release create` →
+`nx release publish --tag=<dist-tag> --excludeTaskDependencies` (a dry run while
+npm is disabled) → move the rolling `latest` release. The combined `nx release`
+command has no `--tag` flag, which is why publish is a separate step. A dry run
+uses `nx release version` with no commit or tag instead, because the combined
+command writes no files under `--dry-run`, and dist manifests would keep their
+`workspace:*` references; it verifies and previews the publish but creates
+nothing.
 
-**Modes.** A version counts as shipped when its GitHub Release is published (not a draft). A real run looks at the `v*` tags on `HEAD` (more than one fails):
+**Modes.** A version counts as shipped when its GitHub Release is published (not
+a draft). A real run looks at the `v*` tags on `HEAD` (more than one fails):
 
-| Tag at `HEAD` | Published release for it | Mode       | Run does                                                                                                                                                                                     |
-| ------------- | ------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| none          | n/a                      | `new`      | the full order above                                                                                                                                                                         |
-| yes           | no                       | `resume`   | rebuilds `dist/` from the tagged source (`pack verify-dist verify-consumer` with task dependencies), deletes any draft for the tag, then creates the release, publishes and updates `latest` |
-| yes           | yes                      | `released` | skips the build, release creation and publish; only brings `latest` up to date                                                                                                               |
+| Tag at `HEAD` | Published release for it | Mode | Run does |
+| -- | -- | -- | -- |
+| none | n/a | `new` | the full order above |
+| yes | no | `resume` | rebuilds `dist/` from the tagged source (`pack verify-dist verify-consumer` with task dependencies), deletes any draft for the tag, then creates the release, publishes and updates `latest` |
+| yes | yes | `released` | skips the build, release creation and publish; only brings `latest` up to date |
 
-A failure before the push leaves nothing public, and a rerun computes the same version. After the push, a rerun from the same ref finds the tag at `HEAD` and finishes that version instead of bumping.
+A failure before the push leaves nothing public, and a rerun computes the same
+version. After the push, a rerun from the same ref finds the tag at `HEAD` and
+finishes that version instead of bumping.
 
-**Rolling `latest`.** It moves only on `main`; hotfix releases from `release/**` keep their own versioned release. The step is idempotent: it is skipped when the remote `latest` tag already points at this tag's commit and the `latest` release has the same asset names as the tag's release. Otherwise it deletes and recreates `latest` with the tarballs (downloaded from the published release in `released` mode).
+**Rolling `latest`.** It moves only on `main`; hotfix releases from `release/**`
+keep their own versioned release. The step is idempotent: it is skipped when the
+remote `latest` tag already points at this tag's commit and the `latest` release
+has the same asset names as the tag's release. Otherwise it deletes and
+recreates `latest` with the tarballs (downloaded from the published release in
+`released` mode).
 
-**`published-install`.** After `release`, on real runs only, it checks out the tag, downloads the tarballs from the published GitHub Release and runs `verify-consumer` on them, so the install is checked against what consumers download rather than what the runner built.
+**`published-install`.** After `release`, on real runs only, it checks out the
+tag, downloads the tarballs from the published GitHub Release and runs
+`verify-consumer` on them, so the install is checked against what consumers
+download rather than what the runner built.
 
-Release commit and tag are pushed to the branch the run started from, so the "Use workflow from" ref decides whether it is a normal release (`main`) or a hotfix (`release/<major>.x`).
+Release commit and tag are pushed to the branch the run started from, so the
+"Use workflow from" ref decides whether it is a normal release (`main`) or a
+hotfix (`release/<major>.x`).
 
-The current version comes from git tags (`currentVersionResolver: "git-tag"`, falling back to `disk`, in each library's `project.json`). The resolver prefers tags reachable from the current branch, so on `release/1.x` it resolves `v1.2.0` and bumps to `1.2.1`, unaware of `v2.3.0` on `main`; hotfix branches need no extra configuration. Bumps are chosen by the person running the release, not derived from commits ([ADR-0003](../adr/ADR-0003.md)).
+The current version comes from git tags (`currentVersionResolver: "git-tag"`,
+falling back to `disk`, in each library's `project.json`). The resolver prefers
+tags reachable from the current branch, so on `release/1.x` it resolves `v1.2.0`
+and bumps to `1.2.1`, unaware of `v2.3.0` on `main`; hotfix branches need no
+extra configuration. Bumps are chosen by the person running the release, not
+derived from commits ([ADR-0003](../adr/ADR-0003.md)).
 
 ## Docs site
 
-The `docs` job in `ci.yml` publishes to GitHub Pages. It runs on push to `main` (and `workflow_dispatch` on `main`) after `ci-cloud` or `ci-local` passes, so a failing commit never deploys. It builds only when a project with a `compodoc` or `build-storybook` target is affected (`nx show projects --affected --with-target <target>` against the `nx-set-shas` base); a manual run always builds. Its `pages` concurrency group has `cancel-in-progress: false`, so a deployment in progress is never cancelled.
+The `docs` job in `ci.yml` publishes to GitHub Pages. It runs on push to `main`
+(and `workflow_dispatch` on `main`) after `ci-cloud` or `ci-local` passes, so a
+failing commit never deploys. It builds only when a project with a `compodoc` or
+`build-storybook` target is affected
+(`nx show projects --affected --with-target <target>` against the `nx-set-shas`
+base); a manual run always builds. Its `pages` concurrency group has
+`cancel-in-progress: false`, so a deployment in progress is never cancelled.
 
-The job names no project. Each project declares its own doc targets with a fixed output convention: `compodoc` writes `dist/compodoc/{projectName}` and `build-storybook` writes `dist/storybook/{projectName}`. `tools/ci/assemble-site.mjs` reads the projects that declare each target and assembles `dist/site/`: `api/<project>/` per `compodoc` project, `storybook/<project>/` per `build-storybook` project, an empty `.nojekyll`, and a generated `index.html` with one card per entry, labelled with the project name and, when the project root has a `package.json`, its `description`. It fails naming the project when an expected output directory is missing. A new library appears on the site by declaring the targets.
+The job names no project. Each project declares its own doc targets with a fixed
+output convention: `compodoc` writes `dist/compodoc/{projectName}` and
+`build-storybook` writes `dist/storybook/{projectName}`.
+`tools/ci/assemble-site.mjs` reads the projects that declare each target and
+assembles `dist/site/`: `api/<project>/` per `compodoc` project,
+`storybook/<project>/` per `build-storybook` project, an empty `.nojekyll`, and
+a generated `index.html` with one card per entry, labelled with the project name
+and, when the project root has a `package.json`, its `description`. It fails
+naming the project when an expected output directory is missing. A new library
+appears on the site by declaring the targets.
