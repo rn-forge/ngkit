@@ -27,6 +27,10 @@ signal. It is a hand-rolled few lines under ADR-0001 exemption 3, and lives in
 
 <!-- BEGIN derived features -->
 
+| Feature | State | Iteration | Stories |
+| -- | -- | -- | -- |
+| [F16.1 — `Invalidation`](F16.1-invalidation.md) | Closed | release-2 | 2 Closed |
+
 <!-- END derived features -->
 
 ## Design

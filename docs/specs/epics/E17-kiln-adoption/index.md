@@ -27,6 +27,14 @@ each acceptance block.
 
 <!-- BEGIN derived features -->
 
+| Feature | State | Iteration | Stories |
+| -- | -- | -- | -- |
+| [F17.1 — The docs follow kiln's work model](F17.1-docs-model.md) | Active | release-3 | 1 Active · 3 New · 2 Closed |
+| [F17.2 — Cut over onto kiln](F17.2-cutover.md) | Active | release-3 | 7 New · 3 Closed · 1 Removed |
+| [F17.3 — The instruction files follow kiln's standard](F17.3-instructions-follow-kiln-standard.md) | Removed | release-3 | — |
+| [F17.4 — Asset subpaths are declared in source](F17.4-asset-exports.md) | New | release-3 | 1 New |
+| [F17.5 — The consumer checks run from `kiln-devops`](F17.5-consumer-checks-in-kiln.md) | New | release-3 | 3 New |
+
 <!-- END derived features -->
 
 **Order.** The cutover runs on `feature/kiln-cutover`, cut from and merged back

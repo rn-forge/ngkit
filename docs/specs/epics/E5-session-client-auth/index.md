@@ -49,6 +49,14 @@ carries E5 must announce it.
 
 <!-- BEGIN derived features -->
 
+| Feature | State | Iteration | Stories |
+| -- | -- | -- | -- |
+| [F5.1 — Client model and wire contract](F5.1-client-model.md) | New | release-3 | 2 New |
+| [F5.2 — `@rn-forge/ng/auth` session client](F5.2-auth-wrapper.md) | New | release-3 | 5 New |
+| [F5.3 — Bootstrap auth UI](F5.3-bootstrap-auth-ui.md) | New | release-3 | 3 New |
+| [F5.4 — Acceptance against a session backend](F5.4-auth-acceptance.md) | New | release-3 | 2 New |
+| [F5.5 — Situational client extensions](F5.5-situational-client-extensions.md) | New | deferred | — |
+
 <!-- END derived features -->
 
 ## Open questions

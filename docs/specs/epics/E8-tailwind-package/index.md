@@ -26,6 +26,13 @@ packed tarball; the component families are
 
 <!-- BEGIN derived features -->
 
+| Feature | State | Iteration | Stories |
+| -- | -- | -- | -- |
+| [F8.1 — The package and its release wiring](F8.1-package.md) | Closed | release-2 | 3 Closed |
+| [F8.2 — Tokens, tones, base sheet and Tailwind bridge](F8.2-css-contract.md) | Closed | release-2 | 4 Closed |
+| [F8.3 — `rnfButton`](F8.3-button.md) | Closed | release-2 | 1 Closed |
+| [F8.4 — Consumer and accessibility acceptance](F8.4-acceptance.md) | Closed | release-2 | 3 Closed |
+
 <!-- END derived features -->
 
 ## Design

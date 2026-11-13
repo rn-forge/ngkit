@@ -19,60 +19,65 @@ and a release; everything else is deferred. E17 (2026-11-02) adopts kiln's
 `node-lib` archetype: F17.1 converts the docs to kiln's work model, F17.2 cuts
 the CI over; it is in Release 3, and F17.1 started 2026-11-03.
 
-## Board
+The Releases and Backlog sections below are derived from the epic, feature and
+release pages by `task docs:generate`; never edit inside their fence.
 
-### In progress
+<!-- BEGIN derived board -->
 
-| Epic | Next step |
+## Releases
+
+| Release | Status | Features |
+| -- | -- | -- |
+| [Release 3](../releases/release-3/index.md) | in progress | 3 Active · 6 New · 1 Removed |
+| [Release 2](../releases/release-2/index.md) | shipped (2026-10-25) | 9 Closed |
+| [Release 1](../releases/release-1/index.md) | shipped (2026-10-14) | 7 Closed |
+
+## Backlog
+
+Features with no Iteration, by State and epic.
+
+### New
+
+| Epic | Features |
 | -- | -- |
-| [E17 — kiln adoption](epics/E17-kiln-adoption/index.md) | F17.1 started 2026-11-03 (S17.1.2, the spec conversion). Revised 2026-11-07: the pre-cutover stories S17.2.6 (Nx), S17.1.5 (links) and S17.2.7 (prose) first, then S17.2.1 (`kiln init` on kiln's `feature/v1`, one numbered list), then the rest of F17.1 and F17.2; Release 3 |
-
-### Planned
-
-| Epic | Next step |
-| -- | -- |
-| [E11 — Workspace generators](epics/E11-workspace-generators/index.md) | Start F11.1 after the kiln cutover (E17); Release 3 |
-
-### To elaborate
-
-| Epic | Next step |
-| -- | -- |
-| [E5 — Session client auth](epics/E5-session-client-auth/index.md) | Refine once a released server library's auth module is defined; accept ADR-0006 (S5.1.1); Release 3 |
-| [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md) | Owner answers F6.1's open question and assigns a release |
+| [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md) | [F6.1](epics/E6-asynchronous-resource/F6.1-loading-timings.md) |
 
 ### Deferred
 
-| Epic | Entry criteria |
-| -- | -- |
-| [E7 — Theme controller](epics/E7-theme-controller/index.md) | The owner schedules it (depends on E3, done) |
-| [E9 — Presentation primitives](epics/E9-presentation-primitives/index.md) | E8 is done and the owner schedules it |
-| [E10 — Connected menu](epics/E10-connected-menu/index.md) | E8 is done and the owner schedules it |
-| [E12 — On-demand features](epics/E12-on-demand-features/index.md) | The row's trigger occurs |
+| Epic | Features | Entry criteria |
+| -- | -- | -- |
+| [E5 — Session client auth](epics/E5-session-client-auth/index.md) | [F5.5](epics/E5-session-client-auth/F5.5-situational-client-extensions.md) | Per feature; see the epic. |
+| [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md) | [F6.2](epics/E6-asynchronous-resource/F6.2-keep-previous.md) | Per feature; see the epic. |
+| [E7 — Theme controller](epics/E7-theme-controller/index.md) | — | the owner schedules it |
+| [E9 — Presentation primitives](epics/E9-presentation-primitives/index.md) | — | [E8](../E8-tailwind-package/index.md) is done and the owner schedules it |
+| [E10 — Connected menu](epics/E10-connected-menu/index.md) | — | [E8](../E8-tailwind-package/index.md) is done and the owner schedules it |
+| [E12 — On-demand features](epics/E12-on-demand-features/index.md) | F12.1, F12.2, F12.3, F12.4, F12.5, F12.6, F12.7, F12.8, F12.9, F12.10, F12.11 | the row's trigger occurs |
 
-### Done
+<!-- END derived board -->
 
-| Epic | Implemented |
-| -- | -- |
-| [E1 — Packaging and compatibility](epics/E1-packaging-and-compatibility/index.md) | 2026-09-20 (`c30d63a`) |
-| [E2 — Retire the HTTP entry point](epics/E2-retire-http-entry-point/index.md) | 2026-09-23 (`c30d63a`) |
-| [E3 — Core correctness](epics/E3-core-correctness/index.md) | 2026-09-23 (`1f54842`) |
-| [E13 — Portable CI](epics/E13-portable-ci/index.md) | 2026-10-14 (`d1e026c`) |
-| [E4 — Standard resource screen](epics/E4-standard-resource-screen/index.md) | 2026-10-17 (`1fc3c8d`) |
-| [E16 — Key invalidation for `httpResource`](epics/E16-resource-invalidation/index.md) | 2026-10-24 |
-| [E15 — Server-sent event stream](epics/E15-event-stream/index.md) | 2026-10-24 |
-| [E14 — RFC 9457 problem client support](epics/E14-problem-client/index.md) | 2026-10-24 |
-| [E8 — `@rn-forge/ng-tailwind` package](epics/E8-tailwind-package/index.md) | 2026-10-24 |
+Ideas not yet agreed as work are parked in the [ideas list](ideas/index.md).
+
+Every epic, by number, is on [the epic list](epics/index.md).
 
 ## Conventions
 
-- **Taxonomy.** Epic `E<n>` → feature `F<n>.<m>` → story `S<n>.<m>.<k>`. IDs are
-  permanent.
-- **State.** `New`, `Active`, `Closed` or `Removed`, in each page's metadata
-  table; deferred work is `New` tagged `deferred`, with entry criteria.
-  Stories carry their own `**State:**` line. Interim rules until kiln's
-  `init`: `docs/specs/_structure.md`.
-- **A decision is its own story**, so work can depend on the decision without
-  depending on its implementation.
-- **Open questions live on the feature or epic they block.**
-- **Acceptance is checked inside ngkit.**
-- **Don't start or elaborate a deferred epic unless the owner asks.**
+The work model is kiln's, in `docs/specs/_structure.md`.
+
+## How this repository differs
+
+- Every acceptance line is checkable inside this repository. When acceptance
+  needs a host, such as an application or a library workspace, a test builds
+  one in a temporary directory.
+- A dependency on another repository's software is a version or git pin in the
+  manifest of the code that uses it, plus at most an entry criterion that can
+  be observed from outside that repository ("its release-1 tags exist").
+- Another repository's pages, paths, spec IDs and internal status are not cited
+  or restated. A requirement or finding that came from elsewhere is written
+  here in full, as this repository's own. The exception is kiln, which owns
+  repository-level setup: its specs and ADRs may be cited by ID as the reason
+  work here is retired or out of scope ([ADR-0007](../adr/ADR-0007.md)).
+- No page here is written for another repository to cite.
+
+**Checking removed behaviour:** a check that a removed symbol is gone asks "does
+any current page describe it as present?", not "does the name appear?". A page
+may name removed behaviour to say it is gone.

@@ -30,6 +30,11 @@ no client, no base URL, no verbs, no retries and no interceptor
 
 <!-- BEGIN derived features -->
 
+| Feature | State | Iteration | Stories |
+| -- | -- | -- | -- |
+| [F14.1 — `Problem` and its helpers](F14.1-problem-types.md) | Closed | release-2 | 4 Closed |
+| [F14.2 — `ng/crud` and the HTTP guide](F14.2-crud-adoption.md) | Closed | release-2 | 2 Closed |
+
 <!-- END derived features -->
 
 ## Placement

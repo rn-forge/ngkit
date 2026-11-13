@@ -33,6 +33,14 @@ follows are in [design.md](design.md).
 
 <!-- BEGIN derived features -->
 
+| Feature | State | Iteration | Stories |
+| -- | -- | -- | -- |
+| [F13.1 — Discovered projects](F13.1-discovered-projects.md) | Closed | release-1 | 5 Closed |
+| [F13.2 — One gate](F13.2-one-gate.md) | Closed | release-1 | 5 Closed |
+| [F13.3 — Docs job](F13.3-docs-job.md) | Closed | release-1 | 3 Closed |
+| [F13.4 — Safe release](F13.4-safe-release.md) | Closed | release-1 | 7 Closed |
+| [F13.5 — Template contract](F13.5-template-contract.md) | Closed | release-1 | 3 Closed |
+
 <!-- END derived features -->
 
 **Order.** F13.1 first: every other feature consumes its discovery. F13.2 and

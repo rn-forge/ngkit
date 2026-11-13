@@ -29,6 +29,10 @@ is about failed `HttpClient` calls, and this is a long-lived stream with no
 
 <!-- BEGIN derived features -->
 
+| Feature | State | Iteration | Stories |
+| -- | -- | -- | -- |
+| [F15.1 — `createEventStream`](F15.1-event-stream.md) | Closed | release-2 | 4 Closed |
+
 <!-- END derived features -->
 
 ## Design

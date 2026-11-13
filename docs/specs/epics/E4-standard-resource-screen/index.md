@@ -25,4 +25,10 @@ alongside it.
 
 <!-- BEGIN derived features -->
 
+| Feature | State | Iteration | Stories |
+| -- | -- | -- | -- |
+| [F4.1 — `@rn-forge/ng/crud` entry point](F4.1-crud-entry-point.md) | Closed | release-1 | 5 Closed |
+| [F4.2 — Bootstrap renderer and demo](F4.2-bootstrap-renderer-and-demo.md) | Closed | release-1 | 2 Closed |
+| [F4.3 — Accept the screen against a real backend](F4.3-wire-acceptance.md) | Closed | release-2 | 6 Closed |
+
 <!-- END derived features -->

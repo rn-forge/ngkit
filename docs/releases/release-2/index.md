@@ -1,6 +1,9 @@
 # Release 2
 
-**Status:** shipped (2026-10-25)
+|  |  |
+| -- | -- |
+| **Status** | shipped |
+| **Finish Date** | 2026-10-25 |
 
 [Back to releases](../index.md) · [Releasing](../../runbooks/releasing.md)
 
@@ -11,17 +14,21 @@ approves.
 
 ## Scope
 
-| Feature | Epic | Status |
+<!-- BEGIN derived scope -->
+
+| Feature | Epic | State |
 | -- | -- | -- |
-| [F4.3 — Accept the screen against a real backend](../../specs/epics/E4-standard-resource-screen/F4.3-wire-acceptance.md) | [E4](../../specs/epics/E4-standard-resource-screen/index.md) | done |
-| [F8.1 — The package and its release wiring](../../specs/epics/E8-tailwind-package/F8.1-package.md) | [E8](../../specs/epics/E8-tailwind-package/index.md) | done |
-| [F8.2 — Tokens, tones, base sheet and bridge](../../specs/epics/E8-tailwind-package/F8.2-css-contract.md) | [E8](../../specs/epics/E8-tailwind-package/index.md) | done |
-| [F8.3 — `rnfButton`](../../specs/epics/E8-tailwind-package/F8.3-button.md) | [E8](../../specs/epics/E8-tailwind-package/index.md) | done |
-| [F8.4 — Consumer and accessibility acceptance](../../specs/epics/E8-tailwind-package/F8.4-acceptance.md) | [E8](../../specs/epics/E8-tailwind-package/index.md) | done |
-| [F14.1 — `Problem` and its helpers](../../specs/epics/E14-problem-client/F14.1-problem-types.md) | [E14](../../specs/epics/E14-problem-client/index.md) | done |
-| [F14.2 — `ng/crud` and the HTTP guide](../../specs/epics/E14-problem-client/F14.2-crud-adoption.md) | [E14](../../specs/epics/E14-problem-client/index.md) | done |
-| [F15.1 — `createEventStream`](../../specs/epics/E15-event-stream/F15.1-event-stream.md) | [E15](../../specs/epics/E15-event-stream/index.md) | done |
-| [F16.1 — `Invalidation`](../../specs/epics/E16-resource-invalidation/F16.1-invalidation.md) | [E16](../../specs/epics/E16-resource-invalidation/index.md) | done |
+| [F4.3 — Accept the screen against a real backend](../../specs/epics/E4-standard-resource-screen/F4.3-wire-acceptance.md) | E4 | Closed |
+| [F8.1 — The package and its release wiring](../../specs/epics/E8-tailwind-package/F8.1-package.md) | E8 | Closed |
+| [F8.2 — Tokens, tones, base sheet and Tailwind bridge](../../specs/epics/E8-tailwind-package/F8.2-css-contract.md) | E8 | Closed |
+| [F8.3 — `rnfButton`](../../specs/epics/E8-tailwind-package/F8.3-button.md) | E8 | Closed |
+| [F8.4 — Consumer and accessibility acceptance](../../specs/epics/E8-tailwind-package/F8.4-acceptance.md) | E8 | Closed |
+| [F14.1 — `Problem` and its helpers](../../specs/epics/E14-problem-client/F14.1-problem-types.md) | E14 | Closed |
+| [F14.2 — `ng/crud` and the HTTP guide](../../specs/epics/E14-problem-client/F14.2-crud-adoption.md) | E14 | Closed |
+| [F15.1 — `createEventStream`](../../specs/epics/E15-event-stream/F15.1-event-stream.md) | E15 | Closed |
+| [F16.1 — `Invalidation`](../../specs/epics/E16-resource-invalidation/F16.1-invalidation.md) | E16 | Closed |
+
+<!-- END derived scope -->
 
 Excluded: F11.2 (`@rn-forge/nx-plugin`) and F11.3
 (`create-rn-forge-ng-workspace`) are retired (owner decision, 2026-10-17): kiln

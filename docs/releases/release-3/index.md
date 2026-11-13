@@ -1,6 +1,9 @@
 # Release 3
 
-**Status:** in progress (since 2026-11-03)
+|  |  |
+| -- | -- |
+| **Status** | in progress |
+| **Start Date** | 2026-11-03 |
 
 [Back to releases](../index.md) · [Releasing](../../runbooks/releasing.md)
 
@@ -10,15 +13,22 @@
 
 ## Scope
 
-| Feature | Epic | Status |
+<!-- BEGIN derived scope -->
+
+| Feature | Epic | State |
 | -- | -- | -- |
-| [F5.1 — Client model and wire contract](../../specs/epics/E5-session-client-auth/F5.1-client-model.md) | [E5](../../specs/epics/E5-session-client-auth/index.md) | elaborating |
-| [F5.2 — `@rn-forge/ng/auth` session client](../../specs/epics/E5-session-client-auth/F5.2-auth-wrapper.md) | [E5](../../specs/epics/E5-session-client-auth/index.md) | elaborating |
-| [F5.3 — Bootstrap auth UI](../../specs/epics/E5-session-client-auth/F5.3-bootstrap-auth-ui.md) | [E5](../../specs/epics/E5-session-client-auth/index.md) | elaborating |
-| [F5.4 — Acceptance against a session backend](../../specs/epics/E5-session-client-auth/F5.4-auth-acceptance.md) | [E5](../../specs/epics/E5-session-client-auth/index.md) | elaborating |
-| [F11.1 — `@rn-forge/ng-plugin`](../../specs/epics/E11-workspace-generators/F11.1-ng-plugin.md) | [E11](../../specs/epics/E11-workspace-generators/index.md) | planned |
-| [F17.1 — The docs follow kiln's work model](../../specs/epics/E17-kiln-adoption/F17.1-docs-model.md) | [E17](../../specs/epics/E17-kiln-adoption/index.md) | in progress |
-| [F17.2 — Cut over onto kiln](../../specs/epics/E17-kiln-adoption/F17.2-cutover.md) | [E17](../../specs/epics/E17-kiln-adoption/index.md) | planned |
+| [F5.1 — Client model and wire contract](../../specs/epics/E5-session-client-auth/F5.1-client-model.md) | E5 | New |
+| [F5.2 — `@rn-forge/ng/auth` session client](../../specs/epics/E5-session-client-auth/F5.2-auth-wrapper.md) | E5 | New |
+| [F5.3 — Bootstrap auth UI](../../specs/epics/E5-session-client-auth/F5.3-bootstrap-auth-ui.md) | E5 | New |
+| [F5.4 — Acceptance against a session backend](../../specs/epics/E5-session-client-auth/F5.4-auth-acceptance.md) | E5 | New |
+| [F11.1 — `@rn-forge/ng-plugin`](../../specs/epics/E11-workspace-generators/F11.1-ng-plugin.md) | E11 | Active |
+| [F17.1 — The docs follow kiln's work model](../../specs/epics/E17-kiln-adoption/F17.1-docs-model.md) | E17 | Active |
+| [F17.2 — Cut over onto kiln](../../specs/epics/E17-kiln-adoption/F17.2-cutover.md) | E17 | Active |
+| [F17.3 — The instruction files follow kiln's standard](../../specs/epics/E17-kiln-adoption/F17.3-instructions-follow-kiln-standard.md) | E17 | Removed |
+| [F17.4 — Asset subpaths are declared in source](../../specs/epics/E17-kiln-adoption/F17.4-asset-exports.md) | E17 | New |
+| [F17.5 — The consumer checks run from `kiln-devops`](../../specs/epics/E17-kiln-adoption/F17.5-consumer-checks-in-kiln.md) | E17 | New |
+
+<!-- END derived scope -->
 
 E5 and F11.1 moved here from Release 2 (owner decision, 2026-10-25): E5 will be
 refined further once a released server library's auth module is defined, and
