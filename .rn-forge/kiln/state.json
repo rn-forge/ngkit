@@ -9,7 +9,7 @@
     },
     ".github/actions/setup/action.yml": {
       "begin_marker": null,
-      "content_hash": "bb57c440512655dc8f3bd3baaf030ea905432a3cada0048ff9b4ff1c661e8986",
+      "content_hash": "6211ec45429d30cc145e34fd7cc19cd0a874567bcdd9f0b5d8cd875e685f4485",
       "end_marker": null,
       "kind": "managed",
       "path": ".github/actions/setup/action.yml"
