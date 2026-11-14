@@ -31,6 +31,15 @@
         "command": "task ci:dist:verify -- dist/{projectRoot}"
       }
     },
+    "verify-consumer": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["pack"],
+      "cache": false,
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "task ci:consumer -- {projectRoot}"
+      }
+    },
     "@angular/build:application": {
       "cache": true,
       "dependsOn": ["^build"],

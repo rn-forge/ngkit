@@ -199,7 +199,8 @@ publishable `project.json` declares them as `"pack": {}` and
   runs `nx release version`, so without it `ng-bootstrap`'s dist
   `package.json` would carry a literal `"@rn-forge/ng": "workspace:^"` peer
   that an external `npm` or `pnpm install` cannot resolve. It is where the
-  caret internal ranges come from.
+  caret internal ranges come from. `dist-resolve` also removes `workspace-ci`
+  from the dist manifest, so a library's consumer matrix is not published.
 - **`verify-dist`** depends on `pack` and is never cached. It runs
   `task ci:dist:verify -- dist/<projectRoot>`, which asserts that no
   `workspace:` protocol remains in the manifest's `dependencies`,
