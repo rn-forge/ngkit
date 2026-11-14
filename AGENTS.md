@@ -38,7 +38,8 @@ the procedure is [docs/runbooks/releasing.md](docs/runbooks/releasing.md).
   `verify-dist` and `verify-consumer` pass, and creates the GitHub Release as
   a draft with its assets, published once the publish step has run
   (`createRelease` stays `false`).
-- Internal peers are exact pins on release, never widened by hand.
+- Internal peers are declared `workspace:^` and publish as a caret range on the
+  released version.
 - `workspace:*` must not reach a dist manifest.
 - npm is disabled (`dryRun: true` on both `nx-release-publish` targets);
   releases are tarballs on GitHub Releases.

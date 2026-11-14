@@ -157,7 +157,7 @@ flags), then work through this list once:
 1. In its `project.json`, set `release.version.manifestRootsToUpdate` to
    `{projectRoot}` plus
    `{ "path": "dist/{projectRoot}", "preserveLocalDependencyProtocols": false }`.
-   Keep the `false` if a genuine `workspace:*` dependency is ever added
+   Keep the `false` if a genuine `workspace:` dependency is ever added
    between these libraries.
 1. Declare `"pack": {}` and `"verify-dist": {}`, which take their definition
    from `nx.json#targetDefaults`, and an `nx-release-publish` target with

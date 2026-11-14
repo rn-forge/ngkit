@@ -34,9 +34,8 @@ trigger: the `release` job in `ci.yml` runs on a push to `main` after
     - `CHANGELOG.md` has an entry for it;
     - `libs/ng/package.json` and `libs/ng-bootstrap/package.json` on `main` both
       show the new version;
-    - `ng-bootstrap`'s `peerDependencies["@rn-forge/ng"]` in the tarball is
-      pinned to the exact new version, not a `^` range; in source it stays
-      `workspace:*`.
+    - `ng-bootstrap`'s `peerDependencies["@rn-forge/ng"]` in the tarball is is
+      `^` plus the new version; in source it stays `workspace:^`.
 
 A push to `main` whose version already has a published release releases nothing:
 the `release` job reports "already released" and `verify-release` is skipped.

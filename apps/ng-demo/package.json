@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "@rn-forge/ng": "workspace:*",
-    "@rn-forge/ng-bootstrap": "workspace:*"
+    "@rn-forge/ng": "workspace:^",
+    "@rn-forge/ng-bootstrap": "workspace:^"
   },
   "devDependencies": {
     "@types/bootstrap": "^5.2.11",

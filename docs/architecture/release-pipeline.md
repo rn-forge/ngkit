@@ -170,9 +170,9 @@ Each publishable library's `project.json` sets
 - `dist/` is gitignored and ng-packagr regenerates it from source on every
   build, so without also bumping the source manifest, `libs/*/package.json` on
   `main` would never reflect the released version.
-- `workspace:*` references must never leak into a published dist manifest.
+- `workspace:` references must never leak into a published dist manifest.
   `preserveLocalDependencyProtocols: false` on the dist manifest root is the
-  guard; keep it if a genuine `workspace:*` dependency is ever added between
+  guard; keep it if a genuine `workspace:` dependency is ever added between
   these libraries.
 
 ## `patch-package-exports`
@@ -200,9 +200,9 @@ publishable `project.json` declares them as `"pack": {}` and
   `workspace:` protocol dependency to the referenced local package's current
   version. The release and the `smoke` job both run `nx pack`, which never
   runs `nx release version`, so without it `ng-bootstrap`'s dist
-  `package.json` would carry a literal `"@rn-forge/ng": "workspace:*"` peer
+  `package.json` would carry a literal `"@rn-forge/ng": "workspace:^"` peer
   that an external `npm` or `pnpm install` cannot resolve. It is where the
-  exact internal pins come from.
+  caret internal ranges come from.
 - **`verify-dist`** depends on `pack` and is never cached. It runs
   `task ci:dist:verify -- dist/<projectRoot>`, which asserts that no
   `workspace:` protocol remains in the manifest's `dependencies`,
@@ -270,9 +270,8 @@ cutover planned and the applied files differ in these ways; the files win.
   `.nvmrc` and `packageManager`.
 - `task ci:internal-ranges`, run by `validate`, requires members to depend on
   each other by `workspace:^` or `workspace:~`. ngkit's manifests use
-  `workspace:*` (`ng-bootstrap` on `ng`, `ng-demo` on both), which the check
-  reports and fails on, so this declaration is not met yet. It is an open
-  decision for the owner: change the ranges, or change the config.
+  `workspace:^` (`ng-bootstrap` on `ng`, `ng-demo` on both), so this
+  declaration is met.
 - No workflow calls `task ci:consumer`; ngkit's `verify-consumer` targets run
   `tools/scripts/verify-consumer.mjs`, and `ci:smoke` and `ci:release:verify`
   run those targets.
