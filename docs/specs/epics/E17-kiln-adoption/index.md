@@ -30,7 +30,7 @@ each acceptance block.
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
 | [F17.1 — The docs follow kiln's work model](F17.1-docs-model.md) | Active | release-3 | 1 Active · 3 New · 2 Closed |
-| [F17.2 — Cut over onto kiln](F17.2-cutover.md) | Active | release-3 | 7 New · 3 Closed · 1 Removed |
+| [F17.2 — Cut over onto kiln](F17.2-cutover.md) | Active | release-3 | 6 New · 3 Closed · 2 Removed |
 | [F17.3 — The instruction files follow kiln's standard](F17.3-instructions-follow-kiln-standard.md) | Removed | release-3 | — |
 | [F17.4 — Asset subpaths are declared in source](F17.4-asset-exports.md) | New | release-3 | 1 New |
 | [F17.5 — The consumer checks run from `kiln-devops`](F17.5-consumer-checks-in-kiln.md) | New | release-3 | 3 New |
@@ -38,8 +38,8 @@ each acceptance block.
 <!-- END derived features -->
 
 **Order.** The cutover runs on `feature/kiln-cutover`, cut from and merged back
-into `feature/release-3`, before kiln's release tag, with
-`[kiln] ref = "feature/v1"` (owner decision, recorded in
+into `feature/release-3`, with `[kiln] ref = "feature/v1"` (owner decision,
+recorded in
 [kiln S7.2.4](https://github.com/rn-forge/kiln/blob/main/docs/specs/epics/E7-pykit-release-pin-flip/F7.2-kiln-release-and-config-upgrade.md)).
 First the pre-cutover stories, which need no kiln and are safe on ngkit's
 current CI, each committed:
@@ -54,9 +54,10 @@ formats ngkit's own Markdown, TOML and YAML on `feature/kiln-format`. Then
 story: an overlay of a `kiln new` reference, a numbered list with commands and
 expected exit codes, run on the working tree and committed at the end in path
 groups, docs first (only the last commit has to pass `task validate`). Then the
-rest of F17.1, then S17.2.3 to S17.2.5. After kiln tags `v0.1.0`,
-[S17.2.8](F17.2-cutover.md#s1728-pin-kilns-release-tag) moves the pin to the
-tag. The branch merges once both features' acceptance holds.
+rest of F17.1, then S17.2.3 to S17.2.5. The pin stays on `feature/v1` while kiln
+irons out the findings from the other repositories it builds (owner decision,
+2026-11-14); [S17.2.8](F17.2-cutover.md#s1728-pin-kilns-release-tag) is Removed.
+The branch merges once both features' acceptance holds.
 [F11.1](../E11-workspace-generators/F11.1-ng-plugin.md) waits on this epic's
 merge.
 

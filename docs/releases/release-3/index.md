@@ -78,7 +78,8 @@ is cut over to kiln. Revised 2026-11-07 (owner decision, recorded in kiln's
 S7.2.4): the cutover runs on `feature/kiln-cutover`, cut from and merged back
 into `feature/release-3`, before kiln tags `v0.1.0`, with
 `[kiln] ref = "feature/v1"`; the pre-cutover stories (S17.2.6, S17.1.5, S17.2.7)
-land first, then S17.2.1, and S17.2.8 bumps the pin to the tag.
+land first, then S17.2.1. Revised 2026-11-14 (owner decision): the pin stays on
+`feature/v1` and Release 3 does not wait for a kiln tag.
 
 ## Commits
 
