@@ -26,7 +26,7 @@
 | [F17.2 — Cut over onto kiln](../../specs/epics/E17-kiln-adoption/F17.2-cutover.md) | E17 | Closed |
 | [F17.3 — The instruction files follow kiln's standard](../../specs/epics/E17-kiln-adoption/F17.3-instructions-follow-kiln-standard.md) | E17 | Removed |
 | [F17.4 — Asset subpaths are declared in source](../../specs/epics/E17-kiln-adoption/F17.4-asset-exports.md) | E17 | Closed |
-| [F17.5 — The consumer checks run from `kiln-devops`](../../specs/epics/E17-kiln-adoption/F17.5-consumer-checks-in-kiln.md) | E17 | Active |
+| [F17.5 — The consumer checks run from `kiln-devops`](../../specs/epics/E17-kiln-adoption/F17.5-consumer-checks-in-kiln.md) | E17 | Closed |
 
 <!-- END derived scope -->
 

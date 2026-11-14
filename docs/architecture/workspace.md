@@ -50,12 +50,13 @@ libraries only render. See [ADR-0002](../adr/ADR-0002.md).
 
 - `pack` (`ng`, `ng-bootstrap`, `ng-tailwind`): builds the library and writes an
   installable tarball under `dist/tarballs/`.
-- `verify-consumer` (`ng`, `ng-tailwind`): installs the packed tarball into
-  throwaway consumer projects; see
+- `verify-consumer` (`ng`, `ng-tailwind`): kiln's `consumer` command installs
+  the packed tarball into throwaway consumer projects, one per declared cell;
+  see [Release pipeline](release-pipeline.md#consumer-verification).
+- `consumer-fixture` (`ng-tailwind`): builds the `tailwind-22.1-zoneless` cell
+  (`dist/consumer-fixtures/rn-forge-ng-tailwind-<version>/`) from the packed
+  tarball, for the e2e cascade checks; see
   [Release pipeline](release-pipeline.md#consumer-verification).
-- `consumer-fixture` (`ng-tailwind`): builds the one Tailwind consumer fixture
-  (Angular 22.1, zoneless) from the packed tarball, for the e2e cascade
-  checks; see [Release pipeline](release-pipeline.md#consumer-verification).
 - `compodoc` (`ng`, `ng-bootstrap`, `ng-tailwind`): generates the API reference
   published on the docs site.
 - `build-storybook` (`ng-bootstrap`, `ng-tailwind`): builds the component

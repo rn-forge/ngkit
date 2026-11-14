@@ -211,26 +211,32 @@ publishable `project.json` declares them as `"pack": {}` and
 
 ## Consumer verification
 
-`tools/scripts/verify-consumer.mjs`, run by the `verify-consumer` target (which
-depends on `pack`), installs the packed `@rn-forge/ng` tarball via `file:` into
-four throwaway fixtures under `dist/consumer-fixtures/` (outside the pnpm
-workspace glob): Angular 22.0.6 and 22.1.7, each with and without `zone.js`
-loaded. It smoke-tests every secondary entry point (`.`, `./core`, `./auth`,
-`./crud`) plus a `LocalStorageService` round-trip through DI, and asserts the
-installed manifest carries no `workspace:` protocol dependency.
-`node tools/scripts/verify-consumer.mjs ng-tailwind` (the `ng-tailwind` target)
-runs the same Angular matrix with the `@rn-forge/ng-tailwind` tarball, but
-builds real applications with `ng build`: a plain one importing `tokens.css`,
-and one with `tailwindcss` and `@tailwindcss/postcss` importing the sheets in
-the README order. It asserts on the built CSS and JS: the plain build carries
+Each publishable library declares its consumer matrix in its `package.json`
+under `workspace-ci.consumer`: shared `dependencies`, `preload` imports,
+`cells`, and an optional `hook`. The `verify-consumer` target, a `{}` over the
+`nx.json` default, depends on `pack` and runs
+`task ci:consumer -- <projectRoot>` (`kiln-devops consumer`). For each cell kiln
+installs the packed tarball via `file:` into
+`dist/consumer-fixtures/<tarball>/<cell>/` (outside the pnpm workspace glob),
+asserts that the installed manifest carries no `workspace:` range, imports every
+JavaScript entry point, then runs the hook.
+
+`ng` has four cells (Angular 22.0.6 and 22.1.7, each with and without `zone.js`
+loaded), and `tools/consumer/ng-smoke.mjs` adds a `LocalStorageService`
+round-trip through DI. `ng-tailwind` has eight cells (those four, times `plain`
+and `tailwind`), and `tools/consumer/ng-tailwind-app.mjs` builds real
+applications with `ng build`: a plain one importing `tokens.css`, and one with
+`tailwindcss` and `@tailwindcss/postcss` importing the sheets in the README
+order. It asserts on the built CSS and JS: the plain build carries
 `--rnf-surface-0` and the button's `rnf` layer rules and has no `tailwindcss`
 installed; the Tailwind build emits the mapped utilities resolving to
 `var(--rnf-*)` and none for the default palette. There is no verdaccio and no
-workspace fixture. The script also takes `--only plain|tailwind` and
-`--cell <angular>-<zone|zoneless>`; the `ng-tailwind:consumer-fixture` target
-uses them (`--only tailwind --cell 22.1-zoneless`) to build the single Tailwind
-fixture that `ng-tailwind-e2e` serves for its cascade checks, and the full
-matrix is unchanged. It runs in the `smoke` job and the release.
+workspace fixture.
+
+`--cell <name>` runs one cell; the `ng-tailwind:consumer-fixture` target uses
+`--cell tailwind-22.1-zoneless` to build the single Tailwind fixture that
+`ng-tailwind-e2e` serves for its cascade checks. It runs in the `smoke` job and
+the release.
 
 ## What a repository declares
 
@@ -269,6 +275,6 @@ cutover planned and the applied files differ in these ways; the files win.
   each other by `workspace:^` or `workspace:~`. ngkit's manifests use
   `workspace:^` (`ng-bootstrap` on `ng`, `ng-demo` on both), so this
   declaration is met.
-- No workflow calls `task ci:consumer`; ngkit's `verify-consumer` targets run
-  `tools/scripts/verify-consumer.mjs`, and `ci:smoke` and `ci:release:verify`
-  run those targets.
+- No workflow calls `task ci:consumer` directly; ngkit's `verify-consumer`
+  targets run `task ci:consumer` (through the `nx.json` default), and
+  `ci:smoke` and `ci:release:verify` run those targets.

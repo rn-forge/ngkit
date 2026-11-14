@@ -33,7 +33,7 @@ each acceptance block.
 | [F17.2 — Cut over onto kiln](F17.2-cutover.md) | Closed | release-3 | 9 Closed · 2 Removed |
 | [F17.3 — The instruction files follow kiln's standard](F17.3-instructions-follow-kiln-standard.md) | Removed | release-3 | — |
 | [F17.4 — Asset subpaths are declared in source](F17.4-asset-exports.md) | Closed | release-3 | 1 Closed |
-| [F17.5 — The consumer checks run from `kiln-devops`](F17.5-consumer-checks-in-kiln.md) | Active | release-3 | 1 New · 2 Closed |
+| [F17.5 — The consumer checks run from `kiln-devops`](F17.5-consumer-checks-in-kiln.md) | Closed | release-3 | 3 Closed |
 
 <!-- END derived features -->
 

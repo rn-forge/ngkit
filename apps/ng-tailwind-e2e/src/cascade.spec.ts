@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-// The Tailwind consumer fixture (see tools/scripts/verify-consumer.mjs) is served on 4403.
+// The Tailwind consumer fixture (see tools/consumer/ng-tailwind-app.mjs) is served on 4403.
 const fixtureURL = 'http://localhost:4403/';
 
 test.describe('application CSS wins the cascade', () => {
