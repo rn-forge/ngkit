@@ -9,8 +9,24 @@ This workspace uses **pnpm**, not npm/npx. Install it via
 [Corepack](https://nodejs.org/api/corepack.html) (`corepack enable`) so you get
 the version pinned in `package.json#packageManager`.
 
+`task` is the entrypoint for the workspace-wide commands:
+
 ```sh
-pnpm install
+task setup           # install the workspace and the docs tooling
+task lint            # every lint
+task typecheck       # type-check every project
+task test            # every project's tests
+task test:coverage   # the same, writing lcov reports to coverage/
+task build           # build every project
+task docs:build      # build the MkDocs site
+task validate        # the gate: lint, typecheck, test, docs build
+task version         # print the version, or bump it: task version -- patch
+```
+
+Commands for working in one project, which the task verbs do not cover, run Nx
+directly:
+
+```sh
 pnpm nx serve ng-demo          # dev server
 pnpm nx build ng-demo          # production bundle
 pnpm nx build ng               # build the ng library
@@ -24,10 +40,10 @@ Targets are either
 [inferred automatically](https://nx.dev/concepts/inferred-tasks) from plugins
 (`nx.json#plugins`) or defined explicitly in each project's `project.json`.
 
-Prefer `nx affected`/`nx run-many` over running a single project's target when
-working across the whole workspace; see
-[.github/workflows/ci.yml](https://github.com/rn-forge/ngkit/blob/main/.github/workflows/ci.yml)
-for how CI invokes these.
+Prefer the `task` verbs over running a single project's target when working
+across the whole workspace. CI runs the `task ci:*` tasks in `tasks/ci.yml`
+(`ci:validate`, `ci:test` on the affected projects, `ci:smoke`); see
+[Release pipeline](../architecture/release-pipeline.md#ci).
 
 [More about running tasks in the docs »](https://nx.dev/features/run-tasks)
 
@@ -83,13 +99,14 @@ Each PR names its source files, public exports and test evidence. No vague
 "implement shared UI" tasks.
 
 Inspect resolved Nx targets with `pnpm nx show project <name> --json`; run the
-relevant library lint/test/build/pack via Nx. For each new published entry
-point, add it to `ng:verify-consumer`'s matrix and test exports, peer resolution
-and runtime styles from the packed tarball. Confirm the `ng-demo` app still
-builds after core changes. Never run a release/publish as a validation shortcut.
+relevant library lint/test/build/pack via the `task` verbs, or Nx for one
+project. For each new published entry point, add it to `ng:verify-consumer`'s
+matrix and test exports, peer resolution and runtime styles from the packed
+tarball. Confirm the `ng-demo` app still builds after core changes. Never run a
+release/publish as a validation shortcut.
 
 ```sh
-pnpm nx run-many -t lint test build
+task validate
 pnpm nx run-many -t pack verify-dist verify-consumer
 ```
 
@@ -134,8 +151,8 @@ flags), then work through this list once:
    `publishConfig.access: "public"`. Without it the package isn't really
    consumable externally even if it builds fine.
 1. Tag it `publishable` in its `project.json`. The tag puts it in
-   `nx.json#release.projects`, `preVersionCommand`, the release workflow and
-   CI's package job, so none of them is edited
+   `nx.json#release.projects`, `preVersionCommand`, the release and CI's
+   `smoke` job, so none of them is edited
    ([Release pipeline](../architecture/release-pipeline.md#publishable-tag)).
 1. In its `project.json`, set `release.version.manifestRootsToUpdate` to
    `{projectRoot}` plus
@@ -144,9 +161,9 @@ flags), then work through this list once:
    between these libraries.
 1. Declare `"pack": {}` and `"verify-dist": {}`, which take their definition
    from `nx.json#targetDefaults`, and an `nx-release-publish` target with
-   `dryRun: true` while npm is disabled. Release steps pass
-   `--excludeTaskDependencies`, so `pack` consumes the version-stamped `dist/`
-   without rebuilding.
+   `dryRun: true` while npm is disabled. The release's publish step passes
+   `--excludeTaskDependencies`, so it publishes the `dist/` its verify step
+   built.
 1. If the library ships non-TS assets alongside compiled entry points, add a
    `patch-package-exports` target and override
    `"pack": { "dependsOn": ["patch-package-exports"] }`, as `ng-bootstrap`

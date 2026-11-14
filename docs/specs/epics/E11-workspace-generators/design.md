@@ -64,7 +64,8 @@ one release, tarballs on GitHub Releases, npm disabled.
 - The plugin ships generator template files, which are non-TS assets. When the
   package is created, check whether its dist `exports` needs
   `patch-package-exports` (guide item 5).
-- Hotfixes to an older major follow the ADR's `release/<major>.x` rule.
+- Releases run from `main` only; the older-major hotfix line is retired in
+  [ADR-0003](../../../adr/ADR-0003.md#background).
 
 Dependency direction:
 

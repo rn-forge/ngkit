@@ -50,7 +50,10 @@ closes the epic.
 **Copying the template.** E11's F11.2 would have written this epic's template
 files into a workspace with `setup-ci` and `setup-release`; it is retired, and
 kiln's `node-lib` archetype renders these files instead (kiln E9, F9.1;
-[ADR-0007](../../../adr/ADR-0007.md)). This epic depends on neither.
+[ADR-0007](../../../adr/ADR-0007.md)). This epic depends on neither. Since
+2026-11-02 kiln renders these files and the portability check retires
+([E17](../E17-kiln-adoption/index.md)); E13 stays as the record of how the
+pipeline was built.
 
 ## Acceptance
 

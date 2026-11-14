@@ -49,7 +49,7 @@ plan or change records the deviation and its reason.
 ## Getting started
 
 ```sh
-pnpm install
+task setup
 pnpm nx serve ng-demo
 ```
 
@@ -62,9 +62,9 @@ produces an installable tarball under `dist/tarballs/`:
 pnpm nx run-many -t pack -p tag:publishable
 ```
 
-CI uploads these as a `package-tarballs` artifact on every run, and the
-`Release` workflow attaches them to the corresponding GitHub Release (both the
-versioned tag and a rolling `latest` release on `main`). See
+CI uploads these as a `package-tarballs` artifact on every run, and the release
+job attaches them to the corresponding GitHub Release (both the versioned tag
+and a rolling `latest` release). See
 [docs/runbooks/releasing.md](docs/runbooks/releasing.md) for the full release
 process and
 [docs/architecture/release-pipeline.md](docs/architecture/release-pipeline.md)
