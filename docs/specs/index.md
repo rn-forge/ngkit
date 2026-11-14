@@ -49,8 +49,8 @@ Features with no Iteration, by State and epic.
 | [E5 — Session client auth](epics/E5-session-client-auth/index.md) | [F5.5](epics/E5-session-client-auth/F5.5-situational-client-extensions.md) | Per feature; see the epic. |
 | [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md) | [F6.2](epics/E6-asynchronous-resource/F6.2-keep-previous.md) | Per feature; see the epic. |
 | [E7 — Theme controller](epics/E7-theme-controller/index.md) | — | the owner schedules it |
-| [E9 — Presentation primitives](epics/E9-presentation-primitives/index.md) | — | [E8](../E8-tailwind-package/index.md) is done and the owner schedules it |
-| [E10 — Connected menu](epics/E10-connected-menu/index.md) | — | [E8](../E8-tailwind-package/index.md) is done and the owner schedules it |
+| [E9 — Presentation primitives](epics/E9-presentation-primitives/index.md) | — | [E8](epics/E8-tailwind-package/index.md) is done and the owner schedules it |
+| [E10 — Connected menu](epics/E10-connected-menu/index.md) | — | [E8](epics/E8-tailwind-package/index.md) is done and the owner schedules it |
 | [E12 — On-demand features](epics/E12-on-demand-features/index.md) | F12.1, F12.2, F12.3, F12.4, F12.5, F12.6, F12.7, F12.8, F12.9, F12.10, F12.11 | the row's trigger occurs |
 
 <!-- END derived board -->

@@ -76,19 +76,19 @@ publishable `project.json` declares them as `"pack": {}` and
 `"verify-dist": {}`. `ng-bootstrap` and `ng-tailwind` override only
 `"pack": { "dependsOn": ["patch-package-exports"] }`.
 
-- **`pack`** depends on `build`, runs `tools/ci/resolve-dist-workspace-deps.mjs`
-  on the dist manifest, then `npm pack` into `dist/tarballs/`. The script
-  rewrites any `workspace:` protocol dependency to the referenced local
-  package's current version, reading name and version from every project root
-  Nx reports. Plain `nx pack` (the path `ci.yml`'s `package` job uses) never
-  runs `nx release version`, so without it `ng-bootstrap`'s dist
-  `package.json` would carry a literal `"@rn-forge/ng": "workspace:*"` peer
-  that an external `npm` or `pnpm install` cannot resolve. It is a no-op once
+- **`pack`** depends on `build`, runs `task ci:dist:resolve` on the dist
+  directory, then `npm pack` into `dist/tarballs/`. The script rewrites any
+  `workspace:` protocol dependency to the referenced local package's current
+  version, reading name and version from every project root Nx reports. Plain
+  `nx pack` (the path `ci.yml`'s `package` job uses) never runs
+  `nx release version`, so without it `ng-bootstrap`'s dist `package.json`
+  would carry a literal `"@rn-forge/ng": "workspace:*"` peer that an external
+  `npm` or `pnpm install` cannot resolve. It is a no-op once
   `nx release version` has already stamped an exact pin, so the real release
   path is unaffected.
 - **`verify-dist`** depends on `pack` and is never cached. It runs
-  `tools/ci/verify-dist-manifest.mjs dist/<projectRoot>`, which asserts that
-  no `workspace:` protocol remains in the manifest's `dependencies`,
+  `task ci:dist:verify -- dist/<projectRoot>`, which asserts that no
+  `workspace:` protocol remains in the manifest's `dependencies`,
   `peerDependencies` or `optionalDependencies`, and that the ng-packagr output
   is complete: `name` and `version` are set, and there is `module` or
   `exports`, and `typings` or `exports`. It runs from both `ci.yml`'s
@@ -143,11 +143,6 @@ matrix is unchanged. It runs in `ci.yml`'s `package` job.
   fails when the gate fails.
 - **`docs`**: the docs site, described under [Docs site](#docs-site). It runs
   only on `main`, after `ci-cloud` or `ci-local` passes.
-- **`template`**: runs `tools/ci/check-template.mjs`, which fails when a file
-  carrying the `ci-template: repository-agnostic` marker contains a
-  repository-specific value (project name or root, repository name, Nx Cloud
-  id, Node or pnpm version, Sonar key or organization). It has no `needs`, so
-  it runs in parallel with the other paths.
 - **`ci-ok`**: the one check branch protection requires. It runs last
   (`always()`, `needs:` every other job) and fails when any needed job failed
   or was cancelled, or when neither `ci-cloud` nor `ci-local` succeeded;
@@ -163,9 +158,6 @@ agents install the same uv version in an init step under the same condition.
 
 Distributed versus local execution is a toggle, not two pipelines to maintain in
 parallel.
-
-Which of these files are portable and what a repository must declare for them is
-in [CI template](ci-template.md).
 
 Playwright e2e uses the atomized `e2e-ci` target (`@nx/playwright/plugin`'s
 default `<targetName>-ci`) so Nx Cloud can distribute individual spec files as

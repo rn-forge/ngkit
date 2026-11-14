@@ -10,5 +10,3 @@ How ngkit's libraries and repository are put together today. Read in this order:
   package split and wire mapping of the CRUD screen.
 - [Release pipeline](release-pipeline.md): build-once `dist/`, versioning,
   packing, verification, CI and the docs site.
-- [CI template](ci-template.md): which CI files are portable, what a repository
-  declares for them, and how to check a copy.
