@@ -34,5 +34,6 @@ Jump to: [E1–E10](#e1e10) · [E11–E20](#e11e20)
 | [E15 — Server-sent event stream](E15-event-stream/index.md) | Closed | 1 Closed | release-2 |
 | [E16 — Key invalidation for `httpResource`](E16-resource-invalidation/index.md) | Closed | 1 Closed | release-2 |
 | [E17 — kiln adoption](E17-kiln-adoption/index.md) | Active | 2 Active · 2 New · 1 Removed | release-3 |
+| [E18 — npm publishing and independent versions](E18-npm-publishing-and-independent-versions/index.md) | New (deferred) | — | — |
 
 <!-- END derived epics -->

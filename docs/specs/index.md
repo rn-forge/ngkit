@@ -52,6 +52,7 @@ Features with no Iteration, by State and epic.
 | [E9 — Presentation primitives](epics/E9-presentation-primitives/index.md) | — | [E8](epics/E8-tailwind-package/index.md) is done and the owner schedules it |
 | [E10 — Connected menu](epics/E10-connected-menu/index.md) | — | [E8](epics/E8-tailwind-package/index.md) is done and the owner schedules it |
 | [E12 — On-demand features](epics/E12-on-demand-features/index.md) | F12.1, F12.2, F12.3, F12.4, F12.5, F12.6, F12.7, F12.8, F12.9, F12.10, F12.11 | the row's trigger occurs |
+| [E18 — npm publishing and independent versions](epics/E18-npm-publishing-and-independent-versions/index.md) | — | F17.2 is merged into `main`, and kiln's findings on node-lib release are met: per-package tags and independent release, an npm release mode with provenance, and SBOM and attestation steps |
 
 <!-- END derived board -->
 

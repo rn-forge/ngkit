@@ -153,6 +153,8 @@ nav:
               - F17.3 — The instruction files follow kiln's standard: specs/epics/E17-kiln-adoption/F17.3-instructions-follow-kiln-standard.md
               - F17.4 — Asset subpaths are declared in source: specs/epics/E17-kiln-adoption/F17.4-asset-exports.md
               - F17.5 — The consumer checks run from `kiln-devops`: specs/epics/E17-kiln-adoption/F17.5-consumer-checks-in-kiln.md
+          - E18 — npm publishing and independent versions:
+              - specs/epics/E18-npm-publishing-and-independent-versions/index.md
       - Ideas:
           - specs/ideas/index.md
   - Decisions: adr/index.md
