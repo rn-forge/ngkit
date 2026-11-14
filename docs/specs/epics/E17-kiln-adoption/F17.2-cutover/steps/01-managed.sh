@@ -8,7 +8,7 @@ import json, pathlib, shutil, sys
 ref = pathlib.Path(sys.argv[1])
 entries = json.loads((ref / ".rn-forge/kiln/state.json").read_text())["entries"]
 managed = sorted(p for p, e in entries.items() if e["kind"] == "managed")
-assert len(managed) == 30, len(managed)
+assert len(managed) == 31, len(managed)
 for p in managed:
     dst = pathlib.Path(p)
     dst.parent.mkdir(parents=True, exist_ok=True)

@@ -3,8 +3,8 @@
 set -euo pipefail
 REF="${REF:-$PWD/../_reference/ngkit}"
 KILN="${KILN:-$PWD/../kiln}"
-REF_COMMIT=388fd00 # the reference, built by build-reference.sh
-KILN_COMMIT=4b906e0 # kiln feature/v1, the commit the reference was built from
+REF_COMMIT=9dfd134 # the reference, built by build-reference.sh
+KILN_COMMIT=3ee1af6 # kiln feature/v1, the commit the reference was built from
 test "$(basename "$PWD")" = ngkit
 test "$(git remote get-url origin | sed 's/\.git$//')" = https://github.com/rn-forge/ngkit
 test "$(git branch --show-current)" = feature/kiln-cutover
