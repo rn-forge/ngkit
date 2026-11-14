@@ -48,8 +48,8 @@ the procedure is [docs/runbooks/releasing.md](docs/runbooks/releasing.md).
 - A new publishable library needs the same `package.json` metadata
   `ng`/`ng-bootstrap` have: `description`, `license`, `repository`,
   `publishConfig.access: "public"`.
-- A library shipping non-TS assets needs `patch-package-exports` after every
-  build and before versioning.
+- A library shipping non-TS assets declares their subpaths in its source
+  `package.json` `exports`.
 
 ### CI
 

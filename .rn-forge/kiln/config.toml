@@ -116,7 +116,6 @@ sonar_exclusions = [
 # rewrites the Sonar properties on `kiln apply`.
 # Default: [].
 sonar_coverage_exclusions = [
-    "tools/scripts/patch-package-exports.mjs",
     "apps/*-e2e/**",
     "apps/*/src/environments/**",
     "apps/*/src/app/app.config.ts",

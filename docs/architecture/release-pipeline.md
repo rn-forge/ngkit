@@ -175,25 +175,22 @@ Each publishable library's `project.json` sets
   guard; keep it if a genuine `workspace:` dependency is ever added between
   these libraries.
 
-## `patch-package-exports`
+## Asset subpaths
 
-The shared script `tools/scripts/patch-package-exports.mjs` takes a project root
-and `subpath=target` pairs and adds them to the ng-packagr dist `package.json`'s
-`exports` map, which ng-packagr computes from compiled entry points only.
-`ng-bootstrap`'s `patch-package-exports` target uses it so deep asset imports
-(`@rn-forge/ng-bootstrap/assets/*`) resolve at all; `ng-tailwind`'s uses it to
-export `./tokens.css`, `./base.css` and `./tailwind.css` from `assets/`. The
-target is a `dependsOn` of each library's `pack` override and is run by
-`preVersionCommand` for every publishable project that defines it. It must
-execute after every build of the library. Any new library shipping non-TS assets
-alongside compiled entry points needs the same pattern.
+A library that ships non-TS assets next to its compiled entry points declares
+their subpaths in its source `package.json` `exports`; ng-packagr merges them
+into the dist manifest and adds the entry points it computes. `ng-bootstrap`
+exports `./assets/*` and `ng-tailwind` exports `./tokens.css`, `./base.css` and
+`./tailwind.css`. `ng-bootstrap`'s entry is a condition object: `default` is
+`./assets/*`, and the `sass` condition (`./assets/*.scss`) lets Sass resolve the
+extensionless `@use '@rn-forge/ng-bootstrap/assets/theme'` that `apps/ng-demo`
+makes through the workspace symlink, which a plain string cannot do.
 
 ## Packing
 
 `pack` and `verify-dist` are defined once, in `nx.json#targetDefaults`; each
 publishable `project.json` declares them as `"pack": {}` and
-`"verify-dist": {}`. `ng-bootstrap` and `ng-tailwind` override only
-`"pack": { "dependsOn": ["patch-package-exports"] }`.
+`"verify-dist": {}`.
 
 - **`pack`** depends on `build`, runs `task ci:dist:resolve` on the dist
   directory, then `npm pack` into `dist/tarballs/`. The task rewrites any
@@ -250,9 +247,8 @@ own, and a new publishable library must carry them
 - The `publishable` tag on every released project.
 - Targets: `lint`, `test`, `build` and `e2e` (run by `test-cloud` and
   `test-local`; `e2e-ci` is the atomized form of `e2e`), `verify-consumer`
-  where a project has consumer-facing entry points, `patch-package-exports`
-  where it ships non-TS assets, and `compodoc` and `build-storybook` where it
-  has a docs site.
+  where a project has consumer-facing entry points, and `compodoc` and
+  `build-storybook` where it has a docs site.
 - Variables and secrets: `USE_NX_CLOUD` (variable), `NX_CLOUD_AGENTS` (variable,
   optional), `NX_CLOUD_ACCESS_TOKEN` (secret), `SONAR_TOKEN` (secret),
   `RELEASE_APP_CLIENT_ID` (variable) and `RELEASE_APP_PRIVATE_KEY` (secret).

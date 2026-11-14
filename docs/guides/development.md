@@ -164,11 +164,9 @@ flags), then work through this list once:
    `dryRun: true` while npm is disabled. The release's publish step passes
    `--excludeTaskDependencies`, so it publishes the `dist/` its verify step
    built.
-1. If the library ships non-TS assets alongside compiled entry points, add a
-   `patch-package-exports` target and override
-   `"pack": { "dependsOn": ["patch-package-exports"] }`, as `ng-bootstrap`
-   does; `preVersionCommand` already runs it
-   ([details](../architecture/release-pipeline.md#patch-package-exports)).
+1. If the library ships non-TS assets alongside compiled entry points, declare
+   their subpaths in its source `package.json` `exports`, as `ng-bootstrap`
+   does ([details](../architecture/release-pipeline.md#asset-subpaths)).
 1. If it has a docs site, declare `compodoc` (and `build-storybook` if it has
    stories), writing to `dist/compodoc/{projectName}` and
    `dist/storybook/{projectName}`

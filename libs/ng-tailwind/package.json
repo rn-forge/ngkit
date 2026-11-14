@@ -11,6 +11,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "exports": {
+    "./tokens.css": "./assets/tokens.css",
+    "./base.css": "./assets/base.css",
+    "./tailwind.css": "./assets/tailwind.css"
+  },
   "sideEffects": [
     "*.css"
   ],

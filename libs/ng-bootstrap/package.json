@@ -11,6 +11,12 @@
   "publishConfig": {
     "access": "public"
   },
+  "exports": {
+    "./assets/*": {
+      "sass": "./assets/*.scss",
+      "default": "./assets/*"
+    }
+  },
   "sideEffects": true,
   "devDependencies": {
     "@angular/cdk": "^22.2.6",

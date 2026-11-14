@@ -56,9 +56,6 @@ libraries only render. See [ADR-0002](../adr/ADR-0002.md).
 - `consumer-fixture` (`ng-tailwind`): builds the one Tailwind consumer fixture
   (Angular 22.1, zoneless) from the packed tarball, for the e2e cascade
   checks; see [Release pipeline](release-pipeline.md#consumer-verification).
-- `patch-package-exports` (`ng-bootstrap`, `ng-tailwind`): fixes the dist
-  `package.json`'s `exports` map so asset imports resolve; see
-  [Release pipeline](release-pipeline.md#patch-package-exports).
 - `compodoc` (`ng`, `ng-bootstrap`, `ng-tailwind`): generates the API reference
   published on the docs site.
 - `build-storybook` (`ng-bootstrap`, `ng-tailwind`): builds the component

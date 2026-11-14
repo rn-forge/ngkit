@@ -34,17 +34,7 @@
         "development": {}
       }
     },
-    "patch-package-exports": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["build"],
-      "options": {
-        "cwd": "{workspaceRoot}",
-        "command": "node tools/scripts/patch-package-exports.mjs libs/ng-tailwind ./tokens.css=./assets/tokens.css ./base.css=./assets/base.css ./tailwind.css=./assets/tailwind.css"
-      }
-    },
-    "pack": {
-      "dependsOn": ["patch-package-exports"]
-    },
+    "pack": {},
     "verify-dist": {},
     "verify-consumer": {
       "executor": "nx:run-commands",
