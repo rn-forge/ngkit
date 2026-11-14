@@ -30,7 +30,7 @@ each acceptance block.
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
 | [F17.1 — The docs follow kiln's work model](F17.1-docs-model.md) | Active | release-3 | 1 Active · 3 New · 2 Closed |
-| [F17.2 — Cut over onto kiln](F17.2-cutover.md) | Active | release-3 | 6 New · 3 Closed · 2 Removed |
+| [F17.2 — Cut over onto kiln](F17.2-cutover.md) | Active | release-3 | 1 New · 8 Closed · 2 Removed |
 | [F17.3 — The instruction files follow kiln's standard](F17.3-instructions-follow-kiln-standard.md) | Removed | release-3 | — |
 | [F17.4 — Asset subpaths are declared in source](F17.4-asset-exports.md) | New | release-3 | 1 New |
 | [F17.5 — The consumer checks run from `kiln-devops`](F17.5-consumer-checks-in-kiln.md) | New | release-3 | 3 New |
