@@ -36,15 +36,7 @@
     },
     "pack": {},
     "verify-dist": {},
-    "verify-consumer": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["pack"],
-      "cache": false,
-      "options": {
-        "cwd": "{workspaceRoot}",
-        "command": "node tools/scripts/verify-consumer.mjs"
-      }
-    },
+    "verify-consumer": {},
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}",

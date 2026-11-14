@@ -63,8 +63,7 @@ const lastVisit = storage.tryGetJSON('lastVisit', { validate: isVisitRecord, fal
 ```
 
 A test injector without an application root (e.g. `Injector.create`) must
-provide `RNF_BROWSER_STORAGE` explicitly — see
-`tools/scripts/verify-consumer.mjs`.
+provide `RNF_BROWSER_STORAGE` explicitly — see `tools/consumer/ng-smoke.mjs`.
 
 ## Running unit tests
 

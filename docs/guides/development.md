@@ -100,10 +100,12 @@ Each PR names its source files, public exports and test evidence. No vague
 
 Inspect resolved Nx targets with `pnpm nx show project <name> --json`; run the
 relevant library lint/test/build/pack via the `task` verbs, or Nx for one
-project. For each new published entry point, add it to `ng:verify-consumer`'s
-matrix and test exports, peer resolution and runtime styles from the packed
-tarball. Confirm the `ng-demo` app still builds after core changes. Never run a
-release/publish as a validation shortcut.
+project. For each new published entry point, add it to the
+`workspace-ci.consumer` cells' expectations: kiln imports every JavaScript
+subpath of the packed `exports`, so a new entry point needs no matrix edit; test
+exports, peer resolution and runtime styles from the packed tarball. Confirm the
+`ng-demo` app still builds after core changes. Never run a release/publish as a
+validation shortcut.
 
 ```sh
 task validate
@@ -138,7 +140,8 @@ when packed:
    `dependencies`, declared in `ng-package.json`'s `allowedNonPeerDependencies`,
    and in the root `package.json`, like the existing ones.
 1. Verify the packed output: `pnpm nx build ng && ls dist/libs/ng/<name>`.
-1. Add the entry point to `tools/scripts/verify-consumer.mjs`'s matrix.
+1. Run `task ci:consumer -- libs/ng`: kiln imports the new subpath from the
+   packed tarball.
 
 ## Adding a publishable library
 
@@ -171,9 +174,10 @@ flags), then work through this list once:
    stories), writing to `dist/compodoc/{projectName}` and
    `dist/storybook/{projectName}`
    ([Docs site](../architecture/release-pipeline.md#docs-site)).
-1. If it has consumer-facing entry points, add a `verify-consumer` target, add
-   each entry point to `tools/scripts/verify-consumer.mjs`'s matrix, and test
-   the exports from the packed artifact.
+1. If it has consumer-facing entry points, add `"verify-consumer": {}` to its
+   `project.json` and declare `workspace-ci.consumer` in its `package.json`
+   (`libs/ng/package.json` is the example), and test the exports from the
+   packed artifact.
 1. Add a row for it to the Projects table in `README.md` and
    [Workspace](../architecture/workspace.md).
 1. Reviewing a pull request that adds a library, check `nx.json`, `project.json`
