@@ -1,6 +1,7 @@
 # @rn-forge/ng/auth
 
-Secondary entry point of `@rn-forge/ng`. It can be used by importing from `@rn-forge/ng/auth`.
+Secondary entry point of `@rn-forge/ng`. It can be used by importing from
+`@rn-forge/ng/auth`.
 
 `AuthBackendService` (used by `AuthComponent`'s login/logout) calls native
 `HttpClient` directly and requires `backend.baseUrl` in `RnForgeAuthConfig` —

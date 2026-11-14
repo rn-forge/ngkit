@@ -1,6 +1,10 @@
 # @rn-forge/ng-tailwind
 
-Angular components styled with prebuilt CSS on `--rnf-*` design tokens. Light and dark come from `color-scheme` and `light-dark()`. Tailwind v4 is optional: a small bridge file maps the tokens to Tailwind theme variables, and a plain Angular app works without it. The package sets no preflight, reset, font, `color-scheme` or brand palette.
+Angular components styled with prebuilt CSS on `--rnf-*` design tokens. Light
+and dark come from `color-scheme` and `light-dark()`. Tailwind v4 is optional: a
+small bridge file maps the tokens to Tailwind theme variables, and a plain
+Angular app works without it. The package sets no preflight, reset, font,
+`color-scheme` or brand palette.
 
 ## Install
 
@@ -8,7 +12,8 @@ Angular components styled with prebuilt CSS on `--rnf-*` design tokens. Light an
 pnpm add @rn-forge/ng-tailwind
 ```
 
-`@angular/core` is a peer. `tailwindcss` (`^4`) is an optional peer, needed only for the bridge.
+`@angular/core` is a peer. `tailwindcss` (`^4`) is an optional peer, needed only
+for the bridge.
 
 ## Plain Angular app
 
@@ -20,7 +25,8 @@ In the global stylesheet:
 @import '@rn-forge/ng-tailwind/base.css';
 ```
 
-Tokens follow the `color-scheme` of the element that uses them, so set it yourself. Pick one:
+Tokens follow the `color-scheme` of the element that uses them, so set it
+yourself. Pick one:
 
 ```css
 /* 1. Dark */
@@ -36,7 +42,8 @@ html {
 /* 3. Neither: light */
 ```
 
-Override any `--rnf-*` token in an unlayered rule, which wins over the package's layers:
+Override any `--rnf-*` token in an unlayered rule, which wins over the package's
+layers:
 
 ```css
 :root {
@@ -46,7 +53,8 @@ Override any `--rnf-*` token in an unlayered rule, which wins over the package's
 
 ## Tailwind v4 app
 
-In the global stylesheet, in this order (CSS allows `@import` only before other rules, so your token values go in their own file):
+In the global stylesheet, in this order (CSS allows `@import` only before other
+rules, so your token values go in their own file):
 
 ```css
 @layer theme, base, rnf, components, utilities;
@@ -62,11 +70,16 @@ In the global stylesheet, in this order (CSS allows `@import` only before other 
 @import '@rn-forge/ng-tailwind/tailwind.css';
 ```
 
-The `@layer` statement matters: Tailwind's preflight resets `button` backgrounds in `base`, so declaring `rnf` after `base` keeps component styles over the reset, and `utilities` still beats `rnf`. The bridge clears Tailwind's default palette (`--color-*: initial`), so default-palette utilities such as `bg-blue-500` produce nothing; colour utilities come from the `--rnf-*` tokens.
+The `@layer` statement matters: Tailwind's preflight resets `button` backgrounds
+in `base`, so declaring `rnf` after `base` keeps component styles over the
+reset, and `utilities` still beats `rnf`. The bridge clears Tailwind's default
+palette (`--color-*: initial`), so default-palette utilities such as
+`bg-blue-500` produce nothing; colour utilities come from the `--rnf-*` tokens.
 
 ## Tones
 
-A component's tone is the custom property `--rnf-tone`. For a hue the package does not define, set it on the host yourself:
+A component's tone is the custom property `--rnf-tone`. For a hue the package
+does not define, set it on the host yourself:
 
 ```css
 .my-badge {
@@ -82,7 +95,8 @@ Use the CDK's `cdk-visually-hidden` class. The package adds no `sr-only` class.
 
 ### `rnfButton`
 
-Put the attribute on a native `<button>` or `<a>`; the element keeps its tag, its `type` and any `routerLink`.
+Put the attribute on a native `<button>` or `<a>`; the element keeps its tag,
+its `type` and any `routerLink`.
 
 ```ts
 import { RnfButton } from '@rn-forge/ng-tailwind';
@@ -93,16 +107,21 @@ import { RnfButton } from '@rn-forge/ng-tailwind';
 <a rnfButton routerLink="/orders" shape="pill" size="sm">Orders</a>
 ```
 
-| Input      | Values                                                   | Default     |
-| ---------- | -------------------------------------------------------- | ----------- |
-| `variant`  | `secondary`, `primary`, `accent`, `ghost`, `danger`      | `secondary` |
-| `shape`    | `default`, `pill`                                        | `default`   |
-| `size`     | `md`, `sm`                                               | `md`        |
-| `disabled` | boolean attribute                                        | `false`     |
-| `busy`     | boolean attribute; sets `aria-busy` and disables as above | `false`     |
+| Input | Values | Default |
+| -- | -- | -- |
+| `variant` | `secondary`, `primary`, `accent`, `ghost`, `danger` | `secondary` |
+| `shape` | `default`, `pill` | `default` |
+| `size` | `md`, `sm` | `md` |
+| `disabled` | boolean attribute | `false` |
+| `busy` | boolean attribute; sets `aria-busy` and disables as above | `false` |
 
-A disabled or busy `<button>` gets the native `disabled` attribute. A disabled or busy `<a>` gets `aria-disabled="true"` and `tabindex="-1"`, and its clicks are swallowed: neither `routerLink` nor a `(click)` handler on it runs.
+A disabled or busy `<button>` gets the native `disabled` attribute. A disabled
+or busy `<a>` gets `aria-disabled="true"` and `tabindex="-1"`, and its clicks
+are swallowed: neither `routerLink` nor a `(click)` handler on it runs.
 
 ## CSS variable namespacing
 
-Components read the global `--rnf-*` tokens from their own styles, so do not enable Angular's `provideCssVarNamespacing()` in an application that uses this package: it renames the custom properties inside component styles, and the components would no longer see the tokens from `tokens.css`.
+Components read the global `--rnf-*` tokens from their own styles, so do not
+enable Angular's `provideCssVarNamespacing()` in an application that uses this
+package: it renames the custom properties inside component styles, and the
+components would no longer see the tokens from `tokens.css`.

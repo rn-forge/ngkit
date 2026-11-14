@@ -15,3 +15,6 @@ packages:
   - 'tools/**'
   # exclude packages that are inside test directories
   - '!**/test/**'
+overrides:
+  # GHSA-g3hv-75wg-m249: minimatch < 11.0.1 on the 10.x line (dev-only, through eslint, ts-morph and verdaccio).
+  'minimatch@10': ^11.0.1

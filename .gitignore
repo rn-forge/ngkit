@@ -1,3 +1,16 @@
+## uv ##
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+## nx ##
 # See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # compiled output
@@ -44,17 +57,29 @@ Thumbs.db
 .claude/worktrees
 .claude/settings.local.json
 
-.nx/polygraph
 .angular
 
-
-storybook-static
 __screenshots__/
-documentation.json
 
-# ng-demo-api fixture (Python)
-.venv/
-__pycache__/
-*.pyc
+# ngkit: Nx Cloud scratch, Storybook and Compodoc output, the Django fixture's database
+.nx/polygraph
+storybook-static
+documentation.json
 *.sqlite3
 *.sqlite3-journal
+
+# BEGIN rn-forge kiln
+# kiln's own state
+.rn-forge/kiln/backups/
+.rn-forge/kiln/rendered/
+.rn-forge/kiln/state.lock
+
+# macOS
+.DS_Store
+
+# Scratch root (tests and tools write here; task clean removes it)
+.tmp/
+
+# Docs build output ([docs] site_dir)
+.docs-site/
+# END rn-forge kiln

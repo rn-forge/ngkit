@@ -27,11 +27,19 @@ each acceptance block.
 
 <!-- BEGIN derived features -->
 
+| Feature | State | Iteration | Stories |
+| -- | -- | -- | -- |
+| [F17.1 — The docs follow kiln's work model](F17.1-docs-model.md) | Active | release-3 | 1 Active · 3 New · 2 Closed |
+| [F17.2 — Cut over onto kiln](F17.2-cutover.md) | Closed | release-3 | 9 Closed · 2 Removed |
+| [F17.3 — The instruction files follow kiln's standard](F17.3-instructions-follow-kiln-standard.md) | Removed | release-3 | — |
+| [F17.4 — Asset subpaths are declared in source](F17.4-asset-exports.md) | New | release-3 | 1 New |
+| [F17.5 — The consumer checks run from `kiln-devops`](F17.5-consumer-checks-in-kiln.md) | New | release-3 | 3 New |
+
 <!-- END derived features -->
 
 **Order.** The cutover runs on `feature/kiln-cutover`, cut from and merged back
-into `feature/release-3`, before kiln's release tag, with
-`[kiln] ref = "feature/v1"` (owner decision, recorded in
+into `feature/release-3`, with `[kiln] ref = "feature/v1"` (owner decision,
+recorded in
 [kiln S7.2.4](https://github.com/rn-forge/kiln/blob/main/docs/specs/epics/E7-pykit-release-pin-flip/F7.2-kiln-release-and-config-upgrade.md)).
 First the pre-cutover stories, which need no kiln and are safe on ngkit's
 current CI, each committed:
@@ -39,15 +47,17 @@ current CI, each committed:
 [S17.1.5](F17.1-docs-model.md#s1715-links) (links),
 [S17.2.7](F17.2-cutover.md#s1727-prose-that-is-true-before-and-after-the-cutover)
 (prose) and [S17.2.9](F17.2-cutover.md#s1729-upgrade-pnpm-to-kilns-pin) (pnpm).
-Then [S17.2.10](F17.2-cutover.md#s17210-format-to-kilns-formatters-ahead-of-the-overlay)
+Then
+[S17.2.10](F17.2-cutover.md#s17210-format-to-kilns-formatters-ahead-of-the-overlay)
 formats ngkit's own Markdown, TOML and YAML on `feature/kiln-format`. Then
 [S17.2.1](F17.2-cutover.md#s1721-overlay-the-kiln-reference), the one cutover
 story: an overlay of a `kiln new` reference, a numbered list with commands and
 expected exit codes, run on the working tree and committed at the end in path
 groups, docs first (only the last commit has to pass `task validate`). Then the
-rest of F17.1, then S17.2.3 to S17.2.5. After kiln tags `v0.1.0`,
-[S17.2.8](F17.2-cutover.md#s1728-pin-kilns-release-tag) moves the pin to the
-tag. The branch merges once both features' acceptance holds.
+rest of F17.1, then S17.2.3 to S17.2.5. The pin stays on `feature/v1` while kiln
+irons out the findings from the other repositories it builds (owner decision,
+2026-11-14); [S17.2.8](F17.2-cutover.md#s1728-pin-kilns-release-tag) is Removed.
+The branch merges once both features' acceptance holds.
 [F11.1](../E11-workspace-generators/F11.1-ng-plugin.md) waits on this epic's
 merge.
 
@@ -57,10 +67,10 @@ merge.
   cut over on kiln's branch so that kiln keeps being refined from their
   findings; the tag follows and each repository bumps its ref and runs
   `kiln apply`. The cutover is deterministic: pre-cutover stories first, then
-  one cutover story (F17.2; an overlay). Nx moves to kiln's
-  pinned `24.0.4` before the cutover (S17.2.6), because kiln's Nx never
-  reaches an adopted repository and `pnpm audit` fails on the older Angular
-  and Nx dependency tree.
+  one cutover story (F17.2; an overlay). Nx moves to kiln's pinned `24.0.4`
+  before the cutover (S17.2.6), because kiln's Nx never reaches an adopted
+  repository and `pnpm audit` fails on the older Angular and Nx dependency
+  tree.
 - **Release:** Release 3, because
   [Release 3](../../../releases/release-3/index.md) already says F11.1 is
   picked up after ngkit is cut over to kiln. Assumed 2026-11-02; the owner
@@ -74,8 +84,8 @@ merge.
 - **Not open:** the Pages site becomes MkDocs with Compodoc under `api/` and
   Storybook under `storybook/`; `USE_NX_CLOUD` is set to `true`; Sonar
   exclusions live in `.rn-forge/kiln/config.toml`; the release is a `release`
-  job on a push to `main` (kiln's S15.8.5). Each is a consequence of the owner's approval above,
-  and each is a story's Build, not a question.
+  job on a push to `main` (kiln's S15.8.5). Each is a consequence of the
+  owner's approval above, and each is a story's Build, not a question.
 
 ## Considered and rejected
 
@@ -110,5 +120,5 @@ grep -q '^archetype = "node-lib"' .rn-forge/kiln/config.toml
 ```
 
 Not scriptable, checked on GitHub: a pull-request run where `ci-ok` passes, a
-push to `main` that deploys the docs site and whose `release` job logs its
-mode (F17.2).
+push to `main` that deploys the docs site and whose `release` job logs its mode
+(F17.2).

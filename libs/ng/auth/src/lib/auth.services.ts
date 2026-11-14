@@ -12,7 +12,11 @@ import { map, union } from 'lodash-es';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 
 // internal imports
-import { LocalStorageService, RouteService, isDebugMode } from '@rn-forge/ng/core';
+import {
+  LocalStorageService,
+  RouteService,
+  isDebugMode,
+} from '@rn-forge/ng/core';
 import { RNF_AUTH_CONFIG_TOKEN, RnForgeAuthConfig } from './auth.config';
 import {
   AnonymousCredentials,
@@ -207,9 +211,7 @@ export class AuthBackendService {
     RNF_AUTH_CONFIG_TOKEN,
   );
 
-  private readonly baseUrl: string = requireAuthBackendBaseUrl(
-    this.authConfig,
-  );
+  private readonly baseUrl: string = requireAuthBackendBaseUrl(this.authConfig);
 
   login(user: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.baseUrl}${this.loginPath}`, {
