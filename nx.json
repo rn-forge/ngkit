@@ -19,7 +19,7 @@
       "dependsOn": ["build"],
       "options": {
         "cwd": "{workspaceRoot}",
-        "command": "node tools/ci/resolve-dist-workspace-deps.mjs dist/{projectRoot}/package.json && mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
+        "command": "task ci:dist:resolve -- dist/{projectRoot} && mkdir -p dist/tarballs && npm pack ./dist/{projectRoot} --pack-destination dist/tarballs"
       }
     },
     "verify-dist": {
@@ -28,7 +28,7 @@
       "cache": false,
       "options": {
         "cwd": "{workspaceRoot}",
-        "command": "node tools/ci/verify-dist-manifest.mjs dist/{projectRoot}"
+        "command": "task ci:dist:verify -- dist/{projectRoot}"
       }
     },
     "@angular/build:application": {
