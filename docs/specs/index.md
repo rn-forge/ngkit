@@ -28,7 +28,7 @@ release pages by `task docs:generate`; never edit inside their fence.
 
 | Release | Status | Features |
 | -- | -- | -- |
-| [Release 3](../releases/release-3/index.md) | in progress | 3 Active · 6 New · 1 Removed |
+| [Release 3](../releases/release-3/index.md) | in progress | 2 Active · 6 New · 1 Closed · 1 Removed |
 | [Release 2](../releases/release-2/index.md) | shipped (2026-10-25) | 9 Closed |
 | [Release 1](../releases/release-1/index.md) | shipped (2026-10-14) | 7 Closed |
 
