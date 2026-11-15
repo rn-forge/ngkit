@@ -2,7 +2,8 @@
 
 |  |  |
 | -- | -- |
-| **State** | New |
+| **State** | Active |
+| **Start Date** | 2026-11-14 |
 
 **Release:** [Release 3](../../../releases/release-3/index.md)
 
@@ -11,10 +12,10 @@ a backend-for-frontend session model.
 
 Replace `@rn-forge/ng/auth` with a client for a same-origin backend session, so
 the browser never handles a token. The backend runs every login protocol (OIDC,
-SAML, social login, local password, a development provider) and keeps an
-`HttpOnly` session cookie. The SPA starts logins by full-page navigation, reads
-the signed-in user and their effective permissions from the backend, and mirrors
-those permissions in the UI without enforcing them
+SAML through a broker, social login, local password, a development provider) and
+keeps an `HttpOnly` session cookie. The SPA starts logins by full-page
+navigation, reads the signed-in user and their effective permissions from the
+backend, and mirrors those permissions in the UI without enforcing them
 ([ADR-0006](../../../adr/ADR-0006.md)). [Design](design.md) holds the wire
 contract every feature builds against.
 
@@ -51,7 +52,7 @@ carries E5 must announce it.
 
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
-| [F5.1 — Client model and wire contract](F5.1-client-model.md) | New | release-3 | 2 New |
+| [F5.1 — Client model and wire contract](F5.1-client-model.md) | Closed | release-3 | 2 Closed |
 | [F5.2 — `@rn-forge/ng/auth` session client](F5.2-auth-wrapper.md) | New | release-3 | 5 New |
 | [F5.3 — Bootstrap auth UI](F5.3-bootstrap-auth-ui.md) | New | release-3 | 3 New |
 | [F5.4 — Acceptance against a session backend](F5.4-auth-acceptance.md) | New | release-3 | 2 New |
@@ -61,8 +62,9 @@ carries E5 must announce it.
 
 ## Open questions
 
-- **Which server library serves the contract for F5.4?** The fixture pins a
-  server library by release tag, as
-  [F4.3](../E4-standard-resource-screen/F4.3-wire-acceptance.md) does. No
-  released server library serves the auth routes in [Design](design.md) yet;
-  F5.4 waits for one (its entry criterion).
+None. **Which server library serves the contract for F5.4?** Answered
+2026-11-14: `rn-forge-fastapi` at `rn-forge-fastapi-v0.4.1`, the primary
+backend, with `rn-forge-django` at `rn-forge-django-v0.6.1` as the second, each
+pinned in its fixture's manifest as
+[F4.3](../E4-standard-resource-screen/F4.3-wire-acceptance.md) pins them. The
+check is in [F5.4](F5.4-auth-acceptance.md#context).

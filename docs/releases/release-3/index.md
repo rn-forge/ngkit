@@ -17,7 +17,7 @@
 
 | Feature | Epic | State |
 | -- | -- | -- |
-| [F5.1 — Client model and wire contract](../../specs/epics/E5-session-client-auth/F5.1-client-model.md) | E5 | New |
+| [F5.1 — Client model and wire contract](../../specs/epics/E5-session-client-auth/F5.1-client-model.md) | E5 | Closed |
 | [F5.2 — `@rn-forge/ng/auth` session client](../../specs/epics/E5-session-client-auth/F5.2-auth-wrapper.md) | E5 | New |
 | [F5.3 — Bootstrap auth UI](../../specs/epics/E5-session-client-auth/F5.3-bootstrap-auth-ui.md) | E5 | New |
 | [F5.4 — Acceptance against a session backend](../../specs/epics/E5-session-client-auth/F5.4-auth-acceptance.md) | E5 | New |
@@ -37,13 +37,13 @@ F11.1 is picked up after ngkit is cut over to kiln
 2026-11-02).
 [F5.5](../../specs/epics/E5-session-client-auth/F5.5-situational-client-extensions.md)
 stays deferred; each extension becomes a story only when an application needs
-it. F5.4 cannot start until a released server library serves the auth routes
-(its entry criterion).
+it. F5.4's entry criterion, a released server library serving the auth routes,
+was met on 2026-11-14.
 
 ## Decisions
 
 - [ADR-0006](../../adr/ADR-0006.md): the browser holds a backend session, never
-  a token. Proposed; accepted by
+  a token. Accepted 2026-11-14 by
   [S5.1.1](../../specs/epics/E5-session-client-auth/F5.1-client-model.md).
 - [E11 Decisions](../../specs/epics/E11-workspace-generators/index.md#decisions)
   (owner decision, 2026-10-17): the new `@rn-forge/ng-plugin` package joins
@@ -79,7 +79,12 @@ S7.2.4): the cutover runs on `feature/kiln-cutover`, cut from and merged back
 into `feature/release-3`, before kiln tags `v0.1.0`, with
 `[kiln] ref = "feature/v1"`; the pre-cutover stories (S17.2.6, S17.1.5, S17.2.7)
 land first, then S17.2.1. Revised 2026-11-14 (owner decision): the pin stays on
-`feature/v1` and Release 3 does not wait for a kiln tag.
+`feature/v1` and Release 3 does not wait for a kiln tag. E5 started 2026-11-14
+(owner decision): `rn-forge-fastapi` at `rn-forge-fastapi-v0.4.1` and
+`rn-forge-django` at `rn-forge-django-v0.6.1` serve the auth contract, with
+FastAPI as F5.4's primary backend, so ADR-0006 is accepted, F5.1 is closed with
+the wire contract settled against it, and F5.4's entry criterion is met. F5.2 is
+next, then F5.3 and F5.4.
 
 ## Commits
 
