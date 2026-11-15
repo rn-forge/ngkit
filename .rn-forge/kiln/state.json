@@ -121,7 +121,7 @@
     },
     "AGENTS.md#rn-forge kiln": {
       "begin_marker": "<!-- BEGIN rn-forge kiln -->",
-      "content_hash": "a34e71a9f26061f98d79cfa9679a1d528b8fad80611840ac80e655024383ca7c",
+      "content_hash": "feb1496c6302422c5043b83031129c096fae48c0d3aa22e5f4e0f6aac65d4532",
       "end_marker": "<!-- END rn-forge kiln -->",
       "kind": "block",
       "path": "AGENTS.md"
@@ -254,7 +254,7 @@
     },
     "docs/specs/_structure.md": {
       "begin_marker": null,
-      "content_hash": "f6cb20b4390265fb9da9e6687d7d175bd8c2d33dc069cf13933ab9b4643d2630",
+      "content_hash": "563d7f53ba0028f002bcdd7f46bbaaea959827ac8fcc074f852f978bf3f42036",
       "end_marker": null,
       "kind": "managed",
       "path": "docs/specs/_structure.md"
@@ -331,7 +331,7 @@
     },
     "tasks/python.yml": {
       "begin_marker": null,
-      "content_hash": "b243726b3645f8348598b3c7b3a48a56fac6c8f221b0338f1d17eafe30ac62f3",
+      "content_hash": "c054e879cc02d1bf0df30ab7a5a35c44b37efdf43a235233ec615610342ddacf",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/python.yml"
