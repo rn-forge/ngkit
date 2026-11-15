@@ -1,4 +1,13 @@
-# The areas of ngkit's docs tree, in reading order. See _structure.md.
+# Seeded by kiln — nav additions go here; kiln derives the rest.
+#
+# kiln writes it once and never touches it again: a repo
+# that needs an area kiln has never heard of adds it here, and the docs checkers
+# validate the tree against this file rather than against a list baked into
+# them. Order is nav order; re-run `task docs:generate` after editing.
+#
+# `nav` is one of: children (the area's pages), index-only (its index.md),
+# include (one entry per package site) or work (its index, its epic list and
+# its epics in ranges of ten, with their features and design).
 version: 1
 areas:
   - key: architecture
@@ -13,13 +22,14 @@ areas:
     optional: true
   - key: reference
     title: Reference
-    nav: index-only
+    nav: children
+    generated: true
   - key: releases
     title: Releases
     nav: index-only
   - key: specs
     title: Specs
-    nav: index-only
+    nav: work
   - key: adr
     title: Decisions
     nav: index-only

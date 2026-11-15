@@ -1,10 +1,15 @@
 import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const port = 4402;
 const baseURL = process.env['BASE_URL'] || `http://localhost:${port}`;
 const fixturePort = 4403;
+const tailwindVersion = JSON.parse(
+  readFileSync(join(workspaceRoot, 'libs/ng-tailwind/package.json'), 'utf-8'),
+).version;
 
 /**
  * Browser checks over the built `ng-tailwind` Storybook (`dist/storybook/ng-tailwind`),
@@ -31,7 +36,7 @@ export default defineConfig({
       command: `pnpm exec nx run ng-tailwind:consumer-fixture && node apps/ng-tailwind-e2e/serve.mjs`,
       env: {
         PORT: String(fixturePort),
-        ROOT: 'dist/consumer-fixtures/ng-tailwind-tailwind-angular-22.1-zoneless/out/browser',
+        ROOT: `dist/consumer-fixtures/rn-forge-ng-tailwind-${tailwindVersion}/tailwind-22.1-zoneless/out/browser`,
         SPA: '1',
       },
       url: `http://localhost:${fixturePort}`,

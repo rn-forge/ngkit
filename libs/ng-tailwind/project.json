@@ -34,41 +34,23 @@
         "development": {}
       }
     },
-    "patch-package-exports": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["build"],
-      "options": {
-        "cwd": "{workspaceRoot}",
-        "command": "node tools/scripts/patch-package-exports.mjs libs/ng-tailwind ./tokens.css=./assets/tokens.css ./base.css=./assets/base.css ./tailwind.css=./assets/tailwind.css"
-      }
-    },
-    "pack": {
-      "dependsOn": ["patch-package-exports"]
-    },
+    "pack": {},
     "verify-dist": {},
-    "verify-consumer": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["pack"],
-      "cache": false,
-      "options": {
-        "cwd": "{workspaceRoot}",
-        "command": "node tools/scripts/verify-consumer.mjs ng-tailwind"
-      }
-    },
+    "verify-consumer": {},
     "consumer-fixture": {
       "executor": "nx:run-commands",
       "dependsOn": ["pack"],
       "inputs": [
         "default",
         "^default",
-        "{workspaceRoot}/tools/scripts/verify-consumer.mjs"
+        "{workspaceRoot}/tools/consumer/ng-tailwind-app.mjs"
       ],
       "outputs": [
-        "{workspaceRoot}/dist/consumer-fixtures/ng-tailwind-tailwind-angular-22.1-zoneless"
+        "{workspaceRoot}/dist/consumer-fixtures/rn-forge-ng-tailwind-*/tailwind-22.1-zoneless"
       ],
       "options": {
         "cwd": "{workspaceRoot}",
-        "command": "node tools/scripts/verify-consumer.mjs ng-tailwind --only tailwind --cell 22.1-zoneless"
+        "command": "task ci:consumer -- libs/ng-tailwind --cell tailwind-22.1-zoneless"
       }
     },
     "nx-release-publish": {
@@ -84,10 +66,21 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        {
+          "externalDependencies": ["eslint"]
+        }
+      ]
     },
     "compodoc": {
       "executor": "@twittwer/compodoc:compodoc",
+      "outputs": ["{workspaceRoot}/dist/compodoc/ng-tailwind"],
       "options": {
         "tsConfig": "libs/ng-tailwind/tsconfig.compodoc.json",
         "outputPath": "dist/compodoc/ng-tailwind"
@@ -100,16 +93,20 @@
           "serve": true,
           "watch": true
         }
-      },
-      "outputs": ["{workspaceRoot}/dist/compodoc/ng-tailwind"]
+      }
     },
     "storybook": {
       "executor": "@storybook/angular:start-storybook",
+      "continuous": true,
       "options": {
         "configDir": "libs/ng-tailwind/.storybook",
         "tsConfig": "libs/ng-tailwind/.storybook/tsconfig.json",
         "styles": ["libs/ng-tailwind/assets/tokens.css"],
         "port": 4401
+      },
+      "readyWhen": {
+        "port": "{env.SBCONFIG_PORT ?? options.port ?? 9009}",
+        "host": "{env.SBCONFIG_HOSTNAME ?? options.host ?? localhost}"
       }
     },
     "build-storybook": {

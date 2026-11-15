@@ -1,61 +1,88 @@
 # ngkit work
 
-What ngkit is made of and what is left to do. The board says what is next; the epic
-says how; its ADRs say why. `done` means implemented; the
+What ngkit is made of and what is left to do. The board says what is next; the
+epic says how; its ADRs say why. `done` means implemented; the
 [release pages](../releases/index.md) record what shipped.
 
-As of 2026-10-26, the libraries' packaging, the retired HTTP entry point, core correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and the portable CI are implemented and shipped as [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14). [Release 2](../releases/release-2/index.md) (F4.3, E8, E14, E15 and E16) shipped as `v0.3.0` (2026-10-25). The owner moved E5 (F5.1–F5.4) and F11.1 to [Release 3](../releases/release-3/index.md) (2026-10-25): E5 will be refined further once a released server library's auth module is defined, and F11.1 is picked up after ngkit is cut over to kiln. E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are retired: kiln owns repository-level setup. E6 is elaborated (2026-10-24) down to loading timings in `ng/core`, waiting on one open question and a release; everything else is deferred.
+As of 2026-10-26, the libraries' packaging, the retired HTTP entry point, core
+correctness, the `@rn-forge/ng/crud` controller with its Bootstrap renderer and
+the portable CI are implemented and shipped as
+[Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14).
+[Release 2](../releases/release-2/index.md) (F4.3, E8, E14, E15 and E16) shipped
+as `v0.3.0` (2026-10-25). The owner moved E5 (F5.1–F5.4) and F11.1 to
+[Release 3](../releases/release-3/index.md) (2026-10-25), then closed Release
+3's scope as the kiln cutover release (2026-11-14): E17 and F5.1, which closed
+once a released server library served E5's auth contract. F5.2–F5.4 and F11.1
+are in the backlog. E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are
+retired: kiln owns repository-level setup. E6 is elaborated (2026-10-24) down to
+loading timings in `ng/core`, waiting on one open question and a release;
+everything else is deferred. E17 (2026-11-02) adopts kiln's `node-lib`
+archetype: F17.1 converts the docs to kiln's work model, F17.2 cuts the CI over;
+it is in Release 3, and F17.1 started 2026-11-03.
 
-## Board
+The Releases and Backlog sections below are derived from the epic, feature and
+release pages by `task docs:generate`; never edit inside their fence.
 
-### In progress
+<!-- BEGIN derived board -->
 
-None.
+## Releases
 
-### Planned
+| Release | Status | Features |
+| -- | -- | -- |
+| [Release 3](../releases/release-3/index.md) | in progress | 5 Closed · 1 Removed |
+| [Release 2](../releases/release-2/index.md) | shipped (2026-10-25) | 9 Closed |
+| [Release 1](../releases/release-1/index.md) | shipped (2026-10-14) | 7 Closed |
 
-| Epic                                                                  | Next step                                     |
-| --------------------------------------------------------------------- | --------------------------------------------- |
-| [E11 — Workspace generators](epics/E11-workspace-generators/index.md) | Start F11.1 after the kiln cutover; Release 3 |
+## Backlog
 
-### To elaborate
+Features with no Iteration, by State and epic.
 
-| Epic                                                                  | Next step                                                                                           |
-| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [E5 — Session client auth](epics/E5-session-client-auth/index.md)     | Refine once a released server library's auth module is defined; accept ADR-0006 (S5.1.1); Release 3 |
-| [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md) | Owner answers F6.1's open question and assigns a release                                            |
+### New
+
+| Epic | Features |
+| -- | -- |
+| [E5 — Session client auth](epics/E5-session-client-auth/index.md) | [F5.2](epics/E5-session-client-auth/F5.2-auth-wrapper.md), [F5.3](epics/E5-session-client-auth/F5.3-bootstrap-auth-ui.md), [F5.4](epics/E5-session-client-auth/F5.4-auth-acceptance.md) |
+| [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md) | [F6.1](epics/E6-asynchronous-resource/F6.1-loading-timings.md) |
+| [E11 — Workspace generators](epics/E11-workspace-generators/index.md) | [F11.1](epics/E11-workspace-generators/F11.1-ng-plugin.md) |
+| [E19 — ngkit simplification](epics/E19-ngkit-simplification/index.md) | [F19.1](epics/E19-ngkit-simplification/F19.1-specs-and-briefs.md), [F19.2](epics/E19-ngkit-simplification/F19.2-current-documentation.md), [F19.3](epics/E19-ngkit-simplification/F19.3-behavioral-baselines.md), [F19.4](epics/E19-ngkit-simplification/F19.4-core-and-permissions.md), [F19.5](epics/E19-ngkit-simplification/F19.5-configuration-and-widgets.md), [F19.6](epics/E19-ngkit-simplification/F19.6-forms-and-crud.md), [F19.7](epics/E19-ngkit-simplification/F19.7-settings-lifetimes.md), [F19.8](epics/E19-ngkit-simplification/F19.8-boundaries-and-consumers.md) |
 
 ### Deferred
 
-| Epic                                                                      | Entry criteria                               |
-| ------------------------------------------------------------------------- | -------------------------------------------- |
-| [E7 — Theme controller](epics/E7-theme-controller/index.md)               | The owner schedules it (depends on E3, done) |
-| [E9 — Presentation primitives](epics/E9-presentation-primitives/index.md) | E8 is done and the owner schedules it        |
-| [E10 — Connected menu](epics/E10-connected-menu/index.md)                 | E8 is done and the owner schedules it        |
-| [E12 — On-demand features](epics/E12-on-demand-features/index.md)         | The row's trigger occurs                     |
+| Epic | Features | Entry criteria |
+| -- | -- | -- |
+| [E5 — Session client auth](epics/E5-session-client-auth/index.md) | [F5.5](epics/E5-session-client-auth/F5.5-situational-client-extensions.md) | Per feature; see the epic. |
+| [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md) | [F6.2](epics/E6-asynchronous-resource/F6.2-keep-previous.md) | Per feature; see the epic. |
+| [E7 — Theme controller](epics/E7-theme-controller/index.md) | — | the owner schedules it |
+| [E9 — Presentation primitives](epics/E9-presentation-primitives/index.md) | — | [E8](epics/E8-tailwind-package/index.md) is done and the owner schedules it |
+| [E10 — Connected menu](epics/E10-connected-menu/index.md) | — | [E8](epics/E8-tailwind-package/index.md) is done and the owner schedules it |
+| [E12 — On-demand features](epics/E12-on-demand-features/index.md) | F12.1, F12.2, F12.3, F12.4, F12.5, F12.6, F12.7, F12.8, F12.9, F12.10, F12.11 | the row's trigger occurs |
+| [E18 — npm publishing and independent versions](epics/E18-npm-publishing-and-independent-versions/index.md) | — | F17.2 is merged into `main`, and kiln's findings on node-lib release are met: per-package tags and independent release, an npm release mode with provenance, and SBOM and attestation steps |
 
-### Done
+<!-- END derived board -->
 
-| Epic                                                                                  | Implemented            |
-| ------------------------------------------------------------------------------------- | ---------------------- |
-| [E1 — Packaging and compatibility](epics/E1-packaging-and-compatibility/index.md)     | 2026-09-20 (`c30d63a`) |
-| [E2 — Retire the HTTP entry point](epics/E2-retire-http-entry-point/index.md)         | 2026-09-23 (`c30d63a`) |
-| [E3 — Core correctness](epics/E3-core-correctness/index.md)                           | 2026-09-23 (`1f54842`) |
-| [E13 — Portable CI](epics/E13-portable-ci/index.md)                                   | 2026-10-14 (`d1e026c`) |
-| [E4 — Standard resource screen](epics/E4-standard-resource-screen/index.md)           | 2026-10-17 (`1fc3c8d`) |
-| [E16 — Key invalidation for `httpResource`](epics/E16-resource-invalidation/index.md) | 2026-10-24             |
-| [E15 — Server-sent event stream](epics/E15-event-stream/index.md)                     | 2026-10-24             |
-| [E14 — RFC 9457 problem client support](epics/E14-problem-client/index.md)            | 2026-10-24             |
-| [E8 — `@rn-forge/ng-tailwind` package](epics/E8-tailwind-package/index.md)            | 2026-10-24             |
+Ideas not yet agreed as work are parked in the [ideas list](ideas/index.md).
+
+Every epic, by number, is on [the epic list](epics/index.md).
 
 ## Conventions
 
-- **Taxonomy.** Epic `E<n>` → feature `F<n>.<m>` → story `S<n>.<m>.<k>`. IDs are
-  permanent.
-- **Status.** `elaborating`, `planned`, `in progress`, `done` or `deferred` (with
-  entry criteria). Stories carry their own status.
-- **A decision is its own story**, so work can depend on the decision without
-  depending on its implementation.
-- **Open questions live on the feature or epic they block.**
-- **Acceptance is checked inside ngkit.**
-- **Don't start or elaborate a deferred epic unless the owner asks.**
+The work model is kiln's, in `docs/specs/_structure.md`.
+
+## How this repository differs
+
+- Every acceptance line is checkable inside this repository. When acceptance
+  needs a host, such as an application or a library workspace, a test builds
+  one in a temporary directory.
+- A dependency on another repository's software is a version or git pin in the
+  manifest of the code that uses it, plus at most an entry criterion that can
+  be observed from outside that repository ("its release-1 tags exist").
+- Another repository's pages, paths, spec IDs and internal status are not cited
+  or restated. A requirement or finding that came from elsewhere is written
+  here in full, as this repository's own. The exception is kiln, which owns
+  repository-level setup: its specs and ADRs may be cited by ID as the reason
+  work here is retired or out of scope ([ADR-0007](../adr/ADR-0007.md)).
+- No page here is written for another repository to cite.
+
+**Checking removed behaviour:** a check that a removed symbol is gone asks "does
+any current page describe it as present?", not "does the name appear?". A page
+may name removed behaviour to say it is gone.

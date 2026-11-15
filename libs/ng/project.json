@@ -36,15 +36,7 @@
     },
     "pack": {},
     "verify-dist": {},
-    "verify-consumer": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["pack"],
-      "cache": false,
-      "options": {
-        "cwd": "{workspaceRoot}",
-        "command": "node tools/scripts/verify-consumer.mjs"
-      }
-    },
+    "verify-consumer": {},
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}",
@@ -79,10 +71,21 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        {
+          "externalDependencies": ["eslint"]
+        }
+      ]
     },
     "compodoc": {
       "executor": "@twittwer/compodoc:compodoc",
+      "outputs": ["{workspaceRoot}/dist/compodoc/ng"],
       "options": {
         "tsConfig": "libs/ng/tsconfig.compodoc.json",
         "outputPath": "dist/compodoc/ng"
@@ -95,8 +98,7 @@
           "serve": true,
           "watch": true
         }
-      },
-      "outputs": ["{workspaceRoot}/dist/compodoc/ng"]
+      }
     }
   }
 }

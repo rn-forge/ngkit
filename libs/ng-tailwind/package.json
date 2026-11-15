@@ -11,6 +11,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "exports": {
+    "./tokens.css": "./assets/tokens.css",
+    "./base.css": "./assets/base.css",
+    "./tailwind.css": "./assets/tailwind.css"
+  },
   "sideEffects": [
     "*.css"
   ],
@@ -21,6 +26,88 @@
   "peerDependenciesMeta": {
     "tailwindcss": {
       "optional": true
+    }
+  },
+  "workspace-ci": {
+    "consumer": {
+      "dependencies": {
+        "rxjs": "~7.8.2",
+        "zone.js": "~0.16.0"
+      },
+      "preload": [
+        "@angular/compiler"
+      ],
+      "cells": {
+        "plain-22.0-zone": {
+          "dependencies": {
+            "@angular/common": "22.0.6",
+            "@angular/compiler": "22.0.6",
+            "@angular/core": "22.0.6",
+            "@angular/platform-browser": "22.0.6"
+          }
+        },
+        "plain-22.0-zoneless": {
+          "dependencies": {
+            "@angular/common": "22.0.6",
+            "@angular/compiler": "22.0.6",
+            "@angular/core": "22.0.6",
+            "@angular/platform-browser": "22.0.6"
+          }
+        },
+        "plain-22.1-zone": {
+          "dependencies": {
+            "@angular/common": "22.1.7",
+            "@angular/compiler": "22.1.7",
+            "@angular/core": "22.1.7",
+            "@angular/platform-browser": "22.1.7"
+          }
+        },
+        "plain-22.1-zoneless": {
+          "dependencies": {
+            "@angular/common": "22.1.7",
+            "@angular/compiler": "22.1.7",
+            "@angular/core": "22.1.7",
+            "@angular/platform-browser": "22.1.7"
+          }
+        },
+        "tailwind-22.0-zone": {
+          "dependencies": {
+            "@angular/common": "22.0.6",
+            "@angular/compiler": "22.0.6",
+            "@angular/core": "22.0.6",
+            "@angular/platform-browser": "22.0.6",
+            "tailwindcss": "4.3.3"
+          }
+        },
+        "tailwind-22.0-zoneless": {
+          "dependencies": {
+            "@angular/common": "22.0.6",
+            "@angular/compiler": "22.0.6",
+            "@angular/core": "22.0.6",
+            "@angular/platform-browser": "22.0.6",
+            "tailwindcss": "4.3.3"
+          }
+        },
+        "tailwind-22.1-zone": {
+          "dependencies": {
+            "@angular/common": "22.1.7",
+            "@angular/compiler": "22.1.7",
+            "@angular/core": "22.1.7",
+            "@angular/platform-browser": "22.1.7",
+            "tailwindcss": "4.3.3"
+          }
+        },
+        "tailwind-22.1-zoneless": {
+          "dependencies": {
+            "@angular/common": "22.1.7",
+            "@angular/compiler": "22.1.7",
+            "@angular/core": "22.1.7",
+            "@angular/platform-browser": "22.1.7",
+            "tailwindcss": "4.3.3"
+          }
+        }
+      },
+      "hook": "tools/consumer/ng-tailwind-app.mjs"
     }
   }
 }
