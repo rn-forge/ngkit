@@ -18,7 +18,7 @@ retired: kiln owns repository-level setup. E6 is elaborated (2026-10-24) down to
 loading timings in `ng/core`, waiting on one open question and a release;
 everything else is deferred. E17 (2026-11-02) adopts kiln's `node-lib`
 archetype: F17.1 converts the docs to kiln's work model, F17.2 cuts the CI over;
-it is in Release 3, and F17.1 started 2026-11-03.
+it is in Release 3, F17.1 started 2026-11-03, and E17 closed 2026-11-14.
 
 The Releases and Backlog sections below are derived from the epic, feature and
 release pages by `task docs:generate`; never edit inside their fence.
