@@ -55,7 +55,7 @@ carries E5 must announce it.
 | -- | -- | -- | -- |
 | [F5.1 — Client model and wire contract](F5.1-client-model.md) | Closed | release-3 | 2 Closed |
 | [F5.2 — `@rn-forge/ng/auth` session client](F5.2-auth-wrapper.md) | Closed | release-4 | 5 Closed |
-| [F5.3 — Bootstrap auth UI](F5.3-bootstrap-auth-ui.md) | New | release-4 | 3 New |
+| [F5.3 — Bootstrap auth UI](F5.3-bootstrap-auth-ui.md) | Active | release-4 | 2 New · 1 Closed |
 | [F5.4 — Acceptance against a session backend](F5.4-auth-acceptance.md) | New | release-4 | 2 New |
 | [F5.5 — Situational client extensions](F5.5-situational-client-extensions.md) | New | deferred | — |
 

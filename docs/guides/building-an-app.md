@@ -221,7 +221,7 @@ object — see §5.5 and copy the real shape from `apps/ng-demo/src/app/app.ts`.
 
 ```ts
 export const appRoutes: Route[] = [
-  { path: 'login', component: AuthComponent },
+  { path: 'login', component: LoginComponent },
   { path: 'error', component: ErrorComponent, data: { options: { code: 500 } } },
   {
     path: '',
@@ -433,9 +433,8 @@ of your validators, so don't use it for optional or short fields.
 UI layer over `@rn-forge/ng/auth` (configured separately — most apps call both
 `provideRnForgeAuth` and `provideRnForgeAuthUiConfig`).
 
-- **`AuthComponent`** — displays a login heading and alert when anonymous;
-  authenticated users navigate to `returnTo` (default `/`). It has no login
-  form.
+- **`LoginComponent`** — chooses an available sign-in provider or shows a
+  password form; successful sign-in returns to `returnTo` (default `/`).
 - **`UserComponent`** — profile and settings screens; route _both_
   `/user/profile` and `/user/settings` to this one component.
 - **`UserSettingsService`** — per-user persisted settings (theme, color mode,
@@ -597,8 +596,8 @@ So the agent doesn't assume these exist:
 - **No design system beyond Bootstrap 5 + Bootstrap Icons** — anything outside
   Bootstrap's visual vocabulary is app CSS.
 - **No charting** — pair with Chart.js/ngx-charts if needed.
-- **No login form** — `AuthComponent` currently displays a heading and alert;
-  the app must supply its login UI.
+- **Login UI** — `LoginComponent` provides provider selection and a password
+  form for configured password providers.
 - **No i18n wiring** beyond `@angular/localize` being a peer dep.
 - **No SSR support story** — components assume a browser (`window`, `document`,
   jQuery plugins). Verify before assuming SSR compatibility.

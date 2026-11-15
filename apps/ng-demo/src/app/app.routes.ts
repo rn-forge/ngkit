@@ -4,7 +4,7 @@ import { Route } from '@angular/router';
 // internal imports
 import { authGuard, permissionGuard } from '@rn-forge/ng/auth';
 import { ErrorComponent } from '@rn-forge/ng-bootstrap';
-import { AuthComponent, UserComponent } from '@rn-forge/ng-bootstrap/auth';
+import { LoginComponent, UserComponent } from '@rn-forge/ng-bootstrap/auth';
 import { DashboardPageComponent } from './dashboard/dashboard.page';
 import { FormsPageComponent } from './forms/forms.page';
 import { OrgChartPageComponent } from './org-chart/org-chart.page';
@@ -13,7 +13,7 @@ import { ProductsPageComponent } from './products/products.page';
 export const appRoutes: Route[] = [
   {
     path: 'login',
-    component: AuthComponent,
+    component: LoginComponent,
   },
   {
     path: 'error',

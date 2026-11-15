@@ -134,15 +134,60 @@ describe('mockApiInterceptor', () => {
   describe('auth routes', () => {
     beforeEach(() => resetMockApi());
 
-    it('serves the development provider', async () => {
+    it('serves only the password provider', async () => {
       const { http, controller } = setup();
 
       await expect(
         firstValueFrom(http.get('/auth/providers')),
       ).resolves.toEqual([
-        { id: 'development', name: 'Development', kind: 'development' },
+        { id: 'password', name: 'Password', kind: 'password' },
       ]);
       controller.expectNone('/auth/providers');
+    });
+
+    it('logs in with the demo password and returns the demo session', async () => {
+      const { http, controller } = setup();
+      await firstValueFrom(http.post('/auth/logout', {}));
+
+      await expect(
+        firstValueFrom(
+          http.post('/auth/login/password', {
+            username: 'ada',
+            password: 'demo',
+          }),
+        ),
+      ).resolves.toMatchObject({
+        subject: 'demo-admin',
+        provider: 'development',
+      });
+      await expect(
+        firstValueFrom(http.get('/auth/session')),
+      ).resolves.toMatchObject({ subject: 'demo-admin' });
+      controller.expectNone('/auth/logout');
+      controller.expectNone('/auth/login/password');
+      controller.expectNone('/auth/session');
+    });
+
+    it('rejects a wrong password without restoring the signed-out session', async () => {
+      const { http, controller } = setup();
+      await firstValueFrom(http.post('/auth/logout', {}));
+
+      const error = await firstValueFrom(
+        http.post('/auth/login/password', {
+          username: 'ada',
+          password: 'wrong',
+        }),
+      ).catch((caught: HttpErrorResponse) => caught);
+      expect(error).toBeInstanceOf(HttpErrorResponse);
+      expect((error as HttpErrorResponse).status).toBe(401);
+      const signedOut = await firstValueFrom(http.get('/auth/session')).catch(
+        (caught: HttpErrorResponse) => caught,
+      );
+      expect(signedOut).toBeInstanceOf(HttpErrorResponse);
+      expect((signedOut as HttpErrorResponse).status).toBe(401);
+      controller.expectNone('/auth/logout');
+      controller.expectNone('/auth/login/password');
+      controller.expectNone('/auth/session');
     });
 
     it('logs out, rejects session refresh, and resets signed in', async () => {

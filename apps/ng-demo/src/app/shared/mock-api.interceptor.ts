@@ -38,6 +38,27 @@ let nextId = 100;
 let idempotent = new Map<string, MockProduct>();
 let signedIn = true;
 
+const DEMO_SESSION: Session = {
+  subject: 'demo-admin',
+  name: 'Demo Admin',
+  provider: 'development',
+  roles: ['admin'],
+  permissions: [
+    'demo.dashboard',
+    'demo.products',
+    'demo.products.list',
+    'demo.products.read',
+    'demo.products.create',
+    'demo.products.update',
+    'demo.products.delete',
+    'demo.products.import',
+    'demo.products.export',
+    'demo.forms',
+    'demo.org-chart',
+  ],
+  expiresAt: '2099-01-01T00:00:00Z',
+};
+
 /** Resets the in-memory store to the seed data (used by tests). */
 export function resetMockApi(): void {
   signedIn = true;
@@ -211,27 +232,7 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
   const path = url.split('?')[0];
   if (method === 'GET' && path.endsWith('/auth/session')) {
     if (!signedIn) return problem(401, 'Unauthorized');
-    const session: Session = {
-      subject: 'demo-admin',
-      name: 'Demo Admin',
-      provider: 'development',
-      roles: ['admin'],
-      permissions: [
-        'demo.dashboard',
-        'demo.products',
-        'demo.products.list',
-        'demo.products.read',
-        'demo.products.create',
-        'demo.products.update',
-        'demo.products.delete',
-        'demo.products.import',
-        'demo.products.export',
-        'demo.forms',
-        'demo.org-chart',
-      ],
-      expiresAt: '2099-01-01T00:00:00Z',
-    };
-    return respond(200, session);
+    return respond(200, DEMO_SESSION);
   }
 
   if (method === 'POST' && path.endsWith('/auth/logout')) {
@@ -241,8 +242,16 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (method === 'GET' && path.endsWith('/auth/providers')) {
     return respond(200, [
-      { id: 'development', name: 'Development', kind: 'development' },
+      { id: 'password', name: 'Password', kind: 'password' },
     ]);
+  }
+
+  if (method === 'POST' && path.endsWith('/auth/login/password')) {
+    if ((req.body as { password?: string } | null)?.password !== 'demo') {
+      return problem(401, 'Invalid credentials');
+    }
+    signedIn = true;
+    return respond(200, DEMO_SESSION);
   }
 
   if (!url.includes('/api/')) {

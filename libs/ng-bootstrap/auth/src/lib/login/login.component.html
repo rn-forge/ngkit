@@ -1,0 +1,49 @@
+<h4 class="page-header">Login</h4>
+
+@if (message()) {
+  <div class="alert alert-danger" role="alert">{{ message() }}</div>
+}
+
+@for (provider of providers(); track provider.id) {
+  <button
+    type="button"
+    class="btn btn-primary me-2 mb-3"
+    (click)="login(provider.id)">
+    {{ provider.name }}
+  </button>
+}
+
+@if (hasPassword()) {
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="mb-3">
+      <label [for]="instanceId + '-username'" class="form-label"
+        >Username</label
+      >
+      <input
+        [id]="instanceId + '-username'"
+        class="form-control"
+        type="text"
+        autocomplete="username"
+        formControlName="username"
+        required />
+    </div>
+    <div class="mb-3">
+      <label [for]="instanceId + '-password'" class="form-label"
+        >Password</label
+      >
+      <input
+        [id]="instanceId + '-password'"
+        class="form-control"
+        type="password"
+        autocomplete="current-password"
+        formControlName="password"
+        required />
+    </div>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="form.invalid || pending()">
+      Sign in
+    </button>
+  </form>
+}
