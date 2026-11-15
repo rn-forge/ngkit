@@ -13,6 +13,7 @@ import {
   RNF_AUTH_CONFIG_TOKEN,
 } from './auth.config';
 import { provideRnForgeAuth } from './auth.providers';
+import { AuthService } from './auth.services';
 
 describe('provideRnForgeAuth', () => {
   afterEach(() => {
@@ -92,4 +93,83 @@ describe('provideRnForgeAuth', () => {
       controller.verify();
     },
   );
+});
+
+describe('focus session refresh', () => {
+  let controller: HttpTestingController;
+  let service: AuthService;
+  const session = {
+    subject: 'ada',
+    provider: 'development',
+    roles: [],
+    permissions: ['items.read'],
+    expiresAt: '2099-01-01T00:00:00Z',
+  };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-15T12:00:00Z'));
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRnForgeAuth(),
+      ],
+    });
+    service = TestBed.inject(AuthService);
+    controller = TestBed.inject(HttpTestingController);
+    controller.expectOne('/auth/session').flush(session);
+  });
+
+  afterEach(() => {
+    controller.verify();
+    TestBed.resetTestingModule();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('fetches the session on focus after startup', () => {
+    window.dispatchEvent(new Event('focus'));
+    const request = controller.expectOne('/auth/session');
+    expect(request.request.method).toBe('GET');
+    request.flush(session);
+  });
+
+  it('ignores focus while a focus refresh is in flight', () => {
+    window.dispatchEvent(new Event('focus'));
+    window.dispatchEvent(new Event('focus'));
+    controller.expectOne('/auth/session').flush(session);
+  });
+
+  it('logs a failed focus refresh once and retains credentials', () => {
+    const error = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const credentials = service.credentials();
+    window.dispatchEvent(new Event('focus'));
+    controller
+      .expectOne('/auth/session')
+      .flush({}, { status: 500, statusText: 'Error' });
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(error.mock.calls[0][0]).toMatch(/^\[rn-forge\.ng\.auth\]/);
+    expect(service.credentials()).toBe(credentials);
+    expect(service.credentials().isAuthenticated).toBe(true);
+    window.dispatchEvent(new Event('focus'));
+    controller.expectOne('/auth/session').flush(session);
+  });
+
+  it('does not refetch on a timer', () => {
+    window.dispatchEvent(new Event('focus'));
+    controller.expectOne('/auth/session').flush(session);
+    vi.advanceTimersByTime(60 * 60 * 1000);
+    controller.expectNone('/auth/session');
+  });
+
+  it('removes the focus listener when destroyed', () => {
+    window.dispatchEvent(new Event('focus'));
+    controller.expectOne('/auth/session').flush(session);
+    TestBed.resetTestingModule();
+    window.dispatchEvent(new Event('focus'));
+    controller.expectNone('/auth/session');
+  });
 });

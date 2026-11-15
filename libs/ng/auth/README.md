@@ -36,6 +36,19 @@ errors set anonymous credentials and log once; the app still starts. Startup
 never navigates. Outside startup, `refresh()` passes non-401 errors to its
 caller.
 
+Window focus refetches the session; focus events during an in-flight focus
+refresh are ignored. A non-401 failure logs once and preserves credentials. The
+listener is removed when the application is destroyed. There is no interval
+refetch or backend polling to keep a session alive.
+
+`AuthService.expiryWarning` is a readonly `Signal<boolean>`. It becomes `true`
+`expiryLeadMs` before the session's `expiresAt` (five minutes by default), or
+immediately when already within that window. Each credentials update cancels the
+previous timer and recomputes the warning. Anonymous credentials set it to
+`false`; a fresh session with a later expiry resets it to `false`. Distant
+expiry dates use capped timers to avoid timeout overflow. Timers make no HTTP
+requests.
+
 `login(provider, returnTo)` starts a full-page login and records its start in
 `sessionStorage`. `returnTo` must start with `/` followed by neither `/` nor
 `\`; invalid paths throw synchronously before any side effect.
@@ -62,10 +75,14 @@ session's permission keys, never roles. `RNF_PERMISSION` follows these
 credentials when the provider is installed; without it the existing zero-config
 `AllowAnyPermission` default remains.
 
-`authRouteGuard` checks `route.data.permission` when present; signed-in users
-may access routes without a permission key. Anonymous users are sent to
-`loginPath` with a `returnTo` query parameter. Permission directives continue to
-use `RNF_PERMISSION`.
+`authGuard` allows signed-in users and calls `startLogin(state.url)` for
+anonymous users, returning `false`. Put it on a parent's `canActivateChild`. Use
+`canActivate: [permissionGuard('items.read', 'items.update')]` on a child to
+require every key through `RNF_PERMISSION`; missing permissions return a
+`UrlTree` to `forbiddenPath`. Anonymous users follow `authGuard`'s login path.
+Both guards support `canActivate` and `canActivateChild`. Calling
+`permissionGuard()` without keys throws immediately with an `[rn-forge.ng.auth]`
+message. Permission directives continue to use `RNF_PERMISSION`.
 
 Install `authInterceptor` with
 `provideHttpClient(withInterceptors([authInterceptor]))`. It handles relative

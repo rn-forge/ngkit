@@ -225,9 +225,9 @@ export const appRoutes: Route[] = [
   { path: 'error', component: ErrorComponent, data: { options: { code: 500 } } },
   {
     path: '',
-    canActivateChild: [authRouteGuard],                      // gates everything below
+    canActivateChild: [authGuard],                          // gates everything below
     children: [
-      { path: 'dashboard', component: DashboardPageComponent, data: { permission: 'app.dashboard' } },
+      { path: 'dashboard', component: DashboardPageComponent, canActivate: [permissionGuard('app.dashboard')] },
       { path: 'user/profile', component: UserComponent },
       { path: 'user/settings', component: UserComponent },   // same component, branches on URL
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -237,8 +237,9 @@ export const appRoutes: Route[] = [
 ];
 ```
 
-`route.data.permission` is read by `authRouteGuard`; `route.data.options` is
-read by page components as a per-route config override layered on global config.
+`permissionGuard(...keys)` requires every permission key; `route.data.options`
+is read by page components as a per-route config override layered on global
+config.
 
 ______________________________________________________________________
 
@@ -310,9 +311,11 @@ sets session credentials; a `401` sets anonymous credentials. Other startup
 errors log once and allow startup with anonymous credentials. Startup never
 navigates. Without the provider, permission checks retain their open defaults.
 
-- **`authRouteGuard`** on a parent route's `canActivateChild` checks
-  `route.data.permission` when a route sets it; anonymous users go to
-  `/login?returnTo=…`.
+- **`authGuard`** on a parent route's `canActivateChild` allows signed-in users;
+  anonymous users start login with the current route as the return path.
+- **`permissionGuard(...keys)`** on a child's `canActivate` requires every key,
+  returning a forbidden `UrlTree` for signed-in users missing a key. Anonymous
+  users start login; calling it without keys throws immediately.
 - **`*rnfHasPermission` / `*rnfHasAnyPermission`** structural directives for
   conditional rendering based on session permissions.
 - **`AuthService`** exposes the `credentials` signal and `refresh()` for a new
@@ -532,11 +535,11 @@ ______________________________________________________________________
   list/create/edit/delete screen.
 - **Don't duplicate global config.** Same setting on every table → set it once
   in `provideRnForgeBootstrapConfig`, not on every `[options]`.
-- **Use the auth guard and permission directives** — `authRouteGuard` and
-  `*rnfHasPermission` cover route gating and conditional rendering. Install
-  `provideHttpClient(withInterceptors([authInterceptor]))` for API errors:
-  `401`s start one login with loop protection; `403`s refetch, retry CSRF
-  once, or open the forbidden page.
+- **Use the auth guards and permission directives** — `authGuard`,
+  `permissionGuard` and `*rnfHasPermission` cover route gating and conditional
+  rendering. Install `provideHttpClient(withInterceptors([authInterceptor]))`
+  for API errors: `401`s start one login with loop protection; `403`s refetch,
+  retry CSRF once, or open the forbidden page.
 - **API services use `HttpClient` directly** (§5.3) — don't write a generic HTTP
   wrapper class; if the screen is standard CRUD, use `standardDataSource()`
   (or implement `CrudDataSource`) and extend `AbstractCrudManager`.

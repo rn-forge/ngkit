@@ -1,6 +1,6 @@
 // external imports
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable, Signal, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, Signal, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   Observable,
@@ -37,10 +37,40 @@ export class AuthService {
   /** Readonly reactive identity, initially anonymous. */
   readonly credentials: Signal<Credentials> =
     this.currentCredentials.asReadonly();
+  private readonly currentExpiryWarning = signal(false);
+  private expiryTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Whether the current session has reached its configured expiry warning lead time. */
+  readonly expiryWarning: Signal<boolean> =
+    this.currentExpiryWarning.asReadonly();
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.expiryTimer));
+  }
+
+  private setCredentials(credentials: Credentials): void {
+    this.currentCredentials.set(credentials);
+    this.recomputeExpiryWarning();
+  }
+
+  private recomputeExpiryWarning(): void {
+    clearTimeout(this.expiryTimer);
+    this.expiryTimer = undefined;
+    const session = this.currentCredentials().session;
+    const due = session
+      ? Date.parse(session.expiresAt) - this.config.expiryLeadMs - Date.now()
+      : undefined;
+    this.currentExpiryWarning.set(due !== undefined && due <= 0);
+    if (due !== undefined && due > 0) {
+      this.expiryTimer = setTimeout(
+        () => this.recomputeExpiryWarning(),
+        Math.min(due, 2_147_483_647),
+      );
+    }
+  }
 
   /** Set anonymous credentials locally, without calling the backend. */
   clear(): void {
-    this.currentCredentials.set(new AnonymousCredentials());
+    this.setCredentials(new AnonymousCredentials());
   }
 
   /** Start a provider login or open the login page for the return path. */
@@ -102,7 +132,7 @@ export class AuthService {
             return throwError(() => new PasswordLoginError('rate-limited'));
           return throwError(() => error);
         }),
-        tap((credentials) => this.currentCredentials.set(credentials)),
+        tap((credentials) => this.setCredentials(credentials)),
       );
   }
 
@@ -139,7 +169,7 @@ export class AuthService {
             : throwError(() => error),
         ),
         tap(({ redirect }) => {
-          this.currentCredentials.set(new AnonymousCredentials());
+          this.setCredentials(new AnonymousCredentials());
           if (typeof redirect === 'string') this.navigation.assign(redirect);
           else void this.router.navigateByUrl(this.config.loggedOutPath);
         }),
@@ -156,7 +186,7 @@ export class AuthService {
           ? of(new AnonymousCredentials())
           : throwError(() => error),
       ),
-      tap((credentials) => this.currentCredentials.set(credentials)),
+      tap((credentials) => this.setCredentials(credentials)),
     );
   }
 }

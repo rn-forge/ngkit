@@ -328,3 +328,119 @@ describe('login, providers and logout', () => {
     }
   });
 });
+
+describe('session expiry warning', () => {
+  let controller: HttpTestingController;
+  let service: AuthService;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-15T12:00:00Z'));
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        provideRnForgeAuth(),
+      ],
+    });
+    controller = TestBed.inject(HttpTestingController);
+    service = TestBed.inject(AuthService);
+    controller
+      .expectOne('/auth/session')
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+  });
+
+  afterEach(() => {
+    controller.verify();
+    vi.useRealTimers();
+    TestBed.resetTestingModule();
+  });
+
+  function expiresIn(minutes: number): Session {
+    return {
+      ...session,
+      expiresAt: new Date(Date.now() + minutes * 60_000).toISOString(),
+    };
+  }
+
+  function setSession(value: Session): void {
+    service.refresh().subscribe();
+    controller.expectOne('/auth/session').flush(value);
+  }
+
+  it('warns at the configured five minute lead time', () => {
+    setSession(expiresIn(10));
+    expect(service.expiryWarning()).toBe(false);
+    vi.advanceTimersByTime(5 * 60_000);
+    expect(service.expiryWarning()).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+    controller.verify();
+  });
+
+  it('warns immediately when expiry is within the lead time', () => {
+    setSession(expiresIn(2));
+    expect(service.expiryWarning()).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+    controller.verify();
+  });
+
+  it('clears the warning after refresh returns a later session', () => {
+    setSession(expiresIn(2));
+    expect(service.expiryWarning()).toBe(true);
+    setSession(expiresIn(60));
+    expect(service.expiryWarning()).toBe(false);
+    controller.verify();
+  });
+
+  it('clears the warning on logout', () => {
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    setSession(expiresIn(2));
+    expect(service.expiryWarning()).toBe(true);
+    service.logout().subscribe();
+    controller.expectOne('/auth/logout').flush({ redirect: null });
+    expect(service.expiryWarning()).toBe(false);
+    controller.verify();
+    vi.restoreAllMocks();
+  });
+
+  it('clears the warning and timer when credentials are cleared', () => {
+    setSession(expiresIn(10));
+    expect(vi.getTimerCount()).toBe(1);
+    service.clear();
+    expect(service.expiryWarning()).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+    controller.verify();
+  });
+
+  it('reschedules expiry after password login', () => {
+    setSession(expiresIn(2));
+    expect(service.expiryWarning()).toBe(true);
+    service.loginWithPassword('ada', 'pw').subscribe();
+    controller.expectOne('/auth/login/password').flush(expiresIn(60));
+    expect(service.expiryWarning()).toBe(false);
+    expect(vi.getTimerCount()).toBe(1);
+    controller.verify();
+  });
+
+  it('clears the warning when refresh returns 401', () => {
+    setSession(expiresIn(2));
+    expect(service.expiryWarning()).toBe(true);
+    service.refresh().subscribe();
+    controller
+      .expectOne('/auth/session')
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(service.expiryWarning()).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+    controller.verify();
+  });
+
+  it('does not overflow the timer for a distant session or make a request', () => {
+    setSession({ ...session, expiresAt: '2099-01-01T00:00:00Z' });
+    expect(service.expiryWarning()).toBe(false);
+    vi.advanceTimersByTime(25 * 24 * 60 * 60_000);
+    expect(service.expiryWarning()).toBe(false);
+    expect(vi.getTimerCount()).toBe(1);
+    controller.verify();
+  });
+});

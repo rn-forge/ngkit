@@ -1,6 +1,6 @@
 // external imports
 import { inject } from '@angular/core';
-import { CanActivateChildFn, Router } from '@angular/router';
+import { CanActivateChildFn, CanActivateFn, Router } from '@angular/router';
 
 // internal imports
 import {
@@ -8,18 +8,36 @@ import {
   RNF_CREDENTIALS,
   RNF_PERMISSION,
 } from './auth.config';
+import { AuthService } from './auth.services';
 
-/** Redirect anonymous users to login and enforce a route permission when present. */
-export const authRouteGuard: CanActivateChildFn = (route, state) => {
-  const config = inject(RNF_AUTH_CONFIG_TOKEN);
+/** Allow signed-in users, starting login for anonymous users. */
+export const authGuard: CanActivateFn & CanActivateChildFn = (
+  _route,
+  state,
+) => {
   const credentials = inject(RNF_CREDENTIALS);
-  const permission = inject(RNF_PERMISSION);
-  const router = inject(Router);
   if (!credentials().isAuthenticated) {
-    return router.createUrlTree([config.loginPath], {
-      queryParams: { returnTo: state.url },
-    });
+    inject(AuthService).startLogin(state.url);
+    return false;
   }
-  const key = route.data?.['permission'];
-  return !key || permission.hasPermission(key);
+  return true;
 };
+
+/** Require every permission key, starting login or routing denied users to forbidden. */
+export function permissionGuard(
+  ...keys: string[]
+): CanActivateFn & CanActivateChildFn {
+  if (keys.length === 0)
+    throw new Error(
+      '[rn-forge.ng.auth] permissionGuard requires at least one key',
+    );
+  return (route, state) => {
+    if (!authGuard(route, state)) return false;
+    const permission = inject(RNF_PERMISSION);
+    return keys.every((key) => permission.hasPermission(key))
+      ? true
+      : inject(Router).createUrlTree([
+          inject(RNF_AUTH_CONFIG_TOKEN).forbiddenPath,
+        ]);
+  };
+}

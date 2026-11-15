@@ -1,12 +1,14 @@
 // external imports
+import { DOCUMENT } from '@angular/common';
 import { withXsrfConfiguration } from '@angular/common/http';
 import {
   EnvironmentProviders,
+  DestroyRef,
   inject,
   makeEnvironmentProviders,
   provideAppInitializer,
 } from '@angular/core';
-import { catchError, firstValueFrom, of } from 'rxjs';
+import { catchError, finalize, firstValueFrom, of } from 'rxjs';
 
 // internal imports
 import {
@@ -36,8 +38,8 @@ class CredentialPermission implements Permission {
  * provideHttpClient. Reading its ɵproviders supplies the root-level name tokens
  * without installing another HttpClient; provider order therefore does not matter.
  * This intentionally deviates from ADR-0001's public-API preference.
- * Startup errors are logged unconditionally, deviating from ADR-0001's debug-only
- * logging so a failed probe is visible while the application still starts.
+ * Startup and focus errors are logged unconditionally, deviating from ADR-0001's
+ * debug-only logging so failed session probes are visible.
  */
 export function provideRnForgeAuth(
   config: Partial<AuthConfig> = {},
@@ -87,15 +89,35 @@ export function provideRnForgeAuth(
     { provide: RNF_PERMISSION, useClass: CredentialPermission },
     provideAppInitializer(() => {
       inject(AuthErrorPolicy);
-      return firstValueFrom(
-        inject(AuthService)
+      const service = inject(AuthService);
+      const window = inject(DOCUMENT).defaultView;
+      let refreshing = false;
+      const onFocus = () => {
+        if (refreshing) return;
+        refreshing = true;
+        service
           .refresh()
           .pipe(
-            catchError(() => {
-              console.error('[rn-forge.ng.auth] Session bootstrap failed');
-              return of(undefined);
+            finalize(() => {
+              refreshing = false;
             }),
-          ),
+          )
+          .subscribe({
+            error: () =>
+              console.error('[rn-forge.ng.auth] Focus session refresh failed'),
+          });
+      };
+      window?.addEventListener('focus', onFocus);
+      inject(DestroyRef).onDestroy(() =>
+        window?.removeEventListener('focus', onFocus),
+      );
+      return firstValueFrom(
+        service.refresh().pipe(
+          catchError(() => {
+            console.error('[rn-forge.ng.auth] Session bootstrap failed');
+            return of(undefined);
+          }),
+        ),
       );
     }),
   ]);
