@@ -215,6 +215,59 @@ describe('login, providers and logout', () => {
     },
   );
 
+  it('starts login with the sole navigating provider', () => {
+    const login = vi.spyOn(service, 'login');
+    service.startLogin('/orders?page=2');
+    controller
+      .expectOne('/auth/providers')
+      .flush([{ id: 'work', name: 'Work', kind: 'oidc' }]);
+    expect(login).toHaveBeenCalledExactlyOnceWith('work', '/orders?page=2');
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('opens the login page when a password provider is available', () => {
+    service.startLogin('/orders?page=2');
+    controller.expectOne('/auth/providers').flush([
+      { id: 'dev', name: 'Development', kind: 'development' },
+      { id: 'local', name: 'Local', kind: 'password' },
+    ]);
+    expect(navigateByUrl).toHaveBeenCalledExactlyOnceWith(
+      TestBed.inject(Router).createUrlTree(['/login'], {
+        queryParams: { returnTo: '/orders?page=2' },
+      }),
+    );
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('opens the login page when provider discovery fails', () => {
+    service.startLogin('/orders');
+    controller.expectOne('/auth/providers').flush(
+      {},
+      {
+        status: 500,
+        statusText: 'Error',
+      },
+    );
+    expect(navigateByUrl).toHaveBeenCalledExactlyOnceWith(
+      TestBed.inject(Router).createUrlTree(['/login'], {
+        queryParams: { returnTo: '/orders' },
+      }),
+    );
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('clears credentials locally without HTTP or navigation', () => {
+    service.refresh().subscribe();
+    controller.expectOne('/auth/session').flush(session);
+    expect(service.credentials().isAuthenticated).toBe(true);
+    service.clear();
+    expect(service.credentials()).toBeInstanceOf(AnonymousCredentials);
+    expect(service.credentials().isAuthenticated).toBe(false);
+    expect(assign).not.toHaveBeenCalled();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+    controller.verify();
+  });
+
   it('lists known providers and warns once per unknown kind', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const next = vi.fn();

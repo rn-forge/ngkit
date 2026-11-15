@@ -10,7 +10,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 // internal imports
 import { provideRnForgeCoreConfig } from '@rn-forge/ng/core';
-import { provideRnForgeAuth } from '@rn-forge/ng/auth';
+import { authInterceptor, provideRnForgeAuth } from '@rn-forge/ng/auth';
 import { provideRnForgeBootstrapConfig } from '@rn-forge/ng-bootstrap';
 import { provideRnForgeShellConfig } from '@rn-forge/ng-bootstrap/shell';
 
@@ -24,7 +24,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(appRoutes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([mockApiInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, mockApiInterceptor])),
 
     provideRnForgeCoreConfig({
       appName: 'Demo App',

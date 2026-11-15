@@ -38,6 +38,35 @@ export class AuthService {
   readonly credentials: Signal<Credentials> =
     this.currentCredentials.asReadonly();
 
+  /** Set anonymous credentials locally, without calling the backend. */
+  clear(): void {
+    this.currentCredentials.set(new AnonymousCredentials());
+  }
+
+  /** Start a provider login or open the login page for the return path. */
+  startLogin(returnTo: string): void {
+    const openLoginPage = () =>
+      void this.router.navigateByUrl(
+        this.router.createUrlTree([this.config.loginPath], {
+          queryParams: { returnTo },
+        }),
+      );
+    this.providers().subscribe({
+      next: (providers) => {
+        const navigating = providers.filter((provider) =>
+          ['oidc', 'oauth2', 'development'].includes(provider.kind),
+        );
+        if (
+          navigating.length === 1 &&
+          !providers.some((provider) => provider.kind === 'password')
+        )
+          this.login(navigating[0].id, returnTo);
+        else openLoginPage();
+      },
+      error: openLoginPage,
+    });
+  }
+
   /** Start a full-page provider login with a relative application return path. */
   login(provider: string, returnTo: string): void {
     if (

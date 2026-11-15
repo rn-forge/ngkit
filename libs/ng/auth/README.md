@@ -3,7 +3,7 @@
 Same-origin session client, imported from `@rn-forge/ng/auth`.
 
 ```ts
-provideHttpClient(),
+provideHttpClient(withInterceptors([authInterceptor])),
 provideRnForgeAuth({ sessionUrl: '/auth/session' }),
 ```
 
@@ -65,7 +65,30 @@ credentials when the provider is installed; without it the existing zero-config
 `authRouteGuard` checks `route.data.permission` when present; signed-in users
 may access routes without a permission key. Anonymous users are sent to
 `loginPath` with a `returnTo` query parameter. Permission directives continue to
-use `RNF_PERMISSION`. An error-policy interceptor follows.
+use `RNF_PERMISSION`.
+
+Install `authInterceptor` with
+`provideHttpClient(withInterceptors([authInterceptor]))`. It handles relative
+URLs equal to an `apiUrls` entry or beneath it, ignoring query strings. Absolute
+URLs, nonmatching prefixes and the session, providers, password-login and logout
+endpoints pass through untouched. It handles HTTP errors only and never adds an
+identity header.
+
+A handled `401` clears credentials and calls `startLogin()` with the current
+route. That method discovers providers: one navigating provider with no password
+provider starts full-page login; otherwise, including discovery failure, it
+opens `loginPath` with `returnTo`. Parallel failures start one login until
+credentials become authenticated again. At startup, a recorded login start is
+consumed; a `401` within `loopGuardMs` of that return opens `errorPath` with
+`error=session_not_established` instead. The original error reaches the caller.
+`clear()` sets anonymous credentials locally without a backend call.
+
+A `403` whose problem `type` ends in `csrf-failed` refetches the session and
+retries once, replacing the configured XSRF header with the current cookie token
+on unsafe methods. A second failure reaches the caller; if the refetch fails,
+the original `403` reaches the caller. Other `403`s share one in-flight session
+refetch, then navigate once to `forbiddenPath`; each caller receives its
+original error. A `403` never calls `clear()` or starts login.
 
 ## Breaking changes
 

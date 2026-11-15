@@ -323,8 +323,10 @@ navigates. Without the provider, permission checks retain their open defaults.
   XSRF names and timing defaults. Read `auth.config.ts` for the complete
   shape.
 
-An error-policy interceptor follows. Angular's built-in XSRF support uses the
-cookie and header names configured by `provideRnForgeAuth()`.
+Install `provideHttpClient(withInterceptors([authInterceptor]))`: API `401`s
+start one login with a return-loop guard; `403`s refetch the session, retrying
+CSRF failures once and routing other denials to the forbidden page. Angular's
+built-in XSRF support uses the names configured by `provideRnForgeAuth()`.
 
 ### 5.3 HTTP — Angular `HttpClient`, no ngkit wrapper
 
@@ -531,8 +533,10 @@ ______________________________________________________________________
 - **Don't duplicate global config.** Same setting on every table → set it once
   in `provideRnForgeBootstrapConfig`, not on every `[options]`.
 - **Use the auth guard and permission directives** — `authRouteGuard` and
-  `*rnfHasPermission` cover route gating and conditional rendering. An
-  error-policy interceptor follows.
+  `*rnfHasPermission` cover route gating and conditional rendering. Install
+  `provideHttpClient(withInterceptors([authInterceptor]))` for API errors:
+  `401`s start one login with loop protection; `403`s refetch, retry CSRF
+  once, or open the forbidden page.
 - **API services use `HttpClient` directly** (§5.3) — don't write a generic HTTP
   wrapper class; if the screen is standard CRUD, use `standardDataSource()`
   (or implement `CrudDataSource`) and extend `AbstractCrudManager`.

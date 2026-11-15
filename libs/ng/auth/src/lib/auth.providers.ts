@@ -17,6 +17,7 @@ import {
   RNF_PERMISSION,
 } from './auth.config';
 import { AuthService } from './auth.services';
+import { AuthErrorPolicy } from './auth.interceptors';
 import { Permission } from './auth.types';
 
 class CredentialPermission implements Permission {
@@ -84,8 +85,9 @@ export function provideRnForgeAuth(
       useFactory: () => inject(AuthService).credentials,
     },
     { provide: RNF_PERMISSION, useClass: CredentialPermission },
-    provideAppInitializer(() =>
-      firstValueFrom(
+    provideAppInitializer(() => {
+      inject(AuthErrorPolicy);
+      return firstValueFrom(
         inject(AuthService)
           .refresh()
           .pipe(
@@ -94,7 +96,7 @@ export function provideRnForgeAuth(
               return of(undefined);
             }),
           ),
-      ),
-    ),
+      );
+    }),
   ]);
 }
