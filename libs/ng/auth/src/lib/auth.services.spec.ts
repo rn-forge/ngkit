@@ -1,5 +1,5 @@
 // external imports
-import { provideHttpClient } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -10,9 +10,11 @@ import { provideRouter, Router } from '@angular/router';
 
 // internal imports
 import { provideRnForgeAuth } from './auth.providers';
+import { FullPageNavigation } from './auth.navigation';
 import { AuthService } from './auth.services';
 import {
   AnonymousCredentials,
+  PasswordLoginError,
   Session,
   SessionCredentials,
 } from './auth.types';
@@ -108,5 +110,168 @@ describe('session bootstrap and refresh', () => {
     expect(error).toHaveBeenCalledWith(
       expect.objectContaining({ status: 500 }),
     );
+  });
+});
+
+describe('login, providers and logout', () => {
+  let controller: HttpTestingController;
+  let service: AuthService;
+  const assign = vi.fn();
+  let navigateByUrl: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        provideRnForgeAuth(),
+        { provide: FullPageNavigation, useValue: { assign } },
+      ],
+    });
+    controller = TestBed.inject(HttpTestingController);
+    service = TestBed.inject(AuthService);
+    navigateByUrl = vi
+      .spyOn(TestBed.inject(Router), 'navigateByUrl')
+      .mockResolvedValue(true);
+    controller
+      .expectOne('/auth/session')
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+    sessionStorage.removeItem('rnf.auth.loginStartedAt');
+  });
+
+  afterEach(() => {
+    controller.verify();
+    sessionStorage.removeItem('rnf.auth.loginStartedAt');
+    document.cookie = 'XSRF-TOKEN=; Max-Age=0';
+    assign.mockClear();
+    vi.restoreAllMocks();
+    TestBed.resetTestingModule();
+  });
+
+  it('navigates to login and records its start without HTTP', () => {
+    const now = Date.now();
+    service.login('workspace', '/orders?page=2');
+    expect(assign).toHaveBeenCalledExactlyOnceWith(
+      '/auth/login/workspace?return_to=%2Forders%3Fpage%3D2',
+    );
+    const started = sessionStorage.getItem('rnf.auth.loginStartedAt');
+    expect(started).toMatch(/^\d+$/);
+    expect(Number(started)).toBeGreaterThanOrEqual(now);
+    expect(Number(started)).toBeLessThanOrEqual(Date.now());
+    controller.verify();
+  });
+
+  it.each(['https://evil.example/x', '//evil.example', '/\\evil'])(
+    'rejects unsafe returnTo %s before side effects',
+    (returnTo) => {
+      const store = vi.spyOn(Storage.prototype, 'setItem');
+      expect(() => service.login('workspace', returnTo)).toThrow(
+        /^\[rn-forge\.ng\.auth\]/,
+      );
+      expect(assign).not.toHaveBeenCalled();
+      expect(store).not.toHaveBeenCalled();
+    },
+  );
+
+  it('logs in with a password and Angular XSRF without navigation', () => {
+    document.cookie = 'XSRF-TOKEN=t1';
+    const next = vi.fn();
+    service.loginWithPassword('ada', 'pw').subscribe(next);
+    const request = controller.expectOne('/auth/login/password');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ username: 'ada', password: 'pw' });
+    expect(request.request.headers.get('X-XSRF-TOKEN')).toBe('t1');
+    request.flush(session);
+    expect(next).toHaveBeenCalledExactlyOnceWith(service.credentials());
+    expect(service.credentials()).toBeInstanceOf(SessionCredentials);
+    expect(service.credentials().isAuthenticated).toBe(true);
+    expect(assign).not.toHaveBeenCalled();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it.each([401, 429, 500])(
+    'handles password login status %s without changing credentials',
+    (status) => {
+      const error = vi.fn();
+      const credentials = service.credentials();
+      service.loginWithPassword('ada', 'pw').subscribe({ error });
+      controller
+        .expectOne('/auth/login/password')
+        .flush({}, { status, statusText: 'Error' });
+      const failure = error.mock.calls[0][0];
+      if (status === 500) {
+        expect(failure).toBeInstanceOf(HttpErrorResponse);
+        expect(failure.status).toBe(500);
+      } else {
+        expect(failure).toBeInstanceOf(PasswordLoginError);
+        expect(failure.reason).toBe(
+          status === 401 ? 'invalid-credentials' : 'rate-limited',
+        );
+        expect(failure.message).toMatch(/^\[rn-forge\.ng\.auth\]/);
+      }
+      expect(service.credentials()).toBe(credentials);
+      expect(service.credentials().isAuthenticated).toBe(false);
+    },
+  );
+
+  it('lists known providers and warns once per unknown kind', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const next = vi.fn();
+    service.providers().subscribe(next);
+    const request = controller.expectOne('/auth/providers');
+    expect(request.request.method).toBe('GET');
+    const providers = [
+      { id: 'workspace', name: 'Workspace', kind: 'oidc' },
+      { id: 'local', name: 'Local', kind: 'password' },
+      { id: 'legacy', name: 'Legacy', kind: 'saml' },
+    ];
+    request.flush(providers);
+    expect(next).toHaveBeenCalledExactlyOnceWith(providers.slice(0, 2));
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^\[rn-forge\.ng\.auth\] unknown provider kind/,
+    );
+  });
+
+  it.each([
+    [200, 'https://idp.example/logout'],
+    [200, null],
+    [401, null],
+    [500, null],
+  ])('handles logout status %s with redirect %s', (status, redirect) => {
+    service.refresh().subscribe();
+    controller.expectOne('/auth/session').flush(session);
+    const credentials = service.credentials();
+    const next = vi.fn();
+    const complete = vi.fn();
+    const error = vi.fn();
+    service.logout().subscribe({ next, complete, error });
+    const request = controller.expectOne('/auth/logout');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({});
+    request.flush({ redirect }, { status, statusText: 'test' });
+    expect(next).not.toHaveBeenCalled();
+    if (status === 500) {
+      expect(error).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 500 }),
+      );
+      expect(service.credentials()).toBe(credentials);
+      expect(service.credentials().isAuthenticated).toBe(true);
+      expect(complete).not.toHaveBeenCalled();
+      expect(assign).not.toHaveBeenCalled();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+    } else {
+      expect(error).not.toHaveBeenCalled();
+      expect(complete).toHaveBeenCalledTimes(1);
+      expect(service.credentials()).toBeInstanceOf(AnonymousCredentials);
+      if (redirect) {
+        expect(assign).toHaveBeenCalledExactlyOnceWith(redirect);
+        expect(navigateByUrl).not.toHaveBeenCalled();
+      } else {
+        expect(navigateByUrl).toHaveBeenCalledExactlyOnceWith('/login');
+        expect(assign).not.toHaveBeenCalled();
+      }
+    }
   });
 });

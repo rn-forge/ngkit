@@ -36,6 +36,25 @@ errors set anonymous credentials and log once; the app still starts. Startup
 never navigates. Outside startup, `refresh()` passes non-401 errors to its
 caller.
 
+`login(provider, returnTo)` starts a full-page login and records its start in
+`sessionStorage`. `returnTo` must start with `/` followed by neither `/` nor
+`\`; invalid paths throw synchronously before any side effect.
+
+`loginWithPassword(username, password)` posts local credentials using Angular's
+XSRF support and emits the new credentials without navigating. A `401` becomes
+`PasswordLoginError` with reason `invalid-credentials`; a `429` uses
+`rate-limited`. Other HTTP errors pass through. Failures leave credentials
+unchanged.
+
+`providers()` fetches the backend provider list, keeping `oidc`, `oauth2`,
+`development` and `password` kinds and warning for each unknown kind.
+
+`logout()` posts to the backend, clears credentials, and follows its redirect
+with full-page navigation, or routes to `loggedOutPath` when there is no
+redirect. A `401` also clears credentials and routes to `loggedOutPath`; other
+errors pass through without changing credentials. It completes without emitting
+a value. In the demo, reload the page to sign in again.
+
 `AuthService.credentials` is a `Signal<Credentials>`, also available through
 `RNF_CREDENTIALS`. Credentials expose `session`, `isAuthenticated`, `roles`,
 `hasPermission()` and `hasAnyPermission()`. Permission checks use only the
@@ -56,8 +75,8 @@ use `RNF_PERMISSION`. An error-policy interceptor follows.
   `AuthConfig`, `DEFAULT_AUTH_CONFIG` and `RNF_AUTH_CONFIG_TOKEN`.
 - JWT storage, bearer headers, `JwtToken`, `JwtCredentials`, `LoginResponse`,
   `UserProfile`, `AuthBackendService` and `authHttpInterceptor` are removed.
-- `AuthService` exposes only `credentials` and `refresh()`; its token login,
-  logout, navigation and profile APIs are removed.
+- `AuthService` exposes session credentials, refresh, provider login, password
+  login, providers and logout; its former token and profile APIs are removed.
 - Credentials expose `session` instead of `userProfile`; role and scope checks
   are removed. `authComponentMixin` exposes `session` and drops `authService`.
 - `disableAuth` and route/backend ignore lists are removed.

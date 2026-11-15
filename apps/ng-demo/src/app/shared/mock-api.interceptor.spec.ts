@@ -131,6 +131,41 @@ describe('mockApiInterceptor', () => {
     },
   );
 
+  describe('auth routes', () => {
+    beforeEach(() => resetMockApi());
+
+    it('serves the development provider', async () => {
+      const { http, controller } = setup();
+
+      await expect(
+        firstValueFrom(http.get('/auth/providers')),
+      ).resolves.toEqual([
+        { id: 'development', name: 'Development', kind: 'development' },
+      ]);
+      controller.expectNone('/auth/providers');
+    });
+
+    it('logs out, rejects session refresh, and resets signed in', async () => {
+      const { http, controller } = setup();
+
+      await expect(
+        firstValueFrom(http.post('/auth/logout', {})),
+      ).resolves.toEqual({ redirect: null });
+      const signedOut = await firstValueFrom(http.get('/auth/session')).catch(
+        (error: HttpErrorResponse) => error,
+      );
+      expect(signedOut).toBeInstanceOf(HttpErrorResponse);
+      expect((signedOut as HttpErrorResponse).status).toBe(401);
+      controller.expectNone('/auth/logout');
+      controller.expectNone('/auth/session');
+
+      resetMockApi();
+      await expect(
+        firstValueFrom(http.get('/auth/session')),
+      ).resolves.toMatchObject({ subject: 'demo-admin' });
+    });
+  });
+
   describe('products (wire standards)', () => {
     type Page = {
       items: { id: number; name: string }[];

@@ -1,3 +1,23 @@
+/** Supported backend login provider kinds. */
+export type AuthProviderKind = 'oidc' | 'oauth2' | 'development' | 'password';
+
+/** Login provider advertised by the backend. */
+export interface AuthProvider {
+  readonly id: string;
+  readonly name: string;
+  readonly kind: AuthProviderKind;
+}
+
+/** Expected password login failures that a login form can display. */
+export type PasswordLoginFailure = 'invalid-credentials' | 'rate-limited';
+
+/** Typed password failure, deliberately mapping HTTP statuses for login forms. */
+export class PasswordLoginError extends Error {
+  constructor(readonly reason: PasswordLoginFailure) {
+    super(`[rn-forge.ng.auth] Password login failed: ${reason}`);
+  }
+}
+
 /** Readonly identity and permissions returned by the backend session endpoint. */
 export interface Session {
   readonly subject: string;

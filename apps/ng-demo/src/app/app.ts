@@ -9,6 +9,7 @@ import {
   StyleHelper,
 } from '@rn-forge/ng-bootstrap';
 import { UserSettingsService } from '@rn-forge/ng-bootstrap/auth';
+import { AuthService } from '@rn-forge/ng/auth';
 import {
   ColorMode,
   DIVIDER,
@@ -34,6 +35,7 @@ import {
 export class App {
   private readonly _styleHelper = inject(StyleHelper);
   private readonly _userSettingsService = inject(UserSettingsService);
+  private readonly authService = inject(AuthService);
 
   @ViewChild('helpModal') private readonly helpModal!: ModalComponent;
 
@@ -81,6 +83,11 @@ export class App {
             items: [
               { type: 'link', label: 'Profile', href: '/user/profile' },
               { type: 'link', label: 'Settings', href: '/user/settings' },
+              {
+                type: 'callback',
+                label: 'Logout',
+                callback: () => this.authService.logout().subscribe(),
+              },
             ],
           },
         },

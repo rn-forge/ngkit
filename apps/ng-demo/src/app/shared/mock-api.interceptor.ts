@@ -36,9 +36,11 @@ let products: MockProduct[] = [];
 let versions = new Map<number, number>();
 let nextId = 100;
 let idempotent = new Map<string, MockProduct>();
+let signedIn = true;
 
 /** Resets the in-memory store to the seed data (used by tests). */
 export function resetMockApi(): void {
+  signedIn = true;
   products = SEED_PRODUCTS.map((p) => ({ ...p }));
   versions = new Map(products.map((p) => [p.id, 1]));
   nextId = 100;
@@ -208,6 +210,7 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
 
   const path = url.split('?')[0];
   if (method === 'GET' && path.endsWith('/auth/session')) {
+    if (!signedIn) return problem(401, 'Unauthorized');
     const session: Session = {
       subject: 'demo-admin',
       name: 'Demo Admin',
@@ -229,6 +232,17 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
       expiresAt: '2099-01-01T00:00:00Z',
     };
     return respond(200, session);
+  }
+
+  if (method === 'POST' && path.endsWith('/auth/logout')) {
+    signedIn = false;
+    return respond(200, { redirect: null });
+  }
+
+  if (method === 'GET' && path.endsWith('/auth/providers')) {
+    return respond(200, [
+      { id: 'development', name: 'Development', kind: 'development' },
+    ]);
   }
 
   if (!url.includes('/api/')) {
