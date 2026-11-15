@@ -856,7 +856,7 @@ docs = [
     { name = "mdformat-gfm", specifier = ">=0.4" },
     { name = "mdformat-mkdocs", specifier = ">=5.3.0" },
     { name = "mkdocs-material", specifier = ">=9.6" },
-    { name = "mkdocstrings", extras = ["python"], specifier = ">=0.30" },
+    { name = "mkdocstrings", extras = ["python"], specifier = ">=1.0.8" },
 ]
 
 [[package]]
