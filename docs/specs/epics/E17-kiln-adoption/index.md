@@ -2,8 +2,9 @@
 
 |  |  |
 | -- | -- |
-| **State** | Active |
+| **State** | Closed |
 | **Start Date** | 2026-11-03 |
+| **Closed Date** | 2026-11-14 |
 
 **Release:** [Release 3](../../../releases/release-3/index.md)
 
@@ -121,3 +122,14 @@ grep -q '^archetype = "node-lib"' .rn-forge/kiln/config.toml
 Not scriptable, checked on GitHub: a pull-request run where `ci-ok` passes, a
 push to `main` that deploys the docs site and whose `release` job logs its mode
 (F17.2).
+
+As run, 2026-11-14: the acceptance block above passed locally (`task validate`
+exit 0, `task lint KILN_DOCTOR_FULL=1` exit 0). On GitHub, pull request #17's
+run passed `ci-ok`; the first `main` run
+([43667226164](https://github.com/rn-forge/ngkit/actions/runs/43667226164),
+merge `0a13aa8`) succeeded in `validate`, `secret-scan`, `test-cloud`, `smoke`,
+`sonar`, `checks-ok`, `release`, `docs` and `ci-ok`, with `verify-release`
+skipped; the `release` job logged
+`Release mode: released (v0.3.0, npm tag latest)`, and the site at
+<https://rn-forge.github.io/ngkit/> served `api/ng/`, `storybook/ng-bootstrap/`
+and `specs/` with HTTP 200.

@@ -69,11 +69,52 @@ land first, then S17.2.1. Revised 2026-11-14 (owner decision): the pin stays on
 settled against `rn-forge-fastapi` and `rn-forge-django`. The same day the owner
 closed the scope as E17 and F5.1.
 
+E17 closed 2026-11-14. Pull request #17 merged as `0a13aa8`; the first `main`
+run (43667226164) succeeded and its `release` job logged
+`Release mode: released (v0.3.0, npm tag latest)`; the docs site deployed. The
+version is bumped to 0.4.0 (`task version -- minor`) on `chore/release-3-close`;
+Release 3 ships as `v0.4.0` when that pull request merges and the `release` job
+runs in `new` mode. The Shipped table is recorded after that run.
+
 ## Commits
 
 ```console
-$ git log --oneline -E --grep 'F5\.[0-9]|S5\.[0-9]\.[0-9]|F11\.[0-9]|S11\.[0-9]\.[0-9]'
-(not refreshed until the cut)
+$ git log --oneline -E --grep 'E17|F5\.1|S5\.1\.[0-9]|F17\.[0-9]|S17\.[0-9]+\.[0-9]+'
+0a13aa8 Merge pull request #17 from rn-forge/feature/release-3
+b6dd9f7 Release 3 scope: E17 and F5.1; F5.2-F5.4 and F11.1 to the backlog
+d32df2b F5.1 close: accept ADR-0006, settle the E5 wire contract
+1bea6da S17.5.3
+271e1d1 Brief S17.5.3
+86c8ad2 S17.5.2
+b045808 F17.5 Active
+d852c93 Brief S17.5.2
+c856dbf S17.5.1
+cec1d65 Brief S17.5.1
+81e7878 S17.4.1
+fb7bba1 F17.1 close S17.1.2 to S17.1.6, brief S17.4.1
+0035837 Merge feature/kiln-cutover into feature/release-3
+8de0a0c S17.2.5
+f9ab2e1 S17.2.5 override minimatch 10.x to 11
+31f6e27 S17.2.5 kiln apply: start-ci-run argument fix
+59cbcf6 F17.2 close S17.2.1 to S17.2.4
+7436798 F17.2 pin stays on feature/v1
+c7bdf3c S17.2.3
+09fe594 S17.2.1 nx
+c85eb53 S17.2.1 legacy
+9117dc1 S17.2.1 kiln
+8a35e71 S17.2.1 docs
+ccf27c3 S17.2.1 update
+3a95c46 S17.2.11
+136c0f6 S17.2.10
+eaf9d36 F17.2 Refinement
+8c392b6 F17.1, F17.3–F17.5
+1ab7023 S17.2.9
+70e1758 S17.2.6
+ca3526e S17.2.7
+8c37d84 S17.1.5
+9ef6f35 docs(specs): S17.1.2 - convert epics, features and stories to kiln's work model
+b126d75 E17 Elaboration
+0476583 Release 2: move E5 and F11.1 to Release 3
 ```
 
 ## Exit criteria
