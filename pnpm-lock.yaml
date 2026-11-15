@@ -217,9 +217,6 @@ importers:
       jquery-treegrid:
         specifier: ^0.3.0
         version: 0.3.0
-      jwt-decode:
-        specifier: ^4.0.0
-        version: 4.0.0
       lodash-es:
         specifier: ^4.18.1
         version: 4.18.1
@@ -399,18 +396,9 @@ importers:
 
   libs/ng:
     dependencies:
-      build-url-ts:
-        specifier: ^6.3.0
-        version: 6.3.0
       content-disposition:
         specifier: ^3.0.0
         version: 3.0.0
-      jwt-decode:
-        specifier: ^4.0.0
-        version: 4.0.0
-      lodash-es:
-        specifier: ^4.18.1
-        version: 4.18.1
     devDependencies:
       '@angular/common':
         specifier: ^22.2.5
@@ -7058,10 +7046,6 @@ packages:
 
   jws@4.0.1:
     resolution: {integrity: sha512-EKI/M/yqPncGUUh44xz0PxSidXFr/+r0pA70+gIYhjv+et7yxM+s29Y+VGDkovRofQem0fs7Uvf4+YmAdyRduA==}
-
-  jwt-decode@4.0.0:
-    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
-    engines: {node: '>=18'}
 
   karma-source-map-support@1.4.0:
     resolution: {integrity: sha512-RsBECncGO17KAoJCYXjv+ckIz+Ii9NCi+9enk+rq6XC81ezYkb4/RHE6CTXdA7IOJqoF3wcaLfVG0CPmE5ca6A==}
@@ -17563,8 +17547,6 @@ snapshots:
     dependencies:
       jwa: 2.0.1
       safe-buffer: 5.2.1
-
-  jwt-decode@4.0.0: {}
 
   karma-source-map-support@1.4.0:
     dependencies:

@@ -11,8 +11,8 @@ import {
 } from '@angular/core';
 import { get } from 'lodash-es';
 
-// internal imports — UserProfile type from auth (only this file + auth EP import it)
-import { UserProfile } from '@rn-forge/ng/auth';
+// internal imports — Session type from auth (only this file + auth EP import it)
+import { Session } from '@rn-forge/ng/auth';
 import { ConfigOptions, ConfigurableComponent } from '@rn-forge/ng-bootstrap';
 
 // types
@@ -36,7 +36,7 @@ export class UserProfileComponent
   implements OnInit
 {
   /** Input properties **/
-  profile: InputSignal<UserProfile> = input.required();
+  profile: InputSignal<Session> = input.required();
   profileAttributes: WritableSignal<ProfileAttribute[]> = signal<
     ProfileAttribute[]
   >([]);
@@ -70,51 +70,21 @@ export class UserProfileComponent
     return {
       enabled: true,
       attributes: [
+        { key: 'subject', label: 'Subject' },
+        { key: 'name', label: 'Name' },
+        { key: 'email', label: 'Email' },
+        { key: 'provider', label: 'Provider' },
         {
-          key: 'id',
-          label: 'ID',
-        },
-        {
-          key: 'email',
-          label: 'Email',
-        },
-        {
-          key: 'first_name',
-          label: 'First Name',
-        },
-        {
-          key: 'last_name',
-          label: 'Last Name',
-        },
-        {
-          key: 'avatar',
-          label: 'Avatar',
-        },
-        {
-          key: 'is_staff',
-          label: 'Staff User',
-        },
-        {
-          key: 'is_superuser',
-          label: 'Superuser',
-        },
-        {
-          key: 'groups',
-          label: 'Groups',
-          getter: (profile: UserProfile) =>
-            profile.groups?.map((g) => g.name).join(', ') ?? '',
+          key: 'roles',
+          label: 'Roles',
+          getter: (profile: Session) => profile.roles.join(', '),
         },
         {
           key: 'permissions',
           label: 'Permissions',
-          getter: (profile: UserProfile) =>
-            profile.permissions?.map((p) => p).join(', ') ?? '',
+          getter: (profile: Session) => profile.permissions.join(', '),
         },
-        {
-          key: 'status',
-          label: 'Status',
-          getter: (profile: UserProfile) => profile.status ?? '',
-        },
+        { key: 'expiresAt', label: 'Expires At' },
       ],
       admin: {
         label: 'Contact Admin',
@@ -127,6 +97,6 @@ export class UserProfileComponent
 export interface ProfileAttribute {
   key: string;
   label: string;
-  getter?: (profile: UserProfile) => string;
+  getter?: (profile: Session) => string;
   value?: string;
 }

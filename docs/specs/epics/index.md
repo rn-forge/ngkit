@@ -16,7 +16,7 @@ Jump to: [E1–E10](#e1e10) · [E11–E20](#e11e20)
 | [E2 — Retire the HTTP entry point](E2-retire-http-entry-point/index.md) | Closed | 3 Closed | — |
 | [E3 — Core correctness](E3-core-correctness/index.md) | Closed | 2 Closed | — |
 | [E4 — Standard resource screen](E4-standard-resource-screen/index.md) | Closed | 3 Closed | release-1, release-2 |
-| [E5 — Session client auth](E5-session-client-auth/index.md) | Active | 4 New · 1 Closed | release-3, release-4 |
+| [E5 — Session client auth](E5-session-client-auth/index.md) | Active | 1 Active · 3 New · 1 Closed | release-3, release-4 |
 | [E6 — Asynchronous resource](E6-asynchronous-resource/index.md) | New | 2 New | — |
 | [E7 — Theme controller](E7-theme-controller/index.md) | New (deferred) | — | — |
 | [E8 — `@rn-forge/ng-tailwind` package](E8-tailwind-package/index.md) | Closed | 4 Closed | release-2 |

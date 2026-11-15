@@ -1,3 +1,4 @@
+// external imports
 import {
   HttpClient,
   HttpErrorResponse,
@@ -10,8 +11,9 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
+
+// internal imports
 import { environment } from '../../environments/environment';
-import { getJwtForEmail } from './demo-jwt';
 import { mockApiInterceptor, resetMockApi } from './mock-api.interceptor';
 
 // ---------------------------------------------------------------------------
@@ -92,27 +94,42 @@ describe('mockApiInterceptor', () => {
     expect(status).toBe(500);
   });
 
-  it('returns an access token keyed on the submitted email for login', async () => {
-    const { http } = setup();
-
-    const res: unknown = await firstValueFrom(
-      http.post('/api/auth/', { user: 'readonly@example.com' }),
-    );
-
-    expect(res).toEqual({
-      access_token: getJwtForEmail('readonly@example.com'),
-    });
-  });
-
-  it('defaults login to admin@example.com when no user is given', async () => {
-    const { http } = setup();
-
-    const res: unknown = await firstValueFrom(http.post('/api/auth/', {}));
-
-    expect(res).toEqual({
-      access_token: getJwtForEmail('admin@example.com'),
-    });
-  });
+  it.each([true, false])(
+    'returns the demo session with mockProducts=%s',
+    async (mockProducts) => {
+      const { http, controller } = setup();
+      const previous = environment.mockProducts;
+      environment.mockProducts = mockProducts;
+      try {
+        const res = await firstValueFrom(
+          http.get('/auth/session?refresh=true'),
+        );
+        expect(res).toEqual({
+          subject: 'demo-admin',
+          name: 'Demo Admin',
+          provider: 'development',
+          roles: ['admin'],
+          permissions: [
+            'demo.dashboard',
+            'demo.products',
+            'demo.products.list',
+            'demo.products.read',
+            'demo.products.create',
+            'demo.products.update',
+            'demo.products.delete',
+            'demo.products.import',
+            'demo.products.export',
+            'demo.forms',
+            'demo.org-chart',
+          ],
+          expiresAt: '2099-01-01T00:00:00Z',
+        });
+        controller.expectNone('/auth/session?refresh=true');
+      } finally {
+        environment.mockProducts = previous;
+      }
+    },
+  );
 
   describe('products (wire standards)', () => {
     type Page = {

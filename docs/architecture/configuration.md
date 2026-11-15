@@ -21,7 +21,7 @@ at every call site.
 
 Pages extend `AbstractPage<TOptions>` (root entry point, auth-free) or
 `AbstractAuthPage<TOptions>` (`/auth` entry point, adds
-`isAuthenticated`/`userProfile`/`hasPermission()`). Both wire a
+`isAuthenticated`/`session`/`hasPermission()`). Both wire a
 `@ViewChild(AlertComponent) alert` plus `handleErrorResponse(httpError)`, which
 surfaces failed HTTP subscriptions through the page's alert. This split is a
 deliberate dependency boundary: using `AbstractPage` keeps `@rn-forge/ng/auth`

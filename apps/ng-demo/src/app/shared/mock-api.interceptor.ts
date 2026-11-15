@@ -1,3 +1,4 @@
+// external imports
 import {
   HttpErrorResponse,
   HttpEvent,
@@ -7,8 +8,10 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
+
+// internal imports
+import { Session } from '@rn-forge/ng/auth';
 import { environment } from '../../environments/environment';
-import { getJwtForEmail } from './demo-jwt';
 
 interface MockProduct {
   id: number;
@@ -203,6 +206,31 @@ function handleProductsRoute(
 export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
   const { url, method } = req;
 
+  const path = url.split('?')[0];
+  if (method === 'GET' && path.endsWith('/auth/session')) {
+    const session: Session = {
+      subject: 'demo-admin',
+      name: 'Demo Admin',
+      provider: 'development',
+      roles: ['admin'],
+      permissions: [
+        'demo.dashboard',
+        'demo.products',
+        'demo.products.list',
+        'demo.products.read',
+        'demo.products.create',
+        'demo.products.update',
+        'demo.products.delete',
+        'demo.products.import',
+        'demo.products.export',
+        'demo.forms',
+        'demo.org-chart',
+      ],
+      expiresAt: '2099-01-01T00:00:00Z',
+    };
+    return respond(200, session);
+  }
+
   if (!url.includes('/api/')) {
     return next(req);
   }
@@ -215,17 +243,6 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
           statusText: 'Internal Server Error',
         }),
     );
-  }
-
-  // Strip query string for path matching
-  const path = url.split('?')[0];
-
-  // Auth login — return token keyed on email
-  if (method === 'POST' && path.endsWith('/api/auth/')) {
-    const body = req.body as { user?: string } | null;
-    return respond(200, {
-      access_token: getJwtForEmail(body?.user ?? 'admin@example.com'),
-    });
   }
 
   if (!environment.mockProducts) {

@@ -1,5 +1,8 @@
+// external imports
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
-import { AuthService } from '@rn-forge/ng/auth';
+
+// internal imports
+import { RNF_CREDENTIALS } from '@rn-forge/ng/auth';
 import { AlertComponent } from '@rn-forge/ng-bootstrap';
 
 @Component({
@@ -9,13 +12,14 @@ import { AlertComponent } from '@rn-forge/ng-bootstrap';
   templateUrl: './dashboard.page.html',
 })
 export class DashboardPageComponent implements AfterViewInit {
-  protected readonly authService = inject(AuthService);
+  private readonly credentials = inject(RNF_CREDENTIALS);
 
   @ViewChild(AlertComponent) private readonly alert?: AlertComponent;
 
   ngAfterViewInit(): void {
+    const session = this.credentials().session;
     this.alert?.success(
-      `Welcome, ${this.authService.jwtToken?.subject ?? 'user'}!`,
+      `Welcome, ${session?.name ?? session?.subject ?? 'user'}!`,
     );
   }
 

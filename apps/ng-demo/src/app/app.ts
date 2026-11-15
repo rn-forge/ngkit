@@ -1,6 +1,8 @@
+// external imports
 import { Component, inject, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { AuthService } from '@rn-forge/ng/auth';
+
+// internal imports
 import {
   ModalComponent,
   ModalOptions,
@@ -30,8 +32,6 @@ import {
   templateUrl: './app.html',
 })
 export class App {
-  protected readonly authService = inject(AuthService);
-
   private readonly _styleHelper = inject(StyleHelper);
   private readonly _userSettingsService = inject(UserSettingsService);
 
@@ -81,11 +81,6 @@ export class App {
             items: [
               { type: 'link', label: 'Profile', href: '/user/profile' },
               { type: 'link', label: 'Settings', href: '/user/settings' },
-              {
-                type: 'callback',
-                label: 'Logout',
-                callback: () => this.authService.logout(),
-              },
             ],
           },
         },

@@ -2,11 +2,7 @@
 import { Component, inject } from '@angular/core';
 
 // internal imports — auth tokens from ng-auth (only this file pulls in auth)
-import {
-  RNF_CREDENTIALS,
-  RNF_PERMISSION,
-  UserProfile,
-} from '@rn-forge/ng/auth';
+import { RNF_CREDENTIALS, RNF_PERMISSION, Session } from '@rn-forge/ng/auth';
 
 import { AbstractPage, ConfigOptions } from '@rn-forge/ng-bootstrap';
 
@@ -32,8 +28,8 @@ export abstract class AbstractAuthPage<
     return this._credentials().isAuthenticated;
   }
 
-  get userProfile(): UserProfile {
-    return this._credentials().userProfile() as UserProfile;
+  get session(): Session | null {
+    return this._credentials().session;
   }
 
   hasPermission(key: string): boolean {

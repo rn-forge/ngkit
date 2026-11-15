@@ -1,60 +1,25 @@
 // external imports
 import { inject } from '@angular/core';
-import { CanActivateChildFn } from '@angular/router';
+import { CanActivateChildFn, Router } from '@angular/router';
 
 // internal imports
-import { isDebugMode } from '@rn-forge/ng/core';
 import {
-  AuthFrontendConfig,
   RNF_AUTH_CONFIG_TOKEN,
+  RNF_CREDENTIALS,
   RNF_PERMISSION,
 } from './auth.config';
-import { AuthService } from './auth.services';
 
+/** Redirect anonymous users to login and enforce a route permission when present. */
 export const authRouteGuard: CanActivateChildFn = (route, state) => {
-  const config: AuthFrontendConfig | undefined = inject(
-    RNF_AUTH_CONFIG_TOKEN,
-  ).frontend;
-  const authService = inject(AuthService);
-  const permissionService = inject(RNF_PERMISSION);
-
-  if (isDebugMode())
-    console.debug('rn-forge.ng.auth.routeGuard: %O | %O', route, state);
-
-  for (const pattern of config?.ignoreAppRoutes ?? []) {
-    if (state.url.includes(pattern)) {
-      if (isDebugMode()) {
-        console.debug(
-          'rn-forge.ng.auth.routeGuard: ignoring auth URL | %s',
-          state.url,
-        );
-      }
-      return true;
-    }
+  const config = inject(RNF_AUTH_CONFIG_TOKEN);
+  const credentials = inject(RNF_CREDENTIALS);
+  const permission = inject(RNF_PERMISSION);
+  const router = inject(Router);
+  if (!credentials().isAuthenticated) {
+    return router.createUrlTree([config.loginPath], {
+      queryParams: { returnTo: state.url },
+    });
   }
-
-  if (!authService.isAuthenticated) {
-    if (isDebugMode()) {
-      console.warn(
-        'rn-forge.ng.auth.routeGuard: user not authenticated, redirecting | %s',
-        state.url,
-      );
-    }
-    authService.sendToLogin(state.url);
-    return false;
-  }
-
-  const routePermission = route.data?.['permission'];
-  if (routePermission && !permissionService.hasPermission(routePermission)) {
-    if (isDebugMode()) {
-      console.warn(
-        'rn-forge.ng.auth.routeGuard: missing permission %s | %s',
-        routePermission,
-        state.url,
-      );
-    }
-    return false;
-  }
-
-  return true;
+  const key = route.data?.['permission'];
+  return !key || permission.hasPermission(key);
 };

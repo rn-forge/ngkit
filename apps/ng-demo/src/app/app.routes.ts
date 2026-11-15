@@ -1,4 +1,7 @@
+// external imports
 import { Route } from '@angular/router';
+
+// internal imports
 import { authRouteGuard } from '@rn-forge/ng/auth';
 import { ErrorComponent } from '@rn-forge/ng-bootstrap';
 import { AuthComponent, UserComponent } from '@rn-forge/ng-bootstrap/auth';
@@ -6,17 +9,11 @@ import { DashboardPageComponent } from './dashboard/dashboard.page';
 import { FormsPageComponent } from './forms/forms.page';
 import { OrgChartPageComponent } from './org-chart/org-chart.page';
 import { ProductsPageComponent } from './products/products.page';
-import { DEMO_USERS } from './shared/demo-jwt';
 
 export const appRoutes: Route[] = [
   {
-    path: 'auth',
+    path: 'login',
     component: AuthComponent,
-    data: {
-      options: {
-        users: DEMO_USERS,
-      },
-    },
   },
   {
     path: 'error',

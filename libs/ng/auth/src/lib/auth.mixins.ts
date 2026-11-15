@@ -3,46 +3,37 @@ import { inject } from '@angular/core';
 
 // internal imports
 import { AbstractConstructor } from '@rn-forge/ng/core';
-import { AuthService } from './auth.services';
-import { UserProfile } from './auth.types';
+import { RNF_CREDENTIALS, RNF_PERMISSION } from './auth.config';
+import { Session } from './auth.types';
 
+/** Component access to the current session, authentication state and permission policy. */
 export interface AuthComponentMixin {
-  readonly authService: AuthService;
-  readonly userProfile: UserProfile;
+  readonly session: Session | null;
   readonly isAuthenticated: boolean;
   userHasPermission(permission: string): boolean;
   userHasAnyPermission(...permissions: string[]): boolean;
 }
 
-/**
- * Mixin to provide access to AuthService and its methods within a component.
- * Return type is cast to `$C & AbstractConstructor<AuthComponentMixin>` so that
- * the base class's generic parameters (e.g. ConfigurableComponent<$O>) are
- * preserved through the mixin chain and don't collapse to `object`.
- */
+/** Preserve the base class's generic parameters through the mixin chain. */
 export function authComponentMixin<$C extends AbstractConstructor>(
   BaseClass: $C,
 ) {
   abstract class AuthenticatedBaseComponent extends BaseClass {
-    public readonly authService: AuthService = inject(AuthService);
-
-    get userProfile(): UserProfile {
-      return (this.authService.userProfile || {}) as UserProfile;
+    private readonly credentials = inject(RNF_CREDENTIALS);
+    private readonly permission = inject(RNF_PERMISSION);
+    get session(): Session | null {
+      return this.credentials().session;
     }
-
     get isAuthenticated(): boolean {
-      return this.authService.isAuthenticated;
+      return this.credentials().isAuthenticated;
     }
-
     userHasPermission(permission: string): boolean {
-      return this.authService.hasPermission(permission);
+      return this.permission.hasPermission(permission);
     }
-
     userHasAnyPermission(...permissions: string[]): boolean {
-      return this.authService.hasAnyPermission(...permissions);
+      return this.permission.hasAnyPermission(...permissions);
     }
   }
-
   return AuthenticatedBaseComponent as unknown as $C &
     AbstractConstructor<AuthComponentMixin>;
 }
