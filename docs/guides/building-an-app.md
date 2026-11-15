@@ -222,6 +222,8 @@ object — see §5.5 and copy the real shape from `apps/ng-demo/src/app/app.ts`.
 ```ts
 export const appRoutes: Route[] = [
   { path: 'login', component: LoginComponent },
+  { path: 'login/error', component: AuthErrorComponent },
+  { path: 'forbidden', component: ForbiddenComponent },
   { path: 'error', component: ErrorComponent, data: { options: { code: 500 } } },
   {
     path: '',
@@ -435,6 +437,10 @@ UI layer over `@rn-forge/ng/auth` (configured separately — most apps call both
 
 - **`LoginComponent`** — chooses an available sign-in provider or shows a
   password form; successful sign-in returns to `returnTo` (default `/`).
+- **`AuthErrorComponent`** — shows a known sign-in error at `/login/error` and
+  links back to the configured login page.
+- **`ForbiddenComponent`** — explains denied access at `/forbidden` and links
+  home without restarting login.
 - **`UserComponent`** — profile and settings screens; route _both_
   `/user/profile` and `/user/settings` to this one component.
 - **`UserSettingsService`** — per-user persisted settings (theme, color mode,

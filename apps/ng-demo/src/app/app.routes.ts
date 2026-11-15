@@ -4,7 +4,12 @@ import { Route } from '@angular/router';
 // internal imports
 import { authGuard, permissionGuard } from '@rn-forge/ng/auth';
 import { ErrorComponent } from '@rn-forge/ng-bootstrap';
-import { LoginComponent, UserComponent } from '@rn-forge/ng-bootstrap/auth';
+import {
+  AuthErrorComponent,
+  ForbiddenComponent,
+  LoginComponent,
+  UserComponent,
+} from '@rn-forge/ng-bootstrap/auth';
 import { DashboardPageComponent } from './dashboard/dashboard.page';
 import { FormsPageComponent } from './forms/forms.page';
 import { OrgChartPageComponent } from './org-chart/org-chart.page';
@@ -14,6 +19,14 @@ export const appRoutes: Route[] = [
   {
     path: 'login',
     component: LoginComponent,
+  },
+  {
+    path: 'login/error',
+    component: AuthErrorComponent,
+  },
+  {
+    path: 'forbidden',
+    component: ForbiddenComponent,
   },
   {
     path: 'error',

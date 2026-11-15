@@ -1,4 +1,6 @@
 export * from './lib/abstract-auth-page';
+export * from './lib/auth-error/auth-error.component';
+export * from './lib/forbidden/forbidden.component';
 export * from './lib/login/login.component';
 export * from './lib/user';
 export { provideRnForgeAuthUiConfig } from './lib/auth-ui.config';
