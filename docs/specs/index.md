@@ -41,6 +41,7 @@ Features with no Iteration, by State and epic.
 | Epic | Features |
 | -- | -- |
 | [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md) | [F6.1](epics/E6-asynchronous-resource/F6.1-loading-timings.md) |
+| [E19 — ngkit simplification](epics/E19-ngkit-simplification/index.md) | [F19.1](epics/E19-ngkit-simplification/F19.1-specs-and-briefs.md), [F19.2](epics/E19-ngkit-simplification/F19.2-current-documentation.md), [F19.3](epics/E19-ngkit-simplification/F19.3-behavioral-baselines.md), [F19.4](epics/E19-ngkit-simplification/F19.4-core-and-permissions.md), [F19.5](epics/E19-ngkit-simplification/F19.5-configuration-and-widgets.md), [F19.6](epics/E19-ngkit-simplification/F19.6-forms-and-crud.md), [F19.7](epics/E19-ngkit-simplification/F19.7-settings-lifetimes.md), [F19.8](epics/E19-ngkit-simplification/F19.8-boundaries-and-consumers.md) |
 
 ### Deferred
 

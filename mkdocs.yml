@@ -155,6 +155,17 @@ nav:
               - F17.5 — The consumer checks run from `kiln-devops`: specs/epics/E17-kiln-adoption/F17.5-consumer-checks-in-kiln.md
           - E18 — npm publishing and independent versions:
               - specs/epics/E18-npm-publishing-and-independent-versions/index.md
+          - E19 — ngkit simplification:
+              - specs/epics/E19-ngkit-simplification/index.md
+              - F19.1 — Short records and disposable build briefs: specs/epics/E19-ngkit-simplification/F19.1-specs-and-briefs.md
+              - F19.2 — One current explanation per audience: specs/epics/E19-ngkit-simplification/F19.2-current-documentation.md
+              - F19.3 — Behavioral coverage and measured simplification: specs/epics/E19-ngkit-simplification/F19.3-behavioral-baselines.md
+              - F19.4 — Bounded stream and permission-view lifetimes: specs/epics/E19-ngkit-simplification/F19.4-core-and-permissions.md
+              - F19.5 — Configuration and widgets with explicit owners: specs/epics/E19-ngkit-simplification/F19.5-configuration-and-widgets.md
+              - F19.6 — Forms and CRUD preserve application values: specs/epics/E19-ngkit-simplification/F19.6-forms-and-crud.md
+              - F19.7 — Settings notifications with consumer lifetimes: specs/epics/E19-ngkit-simplification/F19.7-settings-lifetimes.md
+              - F19.8 — Executable package boundaries and consumer contracts: specs/epics/E19-ngkit-simplification/F19.8-boundaries-and-consumers.md
+              - ngkit simplification — review and proposed design: specs/epics/E19-ngkit-simplification/design.md
       - Ideas:
           - specs/ideas/index.md
   - Decisions: adr/index.md
