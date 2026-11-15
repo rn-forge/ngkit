@@ -5,7 +5,8 @@
 | **State** | Active |
 | **Start Date** | 2026-10-17 |
 
-**Release:** [Release 3](../../../releases/release-3/index.md)
+**Backlog:** F11.1 has no release; the owner moved it out of Release 3 on
+2026-11-14.
 
 **Source:** former plan item "Workspace Setup Tooling"; owner decisions,
 2026-10-17.
@@ -41,7 +42,7 @@ The shared design, package map and implementation standards are in
 
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
-| [F11.1 — `@rn-forge/ng-plugin`](F11.1-ng-plugin.md) | Active | release-3 | 6 New · 1 Closed |
+| [F11.1 — `@rn-forge/ng-plugin`](F11.1-ng-plugin.md) | New | — | 7 New |
 | [F11.2 — `@rn-forge/nx-plugin`](F11.2-nx-plugin.md) | Removed | — | — |
 | [F11.3 — `create-rn-forge-ng-workspace` CLI](F11.3-workspace-cli.md) | Removed | — | — |
 

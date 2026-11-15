@@ -58,8 +58,8 @@ rest of F17.1, then S17.2.3 to S17.2.5. The pin stays on `feature/v1` while kiln
 irons out the findings from the other repositories it builds (owner decision,
 2026-11-14); [S17.2.8](F17.2-cutover.md#s1728-pin-kilns-release-tag) is Removed.
 The branch merges once both features' acceptance holds.
-[F11.1](../E11-workspace-generators/F11.1-ng-plugin.md) waits on this epic's
-merge.
+[F11.1](../E11-workspace-generators/F11.1-ng-plugin.md) is in the backlog (owner
+decision, 2026-11-14).
 
 ## Decisions
 
@@ -71,10 +71,9 @@ merge.
   before the cutover (S17.2.6), because kiln's Nx never reaches an adopted
   repository and `pnpm audit` fails on the older Angular and Nx dependency
   tree.
-- **Release:** Release 3, because
-  [Release 3](../../../releases/release-3/index.md) already says F11.1 is
-  picked up after ngkit is cut over to kiln. Assumed 2026-11-02; the owner
-  moves it if wrong.
+- **Release:** Release 3, with F5.1: the owner closed
+  [Release 3](../../../releases/release-3/index.md)'s scope as the kiln
+  cutover release (2026-11-14).
 - **Retired by the cutover, not open:** the older-major hotfix line. ADR-0003
   has hotfixes cut from `release/<major>.x` with `dist-tag: v<major>-lts`;
   kiln releases from the default branch only (owner decision in kiln,

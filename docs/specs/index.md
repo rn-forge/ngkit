@@ -10,14 +10,15 @@ the portable CI are implemented and shipped as
 [Release 1](../releases/release-1/index.md) (`v0.2.0`, 2026-10-14).
 [Release 2](../releases/release-2/index.md) (F4.3, E8, E14, E15 and E16) shipped
 as `v0.3.0` (2026-10-25). The owner moved E5 (F5.1–F5.4) and F11.1 to
-[Release 3](../releases/release-3/index.md) (2026-10-25): F11.1 is picked up
-after ngkit is cut over to kiln. E5 started 2026-11-14, once a released server
-library served its auth contract. E11's `nx-plugin` and workspace CLI (F11.2,
-F11.3) are retired: kiln owns repository-level setup. E6 is elaborated
-(2026-10-24) down to loading timings in `ng/core`, waiting on one open question
-and a release; everything else is deferred. E17 (2026-11-02) adopts kiln's
-`node-lib` archetype: F17.1 converts the docs to kiln's work model, F17.2 cuts
-the CI over; it is in Release 3, and F17.1 started 2026-11-03.
+[Release 3](../releases/release-3/index.md) (2026-10-25), then closed Release
+3's scope as the kiln cutover release (2026-11-14): E17 and F5.1, which closed
+once a released server library served E5's auth contract. F5.2–F5.4 and F11.1
+are in the backlog. E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are
+retired: kiln owns repository-level setup. E6 is elaborated (2026-10-24) down to
+loading timings in `ng/core`, waiting on one open question and a release;
+everything else is deferred. E17 (2026-11-02) adopts kiln's `node-lib`
+archetype: F17.1 converts the docs to kiln's work model, F17.2 cuts the CI over;
+it is in Release 3, and F17.1 started 2026-11-03.
 
 The Releases and Backlog sections below are derived from the epic, feature and
 release pages by `task docs:generate`; never edit inside their fence.
@@ -28,7 +29,7 @@ release pages by `task docs:generate`; never edit inside their fence.
 
 | Release | Status | Features |
 | -- | -- | -- |
-| [Release 3](../releases/release-3/index.md) | in progress | 1 Active · 3 New · 5 Closed · 1 Removed |
+| [Release 3](../releases/release-3/index.md) | in progress | 5 Closed · 1 Removed |
 | [Release 2](../releases/release-2/index.md) | shipped (2026-10-25) | 9 Closed |
 | [Release 1](../releases/release-1/index.md) | shipped (2026-10-14) | 7 Closed |
 
@@ -40,7 +41,9 @@ Features with no Iteration, by State and epic.
 
 | Epic | Features |
 | -- | -- |
+| [E5 — Session client auth](epics/E5-session-client-auth/index.md) | [F5.2](epics/E5-session-client-auth/F5.2-auth-wrapper.md), [F5.3](epics/E5-session-client-auth/F5.3-bootstrap-auth-ui.md), [F5.4](epics/E5-session-client-auth/F5.4-auth-acceptance.md) |
 | [E6 — Asynchronous resource](epics/E6-asynchronous-resource/index.md) | [F6.1](epics/E6-asynchronous-resource/F6.1-loading-timings.md) |
+| [E11 — Workspace generators](epics/E11-workspace-generators/index.md) | [F11.1](epics/E11-workspace-generators/F11.1-ng-plugin.md) |
 | [E19 — ngkit simplification](epics/E19-ngkit-simplification/index.md) | [F19.1](epics/E19-ngkit-simplification/F19.1-specs-and-briefs.md), [F19.2](epics/E19-ngkit-simplification/F19.2-current-documentation.md), [F19.3](epics/E19-ngkit-simplification/F19.3-behavioral-baselines.md), [F19.4](epics/E19-ngkit-simplification/F19.4-core-and-permissions.md), [F19.5](epics/E19-ngkit-simplification/F19.5-configuration-and-widgets.md), [F19.6](epics/E19-ngkit-simplification/F19.6-forms-and-crud.md), [F19.7](epics/E19-ngkit-simplification/F19.7-settings-lifetimes.md), [F19.8](epics/E19-ngkit-simplification/F19.8-boundaries-and-consumers.md) |
 
 ### Deferred
