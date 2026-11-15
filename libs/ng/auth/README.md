@@ -107,6 +107,51 @@ the original `403` reaches the caller. Other `403`s share one in-flight session
 refetch, then navigate once to `forbiddenPath`; each caller receives its
 original error. A `403` never calls `clear()` or starts login.
 
+## Testing
+
+Import `provideRnForgeAuthTesting` and `FakeAuthService` from
+`@rn-forge/ng/auth/testing` to seed tests or stories. Use this provider in place
+of `provideRnForgeAuth`; it needs no `HttpClient` and installs no startup probe,
+XSRF providers or focus listener. It supplies `DEFAULT_AUTH_CONFIG`, credentials
+and a permission policy that denies every permission for anonymous sessions.
+Keep this testing entry point out of production imports.
+
+```ts
+import { TestBed } from '@angular/core/testing';
+import { AuthService } from '@rn-forge/ng/auth';
+import {
+  FakeAuthService,
+  provideRnForgeAuthTesting,
+} from '@rn-forge/ng/auth/testing';
+
+TestBed.configureTestingModule({
+  providers: [
+    provideRnForgeAuthTesting({
+      subject: 'ada',
+      provider: 'dev',
+      roles: [],
+      permissions: ['orders.read'],
+      expiresAt: '2099-01-01T00:00:00Z',
+    }),
+  ],
+});
+
+const fake = TestBed.inject(FakeAuthService);
+const auth = TestBed.inject(AuthService); // the same instance
+fake.setSession(null);
+expect(auth.credentials().isAuthenticated).toBe(false);
+```
+
+Pass `null` for an anonymous initial state. `setSession(session)` replaces the
+credentials and updates permission answers; `clear()` and `logout()` set an
+anonymous session. `logout()` completes without emitting or navigating.
+`setExpiryWarning(value)` controls the readonly warning signal without timers.
+`setProviders(providers)` replaces the list returned by `providers()` (empty by
+default). `login(provider, returnTo)` appends to `logins` without navigating,
+and `startLogin(returnTo)` does nothing. `loginWithPassword()` and `refresh()`
+emit the current credentials. Override methods with `vi.spyOn(fake, 'method')`
+to simulate failures or custom responses.
+
 ## Breaking changes
 
 - `provideRnForgeAuthConfig`, `RnForgeAuthConfig`, `AuthFrontendConfig`,

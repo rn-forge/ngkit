@@ -11,6 +11,7 @@
     "src/**/*.ts",
     "core/src/**/*.ts",
     "auth/src/**/*.ts",
+    "auth/testing/src/**/*.ts",
     "crud/src/**/*.ts",
     "http/src/**/*.ts"
   ],
@@ -20,6 +21,8 @@
     "core/src/**/*.spec.ts",
     "core/src/**/*.test.ts",
     "auth/src/**/*.spec.ts",
+    "auth/testing/src/**/*.spec.ts",
+    "auth/testing/src/**/*.test.ts",
     "crud/src/**/*.spec.ts",
     "auth/src/**/*.test.ts",
     "crud/src/**/*.test.ts",
