@@ -23,3 +23,17 @@ configured `loginPath` (default `/login`).
 
 The forbidden page explains that the signed-in user lacks permission and offers
 "Go to the home page", linking to `/`. It never offers or starts another login.
+
+## User menu and expiry notice
+
+`<rnf-user-menu />` renders a Bootstrap dropdown when signed in and nothing when
+anonymous. Its optional `profileUrl` and `settingsUrl` inputs are each
+`string | undefined`; set them to show Profile and Settings router links. It
+shows the session picture when present, the name (falling back to subject),
+optional email and provider, and a Sign out button that logs out. The dropdown
+uses Bootstrap's dropdown JavaScript.
+
+`<rnf-session-expiry-notice />` has no inputs. It shows "Your session ends
+soon." while the auth expiry warning is active. Sign in again starts login with
+the current router URL. Dismiss hides the warning until the warning clears; a
+later warning appears again. The notice uses no Bootstrap JavaScript.

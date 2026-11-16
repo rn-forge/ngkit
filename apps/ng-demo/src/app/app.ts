@@ -8,8 +8,11 @@ import {
   ModalOptions,
   StyleHelper,
 } from '@rn-forge/ng-bootstrap';
-import { UserSettingsService } from '@rn-forge/ng-bootstrap/auth';
-import { AuthService } from '@rn-forge/ng/auth';
+import {
+  SessionExpiryNoticeComponent,
+  UserMenuComponent,
+  UserSettingsService,
+} from '@rn-forge/ng-bootstrap/auth';
 import {
   ColorMode,
   DIVIDER,
@@ -28,6 +31,8 @@ import {
     FooterComponent,
     HeaderComponent,
     ModalComponent,
+    UserMenuComponent,
+    SessionExpiryNoticeComponent,
   ],
   host: { class: 'd-flex flex-column flex-grow-1' },
   templateUrl: './app.html',
@@ -35,7 +40,6 @@ import {
 export class App {
   private readonly _styleHelper = inject(StyleHelper);
   private readonly _userSettingsService = inject(UserSettingsService);
-  private readonly authService = inject(AuthService);
 
   @ViewChild('helpModal') private readonly helpModal!: ModalComponent;
 
@@ -72,24 +76,6 @@ export class App {
         {
           type: 'color-mode',
           submenu: { type: 'dropdown', class: 'dropdown-menu-end' },
-        },
-        DIVIDER,
-        {
-          type: 'submenu',
-          label: 'User',
-          submenu: {
-            type: 'dropdown',
-            class: 'dropdown-menu-end',
-            items: [
-              { type: 'link', label: 'Profile', href: '/user/profile' },
-              { type: 'link', label: 'Settings', href: '/user/settings' },
-              {
-                type: 'callback',
-                label: 'Logout',
-                callback: () => this.authService.logout().subscribe(),
-              },
-            ],
-          },
         },
       ],
     },

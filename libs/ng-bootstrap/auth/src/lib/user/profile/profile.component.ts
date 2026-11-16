@@ -73,6 +73,7 @@ export class UserProfileComponent
         { key: 'subject', label: 'Subject' },
         { key: 'name', label: 'Name' },
         { key: 'email', label: 'Email' },
+        { key: 'picture', label: 'Picture' },
         { key: 'provider', label: 'Provider' },
         {
           key: 'roles',

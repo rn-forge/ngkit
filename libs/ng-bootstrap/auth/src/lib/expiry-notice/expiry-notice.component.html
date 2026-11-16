@@ -1,0 +1,16 @@
+@if (auth.expiryWarning() && !dismissed()) {
+  <div class="alert alert-warning alert-dismissible" role="alert">
+    Your session ends soon.
+    <button
+      type="button"
+      class="btn btn-link"
+      (click)="auth.startLogin(router.url)">
+      Sign in again
+    </button>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Dismiss"
+      (click)="dismissed.set(true)"></button>
+  </div>
+}

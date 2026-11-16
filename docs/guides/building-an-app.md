@@ -443,6 +443,10 @@ UI layer over `@rn-forge/ng/auth` (configured separately — most apps call both
   home without restarting login.
 - **`UserComponent`** — profile and settings screens; route _both_
   `/user/profile` and `/user/settings` to this one component.
+- **`UserMenuComponent`** — `rnf-user-menu` shows session identity, optional
+  `profileUrl` and `settingsUrl` links, and Sign out.
+- **`SessionExpiryNoticeComponent`** — `rnf-session-expiry-notice` offers
+  sign-in again at the current URL and dismissal when expiry approaches.
 - **`UserSettingsService`** — per-user persisted settings (theme, color mode,
   custom keys).
 
