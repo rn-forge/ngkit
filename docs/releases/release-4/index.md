@@ -27,7 +27,7 @@ and `rn-forge-django` v0.6.1 serve the auth contract (observed 2026-11-14).
 | [F5.2 — `@rn-forge/ng/auth` session client](../../specs/epics/E5-session-client-auth/F5.2-auth-wrapper.md) | E5 | Closed |
 | [F5.3 — Bootstrap auth UI](../../specs/epics/E5-session-client-auth/F5.3-bootstrap-auth-ui.md) | E5 | Closed |
 | [F5.4 — Acceptance against a session backend](../../specs/epics/E5-session-client-auth/F5.4-auth-acceptance.md) | E5 | Active |
-| [F11.1 — `@rn-forge/ng-plugin`](../../specs/epics/E11-workspace-generators/F11.1-ng-plugin.md) | E11 | New |
+| [F11.1 — `@rn-forge/ng-plugin`](../../specs/epics/E11-workspace-generators/F11.1-ng-plugin.md) | E11 | Active |
 
 <!-- END derived scope -->
 
