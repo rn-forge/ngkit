@@ -129,3 +129,25 @@ An existing project of the same name is refused before any change. It writes:
   root `storybook` and `@storybook/angular` devDependencies;
 - with `compodoc`, `tsconfig.compodoc.json`, the `compodoc` target and the root
   `@twittwer/compodoc` and `@compodoc/compodoc` devDependencies.
+
+## `configure-testing`
+
+Sets an Angular application's or library's Vitest Angular test target to the
+rn-forge defaults. It needs `@nx/angular` in the workspace.
+
+```bash
+pnpm nx g @rn-forge/ng-plugin:configure-testing my-ui --coverageThreshold=80
+```
+
+| Option | Type | Default | Description |
+| -- | -- | -- | -- |
+| `project` | string | required | Angular application or library to configure |
+| `coverageThreshold` | number | `35` | Minimum statements, branches, functions and lines coverage |
+| `reporters` | string | `text,html,json` | Comma-separated coverage reporters |
+| `skipInstall` | boolean | `false` | Skip dependency installation |
+
+It adds or updates the `@nx/angular:unit-test` `test` target (coverage on,
+reporters and thresholds), adds `vitest/globals`, the `src` includes and the
+story excludes to `tsconfig.spec.json`, and declares `vitest`,
+`@vitest/coverage-v8` and `jsdom` as root devDependencies; a `test` target with
+another executor is refused.

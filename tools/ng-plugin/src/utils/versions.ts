@@ -49,3 +49,10 @@ export const COMPODOC_DEPENDENCIES: Readonly<Record<string, string>> = {
   '@twittwer/compodoc': '^1.13.0',
   '@compodoc/compodoc': '^2.0.0',
 };
+
+/** Root devDependency versions `configure-testing` adds for Vitest. */
+export const VITEST_DEPENDENCIES: Readonly<Record<string, string>> = {
+  vitest: '^4.1.12',
+  '@vitest/coverage-v8': '^4.1.12',
+  jsdom: '^27.4.0',
+};

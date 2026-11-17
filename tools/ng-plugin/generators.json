@@ -25,6 +25,11 @@
       "factory": "./src/generators/create-library/generator",
       "schema": "./src/generators/create-library/schema.json",
       "description": "Create a publishable Angular library with the release, coverage, Storybook and Compodoc settings applied."
+    },
+    "configure-testing": {
+      "factory": "./src/generators/configure-testing/generator",
+      "schema": "./src/generators/configure-testing/schema.json",
+      "description": "Set an Angular project's Vitest test target to rn-forge's coverage defaults and patch its tsconfig.spec.json."
     }
   }
 }

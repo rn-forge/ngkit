@@ -8,3 +8,5 @@ export { default as scaffoldComponentGenerator } from './generators/scaffold-com
 export type { ScaffoldComponentGeneratorSchema } from './generators/scaffold-component/schema';
 export { default as createLibraryGenerator } from './generators/create-library/generator';
 export type { CreateLibraryGeneratorSchema } from './generators/create-library/schema';
+export { default as configureTestingGenerator } from './generators/configure-testing/generator';
+export type { ConfigureTestingGeneratorSchema } from './generators/configure-testing/schema';
