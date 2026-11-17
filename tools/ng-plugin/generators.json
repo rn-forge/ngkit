@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "generators": {
+    "setup": {
+      "factory": "./src/generators/setup/generator",
+      "schema": "./src/generators/setup/schema.json",
+      "description": "Configure an Angular application to consume @rn-forge/ng and @rn-forge/ng-bootstrap."
+    }
+  }
+}

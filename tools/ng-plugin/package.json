@@ -1,0 +1,27 @@
+{
+  "name": "@rn-forge/ng-plugin",
+  "version": "0.4.0",
+  "description": "Nx generators that set up Angular apps and libraries for the rn-forge Angular packages.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rn-forge/ngkit",
+    "directory": "tools/ng-plugin"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "generators": "./generators.json",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json",
+    "./generators.json": "./generators.json"
+  },
+  "peerDependencies": {
+    "@nx/devkit": "^24.0.0",
+    "typescript": "^5.4.0 || ^6.0.0"
+  }
+}

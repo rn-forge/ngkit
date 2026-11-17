@@ -16,6 +16,7 @@ the version pinned in `package.json#packageManager`.
 | `ng` | library | Core Angular utilities (`libs/ng`), published as `@rn-forge/ng` |
 | `ng-bootstrap` | library | Bootstrap-based UI kit (`libs/ng-bootstrap`), published as `@rn-forge/ng-bootstrap`, depends on `ng` |
 | `ng-tailwind` | library | Tailwind-friendly UI package (`libs/ng-tailwind`), published as `@rn-forge/ng-tailwind`: `--rnf-*` tokens and prebuilt component CSS, no Bootstrap |
+| `ng-plugin` | library | Nx plugin (`tools/ng-plugin`), published as `@rn-forge/ng-plugin`: generators that set up Angular apps for the rn-forge libraries |
 | `ng-demo` | app | Demo/dev app exercising both libraries (`apps/ng-demo`) |
 | `ng-demo-e2e` | e2e app | Playwright tests for `ng-demo` (`apps/ng-demo-e2e`) |
 | `ng-tailwind-e2e` | e2e app | Playwright and axe-core checks over the built `ng-tailwind` Storybook (`apps/ng-tailwind-e2e`) |

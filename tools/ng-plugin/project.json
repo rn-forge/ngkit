@@ -1,0 +1,66 @@
+{
+  "name": "ng-plugin",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/ng-plugin/src",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": [
+        "{projectRoot}",
+        {
+          "path": "dist/{projectRoot}",
+          "preserveLocalDependencyProtocols": false
+        }
+      ],
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
+  "tags": ["scope:ngkit", "type:tool", "publishable"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/tools/ng-plugin",
+        "main": "tools/ng-plugin/src/index.ts",
+        "tsConfig": "tools/ng-plugin/tsconfig.lib.json",
+        "assets": [
+          {
+            "input": "tools/ng-plugin",
+            "glob": "*.md",
+            "output": "."
+          },
+          {
+            "input": "tools/ng-plugin",
+            "glob": "generators.json",
+            "output": "."
+          },
+          {
+            "input": "tools/ng-plugin",
+            "glob": "src/**/schema.json",
+            "output": "."
+          }
+        ]
+      }
+    },
+    "pack": {},
+    "verify-dist": {},
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}",
+        "dryRun": true
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "outputs": ["{workspaceRoot}/coverage/ng-plugin"],
+      "options": {
+        "command": "vitest run --config tools/ng-plugin/vitest.config.mts",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}

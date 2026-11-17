@@ -38,5 +38,5 @@ libraries. Add whichever entries apply, to the app's build `options`:
 | `quill-delta` | App uses `@rn-forge/ng-bootstrap/form`'s rich-text field (`quill` itself is ESM; only its `quill-delta` dependency is CommonJS) | `@rn-forge/ng-bootstrap/form` |
 | `build-url-ts` | App uses `@rn-forge/ng`'s `auth` sub-lib | `@rn-forge/ng` |
 
-> This list will be added automatically by a scaffolding generator in a future
-> version.
+> `@rn-forge/ng-plugin:setup` writes this list:
+> `pnpm nx g @rn-forge/ng-plugin:setup --project=my-app`.
