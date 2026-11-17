@@ -20,6 +20,11 @@
       "factory": "./src/generators/scaffold-component/generator",
       "schema": "./src/generators/scaffold-component/schema.json",
       "description": "Scaffold a standalone Angular component, page, table or form in an application or library."
+    },
+    "create-library": {
+      "factory": "./src/generators/create-library/generator",
+      "schema": "./src/generators/create-library/schema.json",
+      "description": "Create a publishable Angular library with the release, coverage, Storybook and Compodoc settings applied."
     }
   }
 }

@@ -6,3 +6,5 @@ export { default as configureThemeGenerator } from './generators/configure-theme
 export type { ConfigureThemeGeneratorSchema } from './generators/configure-theme/schema';
 export { default as scaffoldComponentGenerator } from './generators/scaffold-component/generator';
 export type { ScaffoldComponentGeneratorSchema } from './generators/scaffold-component/schema';
+export { default as createLibraryGenerator } from './generators/create-library/generator';
+export type { CreateLibraryGeneratorSchema } from './generators/create-library/schema';

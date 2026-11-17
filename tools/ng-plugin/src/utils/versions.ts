@@ -40,3 +40,12 @@ export const COMMONJS_DEPENDENCIES = [
 
 /** The polyfill `@ng-bootstrap/ng-bootstrap` needs at runtime. */
 export const LOCALIZE_POLYFILL = '@angular/localize/init';
+
+/** Root devDependency versions `create-library` adds for Storybook. */
+export const STORYBOOK_VERSION = '10.6.6';
+
+/** Root devDependency versions `create-library` adds for Compodoc. */
+export const COMPODOC_DEPENDENCIES: Readonly<Record<string, string>> = {
+  '@twittwer/compodoc': '^1.13.0',
+  '@compodoc/compodoc': '^2.0.0',
+};

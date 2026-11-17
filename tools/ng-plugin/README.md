@@ -91,3 +91,41 @@ and a spec in its own folder under the source root, using the project's `prefix`
 (or `rnf`) for the selector; an existing folder is refused. With `export` it
 appends an `export *` line to the library's `src/index.ts`; an application
 rejects `export`.
+
+## `create-library`
+
+Creates a publishable Angular library through `@nx/angular`, then applies the
+settings that let it pack, verify and release like the other libraries. It needs
+`@nx/angular` in the workspace.
+
+```bash
+pnpm nx g @rn-forge/ng-plugin:create-library my-ui --importPath=@acme/my-ui
+```
+
+| Option | Type | Default | Description |
+| -- | -- | -- | -- |
+| `name` | string | required | Name of the library project |
+| `importPath` | string | required | Package name, for example `@acme/my-ui` |
+| `directory` | string | `libs/<name>` | Folder of the library |
+| `secondaryEntryPoints` | string | none | Comma-separated secondary entry point names |
+| `storybook` | boolean | `false` | Add a Storybook configuration and `build-storybook` target |
+| `compodoc` | boolean | `false` | Add a Compodoc configuration and `compodoc` target |
+| `coverageThreshold` | number | `35` | Minimum statements, branches, functions and lines coverage |
+| `skipInstall` | boolean | `false` | Skip dependency installation |
+
+An existing project of the same name is refused before any change. It writes:
+
+- the `publishable` tag and `release.version.manifestRootsToUpdate` in
+  `project.json`, with `pack`, `verify-dist` and `nx-release-publish`
+  (`dryRun: true`) targets; `nx.json#release.projects` is left as it was (the
+  `publishable` tag selects the project);
+- `@angular/*` entries moved into the library's `peerDependencies`;
+- `description`, `license`, `repository` (from the root `package.json`, with
+  `directory`) and `publishConfig.access: "public"` in the library's
+  `package.json`;
+- `coverage: true` and the coverage thresholds on the `test` target, and story
+  files excluded from `tsconfig.spec.json`;
+- with `storybook`, `.storybook/` files, the `build-storybook` target and the
+  root `storybook` and `@storybook/angular` devDependencies;
+- with `compodoc`, `tsconfig.compodoc.json`, the `compodoc` target and the root
+  `@twittwer/compodoc` and `@compodoc/compodoc` devDependencies.
