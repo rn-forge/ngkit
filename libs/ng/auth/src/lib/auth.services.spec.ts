@@ -7,6 +7,7 @@ import {
 import { ApplicationInitStatus } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { of } from 'rxjs';
 
 // internal imports
 import { provideRnForgeAuth } from './auth.providers';
@@ -326,6 +327,92 @@ describe('login, providers and logout', () => {
         expect(assign).not.toHaveBeenCalled();
       }
     }
+  });
+});
+
+describe('login return loop guard', () => {
+  let controller: HttpTestingController;
+  let service: AuthService;
+  let router: Router;
+  let navigateByUrl: ReturnType<typeof vi.spyOn>;
+  let providers: ReturnType<typeof vi.spyOn>;
+  const assign = vi.fn();
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    sessionStorage.setItem(
+      'rnf.auth.loginStartedAt',
+      String(Date.now() - 1000),
+    );
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        provideRnForgeAuth({
+          errorPath: '/session-error',
+          loopGuardMs: 10_000,
+        }),
+        { provide: FullPageNavigation, useValue: { assign } },
+      ],
+    });
+    controller = TestBed.inject(HttpTestingController);
+    service = TestBed.inject(AuthService);
+    router = TestBed.inject(Router);
+    navigateByUrl = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    providers = vi
+      .spyOn(service, 'providers')
+      .mockReturnValue(
+        of([{ id: 'dev', name: 'Development', kind: 'development' }]),
+      );
+    controller
+      .expectOne('/auth/session')
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+  });
+
+  afterEach(() => {
+    controller.verify();
+    sessionStorage.removeItem('rnf.auth.loginStartedAt');
+    assign.mockClear();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+    TestBed.resetTestingModule();
+  });
+
+  function expectLoopError(): void {
+    expect(navigateByUrl).toHaveBeenCalledExactlyOnceWith(
+      router.createUrlTree(['/session-error'], {
+        queryParams: { error: 'session_not_established' },
+      }),
+    );
+    expect(assign).not.toHaveBeenCalled();
+    expect(providers).not.toHaveBeenCalled();
+  }
+
+  it('blocks login within the return window before discovering providers', () => {
+    vi.advanceTimersByTime(5000);
+    service.startLogin('/orders');
+    expectLoopError();
+  });
+
+  it('starts login on a second attempt after the one-shot guard trips', () => {
+    service.startLogin('/orders');
+    expectLoopError();
+    service.startLogin('/orders');
+    expect(assign).toHaveBeenCalledExactlyOnceWith(
+      '/auth/login/dev?return_to=%2Forders',
+    );
+    expect(providers).toHaveBeenCalledTimes(1);
+    expect(navigateByUrl).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts login past the return window', () => {
+    vi.advanceTimersByTime(11000);
+    service.startLogin('/orders');
+    expect(assign).toHaveBeenCalledExactlyOnceWith(
+      '/auth/login/dev?return_to=%2Forders',
+    );
+    expect(navigateByUrl).not.toHaveBeenCalled();
   });
 });
 

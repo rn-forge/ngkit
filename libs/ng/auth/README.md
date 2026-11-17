@@ -96,9 +96,12 @@ route. That method discovers providers: one navigating provider with no password
 provider starts full-page login; otherwise, including discovery failure, it
 opens `loginPath` with `returnTo`. Parallel failures start one login until
 credentials become authenticated again. At startup, a recorded login start is
-consumed; a `401` within `loopGuardMs` of that return opens `errorPath` with
-`error=session_not_established` instead. The original error reaches the caller.
-`clear()` sets anonymous credentials locally without a backend call.
+consumed by `AuthService`. Within `loopGuardMs` of that return, every login
+`startLogin` would start, whether from a `401` or from `authGuard`, opens
+`errorPath` with `error=session_not_established` instead. This guard is
+one-shot: trying again from the error page starts a login. The original error
+reaches the caller. `clear()` sets anonymous credentials locally without a
+backend call.
 
 A `403` whose problem `type` ends in `csrf-failed` refetches the session and
 retries once, replacing the configured XSRF header with the current cookie token

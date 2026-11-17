@@ -35,15 +35,7 @@ export class AuthErrorPolicy {
     computation: (credentials, previous) =>
       credentials.isAuthenticated ? false : (previous?.value ?? false),
   });
-  private readonly returnedAt: number | undefined;
   private forbiddenRefresh: Observable<Credentials> | undefined;
-
-  constructor() {
-    if (sessionStorage.getItem('rnf.auth.loginStartedAt') !== null) {
-      sessionStorage.removeItem('rnf.auth.loginStartedAt');
-      this.returnedAt = Date.now();
-    }
-  }
 
   handles(url: string): boolean {
     const path = url.split('?')[0];
@@ -66,21 +58,9 @@ export class AuthErrorPolicy {
     if (!(error instanceof HttpErrorResponse)) return throwError(() => error);
     if (error.status === 401) {
       if (this.loginPending()) return throwError(() => error);
-      if (
-        this.returnedAt !== undefined &&
-        Date.now() - this.returnedAt < this.config.loopGuardMs
-      ) {
-        this.loginPending.set(true);
-        void this.router.navigateByUrl(
-          this.router.createUrlTree([this.config.errorPath], {
-            queryParams: { error: 'session_not_established' },
-          }),
-        );
-      } else {
-        this.auth.clear();
-        this.loginPending.set(true);
-        this.auth.startLogin(this.router.url);
-      }
+      this.auth.clear();
+      this.loginPending.set(true);
+      this.auth.startLogin(this.router.url);
     } else if (error.status === 403) {
       if (
         typeof error.error?.type === 'string' &&

@@ -39,11 +39,16 @@ export class AuthService {
     this.currentCredentials.asReadonly();
   private readonly currentExpiryWarning = signal(false);
   private expiryTimer: ReturnType<typeof setTimeout> | undefined;
+  private returnedAt: number | undefined;
   /** Whether the current session has reached its configured expiry warning lead time. */
   readonly expiryWarning: Signal<boolean> =
     this.currentExpiryWarning.asReadonly();
 
   constructor() {
+    if (sessionStorage.getItem('rnf.auth.loginStartedAt') !== null) {
+      sessionStorage.removeItem('rnf.auth.loginStartedAt');
+      this.returnedAt = Date.now();
+    }
     inject(DestroyRef).onDestroy(() => clearTimeout(this.expiryTimer));
   }
 
@@ -75,6 +80,18 @@ export class AuthService {
 
   /** Start a provider login or open the login page for the return path. */
   startLogin(returnTo: string): void {
+    if (
+      this.returnedAt !== undefined &&
+      Date.now() - this.returnedAt < this.config.loopGuardMs
+    ) {
+      this.returnedAt = undefined;
+      void this.router.navigateByUrl(
+        this.router.createUrlTree([this.config.errorPath], {
+          queryParams: { error: 'session_not_established' },
+        }),
+      );
+      return;
+    }
     const openLoginPage = () =>
       void this.router.navigateByUrl(
         this.router.createUrlTree([this.config.loginPath], {
