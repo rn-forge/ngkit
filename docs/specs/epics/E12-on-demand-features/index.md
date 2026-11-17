@@ -29,6 +29,7 @@ survey of an existing Angular Material application, treated as prior art
 | [F12.9](#f129-configurablecomponent-into-ngcore) | New | Move `ConfigurableComponent` and `ConfigurerService` into `ng/core` | A second presentation package is scheduled (E8 or F12.10) |
 | [F12.10](#f1210-rn-forgeng-material) | New | `@rn-forge/ng-material` | The owner decides a Material kit is in scope |
 | [F12.11](#f1211-adapter-package-for-another-wire-convention) | New | A separately named adapter package for another published wire convention | Several backends share a published, versioned convention other than AIP + RFC |
+| [F12.12](#f1212-remove-the-picomatch-audit-exception) | New | Remove the `picomatch` audit exception | `picomatch` publishes a fix for GHSA-fc5q-39xc-vjpf, or the owner revisits it |
 
 Adding an entry point under `@rn-forge/ng/<name>` follows
 [Adding a secondary entry point](../../../guides/development.md#adding-a-secondary-entry-point).
@@ -581,3 +582,16 @@ RFC is a published convention, so the dialect objection does not apply to it:
 `@rn-forge/ng/crud` ships `standardDataSource()` for it
 ([ADR-0005](../../../adr/ADR-0005.md)). Other conventions still adapt in the
 app.
+
+## F12.12 — Remove the `picomatch` audit exception
+
+Trigger: `picomatch` publishes a fix for GHSA-fc5q-39xc-vjpf, or the owner
+revisits it.
+
+The production audit (`task lint`) found GHSA-fc5q-39xc-vjpf (high) in
+`picomatch`, reached through `@angular/localize > tinyglobby`, with no patched
+release. `tinyglobby` serves Angular's localize build tooling, not the browser
+bundle. The owner chose to ignore it to keep the gate green (2026-11-17), so
+`pnpm-workspace.yaml` lists it under `auditConfig.ignoreGhsas`. When a fix
+ships, update the lockfile to it and delete the entry, or, if none comes,
+re-decide whether the exception stands.
