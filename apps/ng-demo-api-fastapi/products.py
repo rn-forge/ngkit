@@ -34,6 +34,8 @@ from rn_forge.fastapi.transfer import (
     tabular_export,
     tabular_format,
 )
+from rn_forge.auth import Principal
+from rn_forge.fastapi.auth import current_principal, requires_permission
 from rn_forge.sqlalchemy import (
     AuditMixin,
     Base,
@@ -252,20 +254,20 @@ class ProductStore:
             raise LookupError(f"Product {product_id} not found")
         return product
 
-    async def create(self, item: ProductIn) -> Product:
-        product = Product(**item.model_dump(by_alias=False), created_by=ACTOR, updated_by=ACTOR)
+    async def create(self, item: ProductIn, actor: str) -> Product:
+        product = Product(**item.model_dump(by_alias=False), created_by=actor, updated_by=actor)
         async with self.sessions() as session:
             session.add(product)
             await session.commit()
         return product
 
-    async def update(self, product_id: int, item: ProductIn) -> Product:
+    async def update(self, product_id: int, item: ProductIn, actor: str) -> Product:
         async with self.sessions() as session:
             product = await session.get(Product, product_id)
             if product is None:
                 raise LookupError(f"Product {product_id} not found")
             product = await update_versioned(
-                session, product, **item.model_dump(by_alias=False), updated_by=ACTOR
+                session, product, **item.model_dump(by_alias=False), updated_by=actor
             )
             await session.commit()
         return product
@@ -294,26 +296,37 @@ class ProductStore:
 
 
 def build_router(store: ProductStore) -> APIRouter:
+    caller = current_principal()
+
+    def permission(action: str):
+        return Depends(requires_permission(caller, "demo.products", action))
+
     def product_store() -> ProductStore:
         return store
 
     router = APIRouter(prefix="/api")
-    router.include_router(import_router("/products", model=ProductRow, store=product_store, max_rows=5000))
     router.include_router(
-        import_template_router("/products", model=ProductRow, source=product_store, max_rows=5000)
+        import_router("/products", model=ProductRow, store=product_store, max_rows=5000),
+        dependencies=[permission("import_items")],
+    )
+    router.include_router(
+        import_template_router("/products", model=ProductRow, source=product_store, max_rows=5000),
+        dependencies=[permission("import_template")],
     )
     router.include_router(
         batch_create_router(
             "/products", model=ProductIn, response_model=ProductOut, resource_name="products",
             store=product_store, max_rows=100,
-        )
+        ),
+        dependencies=[permission("batch_create")],
     )
     router.include_router(
-        batch_delete_router("/products", resource_label="Product", store=product_store, max_rows=100)
+        batch_delete_router("/products", resource_label="Product", store=product_store, max_rows=100),
+        dependencies=[permission("batch_delete")],
     )
 
     # Hand-written: the filters, which the library has no helper for.
-    @router.get("/products")
+    @router.get("/products", dependencies=[permission("list")])
     async def products_list(
         request: Request,
         fmt=Depends(tabular_format(("csv", "xlsx"))),
@@ -336,7 +349,7 @@ def build_router(store: ProductStore) -> APIRouter:
     def body(product: Product) -> dict[str, Any]:
         return ProductOut.model_validate(product).model_dump(mode="json")
 
-    @router.get("/products/{product_id}")
+    @router.get("/products/{product_id}", dependencies=[permission("retrieve")])
     async def products_get(product_id: int) -> JSONResponse:
         product = await store.get(product_id)
         return with_etag(product, JSONResponse(body(product)))
@@ -344,8 +357,10 @@ def build_router(store: ProductStore) -> APIRouter:
     # Hand-written: `ETag` on create (the library supplies none), over its idempotency decorator.
     @router.post("/products", status_code=201)
     @idempotent(IDEMPOTENCY, scope="products")
-    async def products_create(request: Request, item: ProductIn) -> JSONResponse:
-        product = await store.create(item)
+    async def products_create(
+        request: Request, item: ProductIn, principal: Principal = permission("create"),
+    ) -> JSONResponse:
+        product = await store.create(item, principal.subject)
         return with_etag(product, JSONResponse(body(product), status_code=201))
 
     @router.patch("/products/{product_id}", openapi_extra=merge_patch_openapi())
@@ -353,12 +368,13 @@ def build_router(store: ProductStore) -> APIRouter:
         product_id: int,
         patch: Annotated[bytes, Depends(merge_patch_body())],
         if_match: Annotated[str, Depends(require_if_match(codec=ETAGS))],
+        principal: Principal = permission("partial_update"),
     ) -> JSONResponse:
         current = await store.get(product_id)
         check_precondition(
             if_match, current_version=current.version, entity_id=product_id, codec=ETAGS
         )
-        product = await store.update(product_id, merge_into(ProductIn, current, patch))
+        product = await store.update(product_id, merge_into(ProductIn, current, patch), principal.subject)
         return with_etag(product, JSONResponse(body(product)))
 
     # Hand-written test hook.

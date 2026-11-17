@@ -6,8 +6,8 @@ import { workspaceRoot } from '@nx/devkit';
 const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
 
 /**
- * The fixture backend, chosen by `NG_DEMO_BACKEND`: `django` (the default) or
- * `fastapi`. Both serve the same routes on port 8100, so the suite and the
+ * The fixture backend, chosen by `NG_DEMO_BACKEND`: `fastapi` (the default) or
+ * `django`. Both serve the same routes on port 8100, so the suite and the
  * demo's proxy are the same for either. `uv` is run directly, not through
  * `nx run <project>:serve`: under Nx the server survives Playwright's
  * shutdown and keeps port 8100.
@@ -18,7 +18,7 @@ const backends: Record<string, string> = {
   fastapi:
     'uv run --project apps/ng-demo-api-fastapi python apps/ng-demo-api-fastapi/serve.py localhost:8100',
 };
-const backend = process.env['NG_DEMO_BACKEND'] || 'django';
+const backend = process.env['NG_DEMO_BACKEND'] || 'fastapi';
 if (!Object.hasOwn(backends, backend)) {
   throw new Error(
     `NG_DEMO_BACKEND must be one of ${Object.keys(backends).join(', ')}; got "${backend}".`,
@@ -80,10 +80,9 @@ export default defineConfig({
       use: { ...devices['Desktop Firefox'] },
     },
 
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    // No WebKit: it does not store the fixture's `__Host-session` cookie on
+    // http://localhost (it keeps the `Secure` XSRF cookie), so every session
+    // request is 401. The suite is not served over HTTPS to work around it.
 
     // Uncomment for mobile browsers support
     /* {

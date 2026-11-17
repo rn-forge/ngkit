@@ -230,23 +230,39 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
   const { url, method } = req;
 
   const path = url.split('?')[0];
-  if (method === 'GET' && path.endsWith('/auth/session')) {
+  if (
+    environment.mockAuth &&
+    method === 'GET' &&
+    path.endsWith('/auth/session')
+  ) {
     if (!signedIn) return problem(401, 'Unauthorized');
     return respond(200, DEMO_SESSION);
   }
 
-  if (method === 'POST' && path.endsWith('/auth/logout')) {
+  if (
+    environment.mockAuth &&
+    method === 'POST' &&
+    path.endsWith('/auth/logout')
+  ) {
     signedIn = false;
     return respond(200, { redirect: null });
   }
 
-  if (method === 'GET' && path.endsWith('/auth/providers')) {
+  if (
+    environment.mockAuth &&
+    method === 'GET' &&
+    path.endsWith('/auth/providers')
+  ) {
     return respond(200, [
       { id: 'password', name: 'Password', kind: 'password' },
     ]);
   }
 
-  if (method === 'POST' && path.endsWith('/auth/login/password')) {
+  if (
+    environment.mockAuth &&
+    method === 'POST' &&
+    path.endsWith('/auth/login/password')
+  ) {
     if ((req.body as { password?: string } | null)?.password !== 'demo') {
       return problem(401, 'Invalid credentials');
     }

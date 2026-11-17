@@ -6,4 +6,7 @@ from products.views import ProductViewSet, ResetView
 router = CustomMethodRouter(trailing_slash=False)
 router.register("products", ProductViewSet, basename="products")
 
-urlpatterns = [path("_test/reset", ResetView.as_view()), *router.urls]
+reset_view = ResetView.as_view()
+reset_view.csrf_exempt = False
+
+urlpatterns = [path("_test/reset", reset_view), *router.urls]

@@ -1,4 +1,8 @@
+// external imports
 import { expect, type Page, test } from '@playwright/test';
+
+// internal imports
+import { resetFixture, signIn, xsrfHeaders } from './support/fixture';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -36,9 +40,9 @@ function csv(lines: string[]) {
 // ---------------------------------------------------------------------------
 
 test.describe('Products page', () => {
-  test.beforeEach(async ({ page, request }) => {
-    const reset = await request.post('/api/_test/reset');
-    expect(reset.ok()).toBe(true);
+  test.beforeEach(async ({ page }) => {
+    await signIn(page, 'demo-admin');
+    await resetFixture(page);
     await gotoProducts(page);
   });
 
@@ -143,7 +147,6 @@ test.describe('Products page', () => {
 
   test('a row changed behind the screen offers a reload on save (412)', async ({
     page,
-    request,
   }) => {
     await row(page, 'Widget A').locator('input[type="checkbox"]').check();
     await list(page).getByRole('button', { name: 'Update' }).click();
@@ -151,13 +154,14 @@ test.describe('Products page', () => {
     await expect(form(page).getByLabel('Name')).toHaveValue('Widget A');
 
     // Someone else changes the row after the screen read it.
-    const current = await request.get('/api/products/1');
+    const current = await page.request.get('/api/products/1');
     const etag = current.headers()['etag'];
     expect(etag).toBeTruthy();
-    const patched = await request.patch('/api/products/1', {
+    const patched = await page.request.patch('/api/products/1', {
       headers: {
         'Content-Type': 'application/merge-patch+json',
         'If-Match': etag,
+        ...(await xsrfHeaders(page)),
       },
       data: { name: 'Changed Elsewhere' },
     });
@@ -352,6 +356,10 @@ test.describe('Products page', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Dashboard page', () => {
+  test.beforeEach(async ({ page }) => {
+    await signIn(page, 'demo-admin');
+  });
+
   test('root redirects to dashboard', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveURL(/\/dashboard/);
