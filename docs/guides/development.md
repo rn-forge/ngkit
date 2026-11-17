@@ -161,6 +161,9 @@ flags), then work through this list once:
    already have: `description`, `license`, `repository`, and
    `publishConfig.access: "public"`. Without it the package isn't really
    consumable externally even if it builds fine.
+1. It lists each of its peers in `devDependencies` with the same range, as
+   `ng-bootstrap` does, because pnpm writes no lockfile importer for a package
+   whose only dependencies are peers. `create-library` does this itself.
 1. Tag it `publishable` in its `project.json`. The tag puts it in
    `nx.json#release.projects`, `preVersionCommand`, the release and CI's
    `smoke` job, so none of them is edited

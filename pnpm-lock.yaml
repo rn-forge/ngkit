@@ -494,6 +494,18 @@ importers:
         specifier: ^4
         version: 4.3.5
 
+  tools/ng-plugin:
+    devDependencies:
+      '@nx/angular':
+        specifier: ^24.0.0
+        version: 24.0.4(4c574553ff5f426d28b5cd5b3f44b2ec)
+      '@nx/devkit':
+        specifier: ^24.0.0
+        version: 24.0.4(nx@24.0.4)
+      typescript:
+        specifier: ^5.4.0 || ^6.0.0
+        version: 6.0.3
+
 packages:
 
   '@acemir/cssom@0.9.32':

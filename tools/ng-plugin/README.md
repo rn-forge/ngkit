@@ -95,8 +95,10 @@ rejects `export`.
 ## `create-library`
 
 Creates a publishable Angular library through `@nx/angular`, then applies the
-settings that let it pack, verify and release like the other libraries. It needs
-`@nx/angular` in the workspace.
+settings that let it pack, verify and release like the other libraries. It moves
+the `@angular/*` packages into `peerDependencies` and lists every peer in
+`devDependencies` too (keeping a range already there), so pnpm writes a lockfile
+importer for the library. It needs `@nx/angular` in the workspace.
 
 ```bash
 pnpm nx g @rn-forge/ng-plugin:create-library my-ui --importPath=@acme/my-ui

@@ -9,7 +9,7 @@ import {
 } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import createLibraryGenerator from './generator';
+import createLibraryGenerator, { movePeers } from './generator';
 import { CreateLibraryGeneratorSchema } from './schema';
 
 vi.mock('@nx/devkit', async (importOriginal) => ({
@@ -81,11 +81,13 @@ describe('create-library', () => {
       expect(tree.exists('libs/my-ui/form/ng-package.json')).toBe(true);
     });
 
-    it('moves @angular packages into peerDependencies', () => {
+    it('moves @angular packages into peerDependencies and mirrors them in devDependencies', () => {
       const pkg = readJson(tree, 'libs/my-ui/package.json');
-      expect(pkg.peerDependencies['@angular/common']).toBeDefined();
-      expect(pkg.dependencies?.['@angular/common']).toBeUndefined();
-      expect(pkg.devDependencies?.['@angular/common']).toBeUndefined();
+      for (const name of ['@angular/common', '@angular/core']) {
+        expect(pkg.peerDependencies[name]).toBeDefined();
+        expect(pkg.devDependencies[name]).toBe(pkg.peerDependencies[name]);
+        expect(pkg.dependencies?.[name]).toBeUndefined();
+      }
     });
 
     it('writes the package metadata', () => {
@@ -151,6 +153,22 @@ describe('create-library', () => {
         readJson(tree, 'package.json').devDependencies['@storybook/angular'],
       ).toBeUndefined();
     });
+  });
+
+  it('keeps an existing devDependencies range for a peer', () => {
+    const tree = createTree();
+    writeJson(tree, 'libs/my-ui/package.json', {
+      name: '@acme/my-ui',
+      dependencies: { '@angular/common': '^22.0.0' },
+      devDependencies: { '@angular/core': '~22.1.0' },
+      peerDependencies: { '@angular/core': '^22.0.0' },
+    });
+    movePeers(tree, 'libs/my-ui/package.json');
+    const pkg = readJson(tree, 'libs/my-ui/package.json');
+    expect(pkg.devDependencies['@angular/core']).toBe('~22.1.0');
+    expect(pkg.devDependencies['@angular/common']).toBe('^22.0.0');
+    expect(pkg.peerDependencies['@angular/core']).toBe('^22.0.0');
+    expect(pkg.dependencies).toBeUndefined();
   });
 
   it('keeps an existing release.projects exactly', async () => {

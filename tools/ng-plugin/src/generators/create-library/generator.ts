@@ -72,7 +72,7 @@ function restoreReleaseProjects(tree: Tree, before: unknown): void {
   updateNxJson(tree, nx);
 }
 
-function movePeers(tree: Tree, packageJson: string): void {
+export function movePeers(tree: Tree, packageJson: string): void {
   updateJson(tree, packageJson, (pkg) => {
     const peers: Record<string, string> = pkg.peerDependencies ?? {};
     for (const key of ['dependencies', 'devDependencies']) {
@@ -81,11 +81,16 @@ function movePeers(tree: Tree, packageJson: string): void {
       for (const [dep, range] of Object.entries(group)) {
         if (!dep.startsWith('@angular/')) continue;
         peers[dep] ??= range;
-        delete group[dep];
+        if (key === 'dependencies') delete group[dep];
       }
       if (Object.keys(group).length === 0) delete pkg[key];
     }
-    if (Object.keys(peers).length > 0) pkg.peerDependencies = peers;
+    if (Object.keys(peers).length > 0) {
+      pkg.peerDependencies = peers;
+      const dev: Record<string, string> = pkg.devDependencies ?? {};
+      for (const [dep, range] of Object.entries(peers)) dev[dep] ??= range;
+      pkg.devDependencies = dev;
+    }
     return pkg;
   });
 }
@@ -216,9 +221,11 @@ function writeCompodoc(tree: Tree, root: string): void {
 
 /**
  * Scaffolds a publishable Angular library through `@nx/angular`, then applies
- * the peer, metadata, release, coverage and optional Storybook and Compodoc
- * settings, leaving `nx.json#release.projects` as it was. Refuses an existing project. Returns the install callback unless
- * `skipInstall` is set.
+ * the peer settings (`@angular/*` moves to `peerDependencies`, and every peer
+ * is also listed in `devDependencies` unless already there), metadata,
+ * release, coverage and optional Storybook and Compodoc settings, leaving
+ * `nx.json#release.projects` as it was. Refuses an existing project. Returns
+ * the install callback unless `skipInstall` is set.
  */
 export default async function createLibraryGenerator(
   tree: Tree,
