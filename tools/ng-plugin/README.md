@@ -27,3 +27,23 @@ It adds the packages and their peer dependencies, imports the theme between
 `rn-forge:start` and `rn-forge:end` markers, lists the CommonJS dependencies,
 adds the `@angular/localize/init` polyfill and registers
 `provideRnForgeBootstrapConfig({})`. A second run changes nothing.
+
+## `add-bootstrap-table`
+
+Adds the Bootstrap Table dependencies (`bootstrap-table`, `jquery`,
+`jquery-treegrid`) to an Angular application.
+
+```bash
+pnpm nx g @rn-forge/ng-plugin:add-bootstrap-table --project=my-app
+```
+
+| Option | Type | Default | Description |
+| -- | -- | -- | -- |
+| `project` | string | required | Angular application project to add Bootstrap Table to |
+| `skipInstall` | boolean | `false` | Skip dependency installation |
+| `scaffoldExample` | boolean | `false` | Add an example standalone component that renders `rnf-table` |
+
+With `scaffoldExample` it writes `bootstrap-table-example.component.ts` under
+the application's `app/bootstrap-table-example/` folder, using the project's
+`prefix` (or `rnf`) for the selector; an existing file is kept. A second run
+changes nothing.

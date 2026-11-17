@@ -5,6 +5,11 @@
       "factory": "./src/generators/setup/generator",
       "schema": "./src/generators/setup/schema.json",
       "description": "Configure an Angular application to consume @rn-forge/ng and @rn-forge/ng-bootstrap."
+    },
+    "add-bootstrap-table": {
+      "factory": "./src/generators/add-bootstrap-table/generator",
+      "schema": "./src/generators/add-bootstrap-table/schema.json",
+      "description": "Add the Bootstrap Table dependencies to an Angular application and optionally scaffold an example component."
     }
   }
 }
