@@ -10,6 +10,11 @@
       "factory": "./src/generators/add-bootstrap-table/generator",
       "schema": "./src/generators/add-bootstrap-table/schema.json",
       "description": "Add the Bootstrap Table dependencies to an Angular application and optionally scaffold an example component."
+    },
+    "configure-theme": {
+      "factory": "./src/generators/configure-theme/generator",
+      "schema": "./src/generators/configure-theme/schema.json",
+      "description": "Import the rn-forge Bootstrap theme into an Angular application's SCSS stylesheet."
     }
   }
 }

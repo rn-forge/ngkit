@@ -47,3 +47,23 @@ With `scaffoldExample` it writes `bootstrap-table-example.component.ts` under
 the application's `app/bootstrap-table-example/` folder, using the project's
 `prefix` (or `rnf`) for the selector; an existing file is kept. A second run
 changes nothing.
+
+## `configure-theme`
+
+Imports the rn-forge Bootstrap theme into an Angular application's SCSS
+stylesheet, between `rn-forge:start` and `rn-forge:end` markers.
+
+```bash
+pnpm nx g @rn-forge/ng-plugin:configure-theme --project=my-app
+```
+
+| Option | Type | Default | Description |
+| -- | -- | -- | -- |
+| `project` | string | required | Angular application project whose stylesheet imports the theme |
+| `theme` | `default` | `default` | Theme preset to import |
+| `stylesheet` | string | build `styles` entry, else `src/styles.scss` | Workspace-relative SCSS file to patch |
+| `force` | boolean | `false` | Replace the content of the markers with the plain import |
+
+With `force`, a `with (...)` clause or other lines between the markers are
+replaced by the plain `@use` line; without it an existing import is kept. A
+second run changes nothing.

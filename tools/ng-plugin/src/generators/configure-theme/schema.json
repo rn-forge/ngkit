@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "RnForgeNgPluginConfigureTheme",
+  "title": "Import the rn-forge Bootstrap theme into an Angular application",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Angular application project whose stylesheet imports the theme.",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Which Angular application should import the theme?"
+    },
+    "theme": {
+      "type": "string",
+      "enum": ["default"],
+      "default": "default",
+      "description": "Theme preset to import."
+    },
+    "stylesheet": {
+      "type": "string",
+      "description": "Workspace-relative path of the SCSS stylesheet to patch. Defaults to the build target's first SCSS style, else src/styles.scss."
+    },
+    "force": {
+      "type": "boolean",
+      "default": false,
+      "description": "Replace the content of the rn-forge markers with the plain theme import."
+    }
+  },
+  "required": ["project"]
+}
