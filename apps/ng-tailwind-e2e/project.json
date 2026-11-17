@@ -11,7 +11,6 @@
       "parallelism": false
     },
     "e2e-ci": {
-      "dependsOn": [],
       "parallelism": false
     }
   },

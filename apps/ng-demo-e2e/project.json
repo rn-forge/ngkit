@@ -13,7 +13,6 @@
     },
     "e2e-ci": {
       "inputs": ["...", { "env": "NG_DEMO_BACKEND" }],
-      "dependsOn": [],
       "parallelism": false
     }
   },
