@@ -67,3 +67,27 @@ pnpm nx g @rn-forge/ng-plugin:configure-theme --project=my-app
 With `force`, a `with (...)` clause or other lines between the markers are
 replaced by the plain `@use` line; without it an existing import is kept. A
 second run changes nothing.
+
+## `scaffold-component`
+
+Writes a standalone Angular component in an Angular application or library.
+
+```bash
+pnpm nx g @rn-forge/ng-plugin:scaffold-component customer-grid --project=my-app
+```
+
+| Option | Type | Default | Description |
+| -- | -- | -- | -- |
+| `project` | string | required | Angular application or library to add the component to |
+| `name` | string | required | Name of the component |
+| `directory` | string | `app` (application) or `lib` (library) | Folder under the source root for the component folder |
+| `type` | `component`, `page`, `table`, `form` | `component` | Shape of the component |
+| `export` | boolean | `false` | Export the component from the library's public API |
+| `withStory` | boolean | `false` | Write a Storybook story when the project uses Storybook |
+| `withTest` | boolean | `true` | Write a spec file |
+
+It writes `<name>/<name>.component.{ts,html,scss}` (`.page` for `type: page`)
+and a spec in its own folder under the source root, using the project's `prefix`
+(or `rnf`) for the selector; an existing folder is refused. With `export` it
+appends an `export *` line to the library's `src/index.ts`; an application
+rejects `export`.

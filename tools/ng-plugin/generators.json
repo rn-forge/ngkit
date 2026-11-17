@@ -15,6 +15,11 @@
       "factory": "./src/generators/configure-theme/generator",
       "schema": "./src/generators/configure-theme/schema.json",
       "description": "Import the rn-forge Bootstrap theme into an Angular application's SCSS stylesheet."
+    },
+    "scaffold-component": {
+      "factory": "./src/generators/scaffold-component/generator",
+      "schema": "./src/generators/scaffold-component/schema.json",
+      "description": "Scaffold a standalone Angular component, page, table or form in an application or library."
     }
   }
 }

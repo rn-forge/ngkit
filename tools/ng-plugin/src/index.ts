@@ -4,3 +4,5 @@ export { default as addBootstrapTableGenerator } from './generators/add-bootstra
 export type { AddBootstrapTableGeneratorSchema } from './generators/add-bootstrap-table/schema';
 export { default as configureThemeGenerator } from './generators/configure-theme/generator';
 export type { ConfigureThemeGeneratorSchema } from './generators/configure-theme/schema';
+export { default as scaffoldComponentGenerator } from './generators/scaffold-component/generator';
+export type { ScaffoldComponentGeneratorSchema } from './generators/scaffold-component/schema';
