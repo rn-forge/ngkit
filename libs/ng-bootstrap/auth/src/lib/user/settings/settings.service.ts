@@ -53,17 +53,25 @@ export class UserSettingsService {
   }
 
   /**
-   * Registers a change listener for a specific user setting.
+   * Registers a change listener for a specific user setting. The callback is
+   * called immediately with the current value, then on every update.
+   *
+   * @returns a disposer that removes the listener; the caller must call it
+   * when its owner goes away. Calling it more than once is harmless.
    */
-  registerChangeListener(key: string, callback: (value: string) => void): void {
+  registerChangeListener(
+    key: string,
+    callback: (value: string) => void,
+  ): () => void {
     if (isDebugMode())
       console.debug('UserSettingsService.registerChangeListener:', key);
-    ObjectUtil.setDefault(
+    const subscription = ObjectUtil.setDefault(
       this._changeListeners,
       key,
       // could be undefined
       new BehaviorSubject<string>(this.currentUserSettings[key]),
     ).subscribe(callback);
+    return () => subscription.unsubscribe();
   }
 
   /**

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   Component,
   computed,
+  DestroyRef,
   effect,
   inject,
   input,
@@ -48,6 +49,7 @@ export class HeaderComponent
   private readonly appConfig: RnForgeCoreConfig = inject(
     RN_FORGE_APP_CONFIG_TOKEN,
   );
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly userSettingsService: UserSettingsService =
     inject(UserSettingsService);
   protected navbarColor: WritableSignal<string> = signal('default');
@@ -89,12 +91,13 @@ export class HeaderComponent
 
   override ngOnInit(): void {
     super.ngOnInit();
-    this.userSettingsService.registerChangeListener(
+    const dispose = this.userSettingsService.registerChangeListener(
       'navbarColor',
       (navbarColor: string) => {
         this.navbarColor.set(navbarColor);
       },
     );
+    this.destroyRef.onDestroy(dispose);
   }
 
   /** ConfigurableComponent overrides **/

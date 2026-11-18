@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RN_FORGE_APP_CONFIG_TOKEN } from '@rn-forge/ng/core';
+import { UserSettingsService } from '@rn-forge/ng-bootstrap/auth';
 import { HeaderComponent } from './header.component';
 
 describe('HeaderComponent', () => {
@@ -59,5 +60,48 @@ describe('HeaderComponent', () => {
       fixture.detectChanges();
       expect(menuPositionClass()).toBe('me-auto mx-md-auto');
     });
+  });
+});
+
+describe('HeaderComponent settings listener lifetime', () => {
+  class TestHeader extends HeaderComponent {
+    color(): string {
+      return this.navbarColor();
+    }
+  }
+
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({
+      imports: [TestHeader],
+      providers: [
+        provideRouter([]),
+        { provide: RN_FORGE_APP_CONFIG_TOKEN, useValue: { name: 'test-app' } },
+      ],
+    });
+  });
+
+  afterEach(() => TestBed.resetTestingModule());
+
+  it('ignores navbarColor updates after destroy', () => {
+    const settings = TestBed.inject(UserSettingsService);
+    const destroyed = TestBed.createComponent(TestHeader);
+    destroyed.detectChanges();
+    const instance = destroyed.componentInstance;
+    destroyed.destroy();
+
+    settings.updateSetting('navbarColor', 'dark');
+
+    expect(instance.color()).not.toBe('dark');
+  });
+
+  it('picks up updates while mounted', () => {
+    const settings = TestBed.inject(UserSettingsService);
+    const live = TestBed.createComponent(TestHeader);
+    live.detectChanges();
+
+    settings.updateSetting('navbarColor', 'dark');
+    expect(live.componentInstance.color()).toBe('dark');
+    live.destroy();
   });
 });
