@@ -1,3 +1,32 @@
+## 0.5.0 (2026-11-18)
+
+Release 4 adds the session client and its Bootstrap auth UI, and a new package,
+`@rn-forge/ng-plugin`.
+
+### 🚀 Features
+
+- `@rn-forge/ng/auth`: a session client. `provideRnForgeAuth` configures it, and
+  `authGuard` and `permissionGuard` guard routes.
+- `@rn-forge/ng-bootstrap/auth`: Bootstrap auth UI on the session client,
+  accepted against a FastAPI backend.
+- `@rn-forge/ng-plugin`: Nx generators (`setup`, `add-bootstrap-table`,
+  `configure-theme`, `scaffold-component`, `create-library`,
+  `configure-testing`) that set up Angular apps and libraries for the rn-forge
+  packages. It releases with the group.
+
+### ⚠️ Breaking Changes
+
+- `@rn-forge/ng/auth`: the configuration (`provideRnForgeAuthConfig`,
+  `RnForgeAuthConfig`, `RN_FORGE_AUTH_CONFIG_TOKEN`) is removed; use
+  `provideRnForgeAuth`. The credentials types and services (`LoginResponse`,
+  `UserProfile`, `JwtCredentials`, `JwtToken`, the `refreshToken` hook,
+  `disableAuth`) are removed. The guard (`authRouteGuard`, `ignoreAppRoutes`)
+  is removed; use `authGuard` and `permissionGuard`. The `jwt-decode`
+  dependency is removed.
+- `@rn-forge/ng-bootstrap/auth`: the whole surface is replaced, including
+  `AuthComponent`'s login and logout modes and `UserComponent`'s use of
+  `UserProfile`.
+
 ## 0.4.0 (2026-11-15)
 
 Release 3 adopts kiln's `node-lib` archetype (E17) and settles the E5 wire

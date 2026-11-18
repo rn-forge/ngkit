@@ -2,8 +2,9 @@
 
 |  |  |
 | -- | -- |
-| **Status** | in progress |
+| **Status** | shipped |
 | **Start Date** | 2026-11-03 |
+| **Finish Date** | 2026-11-14 |
 
 [Back to releases](../index.md) · [Releasing](../../runbooks/releasing.md)
 
@@ -73,8 +74,8 @@ E17 closed 2026-11-14. Pull request #17 merged as `0a13aa8`; the first `main`
 run (43667226164) succeeded and its `release` job logged
 `Release mode: released (v0.3.0, npm tag latest)`; the docs site deployed. The
 version is bumped to 0.4.0 (`task version -- minor`) on `chore/release-3-close`;
-Release 3 ships as `v0.4.0` when that pull request merges and the `release` job
-runs in `new` mode. The Shipped table is recorded after that run.
+Pull request #22 merged 2026-11-14 and Release 3 shipped as `v0.4.0`. Nothing
+remains.
 
 ## Commits
 
@@ -126,3 +127,9 @@ b126d75 E17 Elaboration
   `ng-bootstrap` and `ng-tailwind`, the three `publishable` projects.
 - `CHANGELOG.md` has an entry for the version.
 - `verify-consumer` passes on the released tarballs.
+
+## Shipped
+
+| Version | Date | Release | Evidence |
+| -- | -- | -- | -- |
+| `v0.4.0` | 2026-11-14 | [v0.4.0](https://github.com/rn-forge/ngkit/releases/tag/v0.4.0) | PR #22 merged (merge commit `01e981f`, which the `v0.4.0` tag points at); the GitHub Release was published 2026-11-15T04:42:57Z. It has `rn-forge-ng-0.4.0.tgz`, `rn-forge-ng-bootstrap-0.4.0.tgz` and `rn-forge-ng-tailwind-0.4.0.tgz`. `libs/*/package.json` on `main` are at `0.4.0`. |

@@ -2,7 +2,8 @@
 
 |  |  |
 | -- | -- |
-| **Status** | planned |
+| **Status** | in progress |
+| **Start Date** | 2026-11-15 |
 
 [Back to releases](../index.md) · [Releasing](../../runbooks/releasing.md)
 
@@ -62,18 +63,65 @@ None from F11.1: a new package is not a break.
 
 ## Progress
 
-F5.2 and F5.3 closed 2026-11-15. F5.4's stories closed 2026-11-16; the feature
-waits on its acceptance runs in CI. F11.1 closed 2026-11-17: the
-`@rn-forge/ng-plugin` package with six generators (`setup`,
-`add-bootstrap-table`, `configure-theme`, `scaffold-component`,
-`create-library`, `configure-testing`). E11 closes when the package releases
-with the group.
+F5.2 and F5.3 closed 2026-11-15. F5.4's stories closed 2026-11-16, and the
+feature closed 2026-11-17 with its acceptance green on both CI paths and locally
+against Django. F11.1 closed 2026-11-17: the `@rn-forge/ng-plugin` package with
+six generators (`setup`, `add-bootstrap-table`, `configure-theme`,
+`scaffold-component`, `create-library`, `configure-testing`). The release is cut
+as `v0.5.0` (`task version -- minor` on `chore/release-4-cut`); it ships when
+that pull request merges and the `release` job runs. The Shipped table is
+recorded after that run. E11 closes when the package releases with the group.
 
 ## Commits
 
 ```console
 $ git log --oneline -E --grep 'F5\.[0-9]|S5\.[0-9]\.[0-9]|F11\.[0-9]|S11\.[0-9]\.[0-9]'
-(not refreshed until the cut)
+fe78c92 Merge pull request #24 from rn-forge/feature/release-4
+f5ff26d F5.4: close; acceptance green on both CI paths and locally with Django
+b31c779 F11.1: close; Release 4 progress and decisions
+9582907 S11.1.8
+be2a27b S11.1.8: peers are also dev dependencies; brief
+b3fe3c3 S11.1.5
+4e9ea8c S11.1.5: brief
+e703825 S11.1.7
+304a4cc S11.1.7: brief
+d7c5a64 S11.1.4
+e66199b S11.1.4: brief
+ce8278f S11.1.3
+a0af7c7 S11.1.3: brief
+b6a8e63 S11.1.2
+c0847ce S11.1.2: brief
+d61ad04 S11.1.1
+1ad12b4 S11.1.1: brief; S11.1.6 re-confirmed with the localize polyfill
+744eae3 F5.4: run atomized e2e-ci specs
+99dfb7f S5.4.2: acceptance run
+8cc0ae3 S5.4.2: brief
+0101d85 S5.4.1: fixture auth
+72cf84e S5.4.1: brief
+babbd32 F5.3: closed
+1c05ca7 S5.3.3: user menu and expiry warning
+c6d29f3 S5.3.3: brief
+63431ab S5.3.2: auth error and forbidden pages
+3cd878f S5.3.2: brief
+0271c14 S5.3.1: login page
+4990d44 S5.3.1: brief
+c3c2769 F5.2: closed
+4220749 S5.2.5: testing provider
+800c865 S5.2.5: brief
+b829a7e S5.2.4: guards, refresh and expiry
+9e6dd10 S5.2.4: brief
+7002d1b S5.2.3: error policy
+839ee30 S5.2.3: brief
+995a2f2 S5.2.2: login and logout
+f058f23 S5.2.2: brief
+f8aaf74 S5.2.1: session client configuration and bootstrap
+8e4f681 S5.2.1: brief
+9edd409 Release 4: plan F5.2-F5.4 and F11.1
+0a13aa8 Merge pull request #17 from rn-forge/feature/release-3
+b6dd9f7 Release 3 scope: E17 and F5.1; F5.2-F5.4 and F11.1 to the backlog
+d32df2b F5.1 close: accept ADR-0006, settle the E5 wire contract
+9ef6f35 docs(specs): S17.1.2 - convert epics, features and stories to kiln's work model
+0476583 Release 2: move E5 and F11.1 to Release 3
 ```
 
 ## Exit criteria
