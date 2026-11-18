@@ -17,7 +17,7 @@ Jump to: [E1–E10](#e1e10) · [E11–E20](#e11e20)
 | [E3 — Core correctness](E3-core-correctness/index.md) | Closed | 2 Closed | — |
 | [E4 — Standard resource screen](E4-standard-resource-screen/index.md) | Closed | 3 Closed | release-1, release-2 |
 | [E5 — Session client auth](E5-session-client-auth/index.md) | Active | 1 New · 4 Closed | release-3, release-4 |
-| [E6 — Asynchronous resource](E6-asynchronous-resource/index.md) | New | 2 New | — |
+| [E6 — Asynchronous resource](E6-asynchronous-resource/index.md) | New | 2 New | release-5 |
 | [E7 — Theme controller](E7-theme-controller/index.md) | New (deferred) | — | — |
 | [E8 — `@rn-forge/ng-tailwind` package](E8-tailwind-package/index.md) | Closed | 4 Closed | release-2 |
 | [E9 — Presentation primitives](E9-presentation-primitives/index.md) | New (deferred) | — | — |
@@ -35,6 +35,6 @@ Jump to: [E1–E10](#e1e10) · [E11–E20](#e11e20)
 | [E16 — Key invalidation for `httpResource`](E16-resource-invalidation/index.md) | Closed | 1 Closed | release-2 |
 | [E17 — kiln adoption](E17-kiln-adoption/index.md) | Closed | 4 Closed · 1 Removed | release-3 |
 | [E18 — npm publishing and independent versions](E18-npm-publishing-and-independent-versions/index.md) | New (deferred) | — | — |
-| [E19 — ngkit simplification](E19-ngkit-simplification/index.md) | New | 8 New | — |
+| [E19 — ngkit simplification](E19-ngkit-simplification/index.md) | New | 8 New | release-5 |
 
 <!-- END derived epics -->

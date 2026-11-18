@@ -8,14 +8,14 @@
 
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
-| [F19.1 — Short records and disposable build briefs](F19.1-specs-and-briefs.md) | New | — | 2 New |
-| [F19.2 — One current explanation per audience](F19.2-current-documentation.md) | New | — | 2 New |
-| [F19.3 — Behavioral coverage and measured simplification](F19.3-behavioral-baselines.md) | New | — | 2 New |
-| [F19.4 — Bounded stream and permission-view lifetimes](F19.4-core-and-permissions.md) | New | — | 2 New |
-| [F19.5 — Configuration and widgets with explicit owners](F19.5-configuration-and-widgets.md) | New | — | 2 New |
-| [F19.6 — Forms and CRUD preserve application values](F19.6-forms-and-crud.md) | New | — | 3 New |
-| [F19.7 — Settings notifications with consumer lifetimes](F19.7-settings-lifetimes.md) | New | — | 2 New |
-| [F19.8 — Executable package boundaries and consumer contracts](F19.8-boundaries-and-consumers.md) | New | — | 2 New |
+| [F19.1 — Short records and disposable build briefs](F19.1-specs-and-briefs.md) | New | release-5 | 2 New |
+| [F19.2 — One current explanation per audience](F19.2-current-documentation.md) | New | release-5 | 2 New |
+| [F19.3 — Behavioral coverage and measured simplification](F19.3-behavioral-baselines.md) | New | release-5 | 2 New |
+| [F19.4 — Bounded stream and permission-view lifetimes](F19.4-core-and-permissions.md) | New | release-5 | 2 New |
+| [F19.5 — Configuration and widgets with explicit owners](F19.5-configuration-and-widgets.md) | New | release-5 | 2 New |
+| [F19.6 — Forms and CRUD preserve application values](F19.6-forms-and-crud.md) | New | release-5 | 3 New |
+| [F19.7 — Settings notifications with consumer lifetimes](F19.7-settings-lifetimes.md) | New | release-5 | 2 New |
+| [F19.8 — Executable package boundaries and consumer contracts](F19.8-boundaries-and-consumers.md) | New | release-5 | 2 New |
 
 <!-- END derived features -->
 
@@ -23,8 +23,8 @@ Simplify the existing libraries, tests and documentation around observable
 contracts, explicit lifetimes and one owner per fact. Correctness regressions
 come before refactoring; performance changes follow measurements. The
 [review and proposed design](design.md) records the source observations and
-their limits. This epic is unscheduled; documenting it does not start its build
-stories or add them to a release.
+their limits. The owner scheduled this epic into
+[Release 5](../../../releases/release-5/index.md) on 2026-11-18.
 
 ## Order
 
