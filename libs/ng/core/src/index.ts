@@ -4,6 +4,7 @@ export * from './lib/core.constants';
 export * from './lib/core.directives';
 export * from './lib/core.eventstream';
 export * from './lib/core.invalidation';
+export * from './lib/core.loading';
 export * from './lib/core.mixins';
 export * from './lib/core.problem';
 export * from './lib/core.services';
