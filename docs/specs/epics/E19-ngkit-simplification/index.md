@@ -12,7 +12,7 @@
 | [F19.1 — Short records and disposable build briefs](F19.1-specs-and-briefs.md) | Closed | release-5 | 2 Closed |
 | [F19.2 — One current explanation per audience](F19.2-current-documentation.md) | New | release-5 | 2 New |
 | [F19.3 — Behavioral coverage and measured simplification](F19.3-behavioral-baselines.md) | Active | release-5 | 1 New · 1 Closed |
-| [F19.4 — Bounded stream and permission-view lifetimes](F19.4-core-and-permissions.md) | Active | release-5 | 1 New · 1 Closed |
+| [F19.4 — Bounded stream and permission-view lifetimes](F19.4-core-and-permissions.md) | Closed | release-5 | 2 Closed |
 | [F19.5 — Configuration and widgets with explicit owners](F19.5-configuration-and-widgets.md) | New | release-5 | 2 New |
 | [F19.6 — Forms and CRUD preserve application values](F19.6-forms-and-crud.md) | New | release-5 | 3 New |
 | [F19.7 — Settings notifications with consumer lifetimes](F19.7-settings-lifetimes.md) | New | release-5 | 2 New |

@@ -13,6 +13,7 @@ import { RNF_PERMISSION } from './auth.config';
 
 /**
  * Conditionally renders a template based on a single permission key.
+ * Renders at most one view.
  */
 @Directive({
   selector: '[rnfHasPermission]',
@@ -25,7 +26,9 @@ export class HasPermissionDirective {
 
   @Input() set rnfHasPermission(key: string) {
     if (this.permission.hasPermission(key)) {
-      this.viewContainer.createEmbeddedView(this.templateRef);
+      if (this.viewContainer.length === 0) {
+        this.viewContainer.createEmbeddedView(this.templateRef);
+      }
       return;
     }
 
@@ -35,6 +38,7 @@ export class HasPermissionDirective {
 
 /**
  * Conditionally renders a template when the user holds at least one of the given permissions.
+ * Renders at most one view.
  */
 @Directive({
   selector: '[rnfHasAnyPermission]',
@@ -47,7 +51,9 @@ export class HasAnyPermissionDirective {
 
   @Input() set rnfHasAnyPermission(keys: string[]) {
     if (this.permission.hasAnyPermission(...keys)) {
-      this.viewContainer.createEmbeddedView(this.templateRef);
+      if (this.viewContainer.length === 0) {
+        this.viewContainer.createEmbeddedView(this.templateRef);
+      }
       return;
     }
 
