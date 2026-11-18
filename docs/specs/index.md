@@ -18,7 +18,7 @@ and F11.1) shipped as `v0.5.0` (2026-11-18), closing E11. The owner scheduled
 E19 and F6.1 into [Release 5](../releases/release-5/index.md) (2026-11-18).
 E11's `nx-plugin` and workspace CLI (F11.2, F11.3) are retired: kiln owns
 repository-level setup. E6 is elaborated (2026-10-24) down to loading timings in
-`ng/core`, waiting on one open question and a release; everything else is
+`ng/core`; F6.1's open question was answered 2026-11-18; everything else is
 deferred. E17 (2026-11-02) adopts kiln's `node-lib` archetype: F17.1 converts
 the docs to kiln's work model, F17.2 cuts the CI over; it is in Release 3, F17.1
 started 2026-11-03, and E17 closed 2026-11-14.
