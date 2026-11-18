@@ -17,8 +17,12 @@ is a kiln ADR; this file states the rule.
 
 ## 1. One entrypoint
 
-`task` is the only entrypoint. Nobody — human, agent, or CI — invokes `uv`,
-`mkdocs`, `pnpm`, `npx`, `nx`, `ng` or `kiln` directly.
+`task` is the only entrypoint for CI and for the gate. A workflow step, and
+everything `validate`, `lint`, `test` and `build` run, goes through `task`;
+nothing there invokes `uv`, `mkdocs`, `pnpm`, `npx`, `nx`, `ng` or `kiln`
+directly. A document may name a native command that is scoped to one project and
+that no verb covers, such as `pnpm exec nx serve <app>`, `pnpm exec nx g …` or
+`pnpm exec nx show project <name>`, where it says what the command is for.
 
 The developer surface for this repo is exactly:
 
@@ -32,7 +36,7 @@ The developer surface for this repo is exactly:
 | `task format` | Format Prettier-formatted files, TOML, YAML and Markdown prose in place. |
 | `task kiln:apply` | Re-render the generated files from .rn-forge/kiln/config.toml. Pass --dry-run, or --force \<path> to overwrite a drifted file, after `--`. |
 | `task kiln:diff` | Show every generated file that differs from a fresh render, writing nothing. Pass --artifact \<key or path> after `--` to limit it to one. |
-| `task kiln:pin` | Move kiln to another ref (tag, branch or SHA) and re-render with it. Pass the ref after `--`. |
+| `task kiln:pin` | Pin kiln to a branch's newest commit, a tag or a SHA and re-render with it. Pass it after `--`; with none, follow `track`. |
 | `task lint` | Every lint — Nx projects, Prettier formatting, Markdown, TOML and YAML formatting, kiln's checks, workflow security, dependency vulnerabilities, dependency licences. |
 | `task setup` | Install the pnpm workspace and the docs tooling. |
 | `task sonar:local` | Run the coverage tests and scan the checked-out branch on SonarCloud, awaiting the quality gate. Needs SONAR_TOKEN and sonar-scanner on PATH; pass --dry-run after -- to print the commands. |
@@ -52,13 +56,13 @@ developer has no reason to call it:
 | `task ci:dist:resolve` | CI only: Resolve the workspace: ranges in a built package's package.json (-- \<dist-dir>). |
 | `task ci:dist:verify` | CI only: Check a built package's package.json: no workspace: ranges; name, version, entry point and types present (-- \<dist-dir>). |
 | `task ci:docs:site` | CI only: Build Compodoc and Storybook and assemble them under the MkDocs site in .docs-site. |
-| `task ci:internal-ranges` | CI only: Check that members depend on each other by workspace:^ or workspace:~. |
+| `task ci:internal-ranges` | CI only: Check that members depend on each other by workspace:^ or workspace:~, or also workspace:\* in a fixed release group. |
 | `task ci:release:author` | CI only: Set the git author to the github-actions bot. |
-| `task ci:release:finalize` | CI only: Publish the draft GitHub Release for TAG, once npm has the version. |
+| `task ci:release:finalize` | CI only: Publish the draft GitHub Release for TAG. |
 | `task ci:release:github` | CI only: Create the GitHub Release for TAG as a draft, from the tarballs and kiln-devops notes. |
 | `task ci:release:latest` | CI only: Move the rolling latest release to TAG. |
-| `task ci:release:publish` | CI only: Publish to npm under DIST_TAG; FIRST_RELEASE_FLAG holds the flag, or nothing. |
 | `task ci:release:push` | CI only: Push the tag TAG, and nothing else. |
+| `task ci:release:sbom` | CI only: Write a CycloneDX SBOM beside each released package's tarball in dist/tarballs. |
 | `task ci:release:state` | CI only: Write tag, mode=new\|resume\|released, first-release and dist-tag for the version in the pull request to $GITHUB_OUTPUT. |
 | `task ci:release:tag` | CI only: Tag HEAD with TAG. |
 | `task ci:release:verify` | CI only: Rebuild dist/ from the tagged source, then pack and verify the publishable projects; fails when no tarball was written. |
@@ -232,7 +236,7 @@ model.
 | Docs strict build | `task docs:build` | D: `[docs] profile = "mkdocs"` |
 | `dependency-review` | action | S |
 | Sonar | `sonar` job | C: `[ci] sonar`, default `true` |
-| Release | `release` job | C: `[ci] release`, default `tag-exists`; `pypi` for `python-lib`; `nx-dispatch` for `node-lib`; `none` |
+| Release | `release` job | C: `[ci] release`, default `tag-exists`; `pypi` for `python-lib`; `nx-dispatch` or `npm` for `node-lib`; `none` |
 | `verify-release` | `task ci:verify-release` | D: a release mode other than `none` |
 | Docs deploy | `docs` job | D: `[docs] profile = "mkdocs"` |
 | Package tarballs | `task ci:smoke` | S |
@@ -269,19 +273,17 @@ targets `"pack": {}` and `"verify-dist": {}`, which take their commands from
 `release.projects`, and it can stay there. Without the tag, `task version` finds
 no publishable project and a release fails in its state step, before anything is
 pushed. With the tag but without `pack`, a release fails in its verify step,
-before anything is pushed, with `No tarball in dist/tarballs`. Until npm
-publishing is set up, add `"dryRun": true` to the `nx-release-publish` options:
-the project generator does not write it, and without it the release's Publish
-step publishes to npm.
+before anything is pushed, with `No tarball in dist/tarballs`.
 
 **Releasing.** A release follows a version bump made in a pull request: run
 `task version -- <patch|minor|major|x.y.z>` (`nx release version`, no commit or
 tag), commit the changed `package.json` files and the new `CHANGELOG.md`
 section, and merge. `task version` with no argument prints the version. On the
-push to the default branch, `release` tags `v<version>`, publishes to npm under
-the dist-tag the version names (`latest` for `x.y.z`, the prerelease identifier
-for `x.y.z-<id>.<n>`), and publishes the GitHub Release last. CI never commits.
-A version whose GitHub Release is published is skipped.
+push to the default branch, `release` tags `v<version>`, creates the GitHub
+Release with the tarballs and publishes it; it does not publish to npm. Each
+released package's GitHub Release carries its tarball and a CycloneDX SBOM, both
+attested before anything is published. CI never commits. A version whose GitHub
+Release is published is skipped.
 
 **For a publishable library's consumer check.** Add `"verify-consumer": {}` to
 its `project.json`, which takes its command from `targetDefaults`, and declare
@@ -291,9 +293,7 @@ and an optional `hook`. `task ci:consumer` installs the packed tarball into one
 fixture per cell and imports every entry point. A hook is one `.mjs` file that
 runs inside the fixture, so its bare imports resolve to the installed tarball
 and the cell's dependencies; it imports no sibling file. `dist-resolve` keeps
-the matrix out of the published manifest. The
-[example](https://github.com/rn-forge/kiln/blob/main/docs/specs/epics/E9-node-archetypes/F9.4-node-helpers-in-kiln-devops.md#s945-kiln-devops-consumer-smoke-tests-a-packed-library-across-its-peer-matrix)
-shows the shape.
+the matrix out of the published manifest.
 
 **Targets CI runs.** `lint`, `test` (writing lcov under `coverage/`), `build`
 and `e2e` (`e2e-ci` on Nx Cloud), on the affected projects. Optional, declared
@@ -326,7 +326,7 @@ per project: `verify-consumer` (a check that runs against the packed tarballs;
   token.
 
 **Action pins.** The `uses:` SHAs in generated files are kiln's. They move when
-kiln's `cicd/pins.toml` changes and the repository moves `[kiln] ref` and runs
+kiln's `core/pins.toml` changes and the repository moves `[kiln] ref` and runs
 `kiln apply`. Editing one is drift: `kiln doctor` fails, `kiln apply` refuses,
 and `kiln apply --force <path>` restores kiln's SHA, keeping a backup under
 `.rn-forge/kiln/backups`. Dependabot's `npm` and `uv` pull requests edit

@@ -5,7 +5,7 @@ version: "3"
 # internal, run by `lint`.
 
 vars:
-  DEVOPS: 'uvx --from "rn-forge-kiln @ git+https://github.com/rn-forge/kiln@feature/v1" kiln-devops'
+  DEVOPS: 'uvx --from "rn-forge-kiln @ git+https://github.com/rn-forge/kiln@9f3349ace048f0bcee89acfbbcd26d704a1b2ac4" kiln-devops'
 
 tasks:
   lint:workflows:
@@ -57,7 +57,7 @@ tasks:
       - '{{.DEVOPS}} sonar-target'
 
   internal-ranges:
-    desc: "CI only: Check that members depend on each other by workspace:^ or workspace:~."
+    desc: "CI only: Check that members depend on each other by workspace:^ or workspace:~, or also workspace:* in a fixed release group."
     silent: true
     cmds:
       - "set -o pipefail; pnpm ls -r --depth -1 --json | {{.DEVOPS}} requirements --stack node"
@@ -200,6 +200,58 @@ tasks:
     cmds:
       - git push origin "refs/tags/$TAG"
 
+  release:sbom:
+    desc: "CI only: Write a CycloneDX SBOM beside each released package's tarball in dist/tarballs."
+    cmds:
+      - |
+        set -eu
+        projects() {
+          node -e '
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const skip = new Set(["node_modules", "dist", ".git", ".nx"]);
+          const projects = [];
+          const walk = (dir) => {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const file = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                if (!skip.has(entry.name)) walk(file);
+              } else if (entry.name === "project.json") {
+                const project = JSON.parse(fs.readFileSync(file, "utf8"));
+                if ((project.tags ?? []).includes("publishable")) {
+                  const pkg = JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8"));
+                  const deps = Object.keys({ ...pkg.dependencies, ...pkg.peerDependencies, ...pkg.optionalDependencies });
+                  projects.push({ name: project.name, version: pkg.version, dir, pkg: pkg.name, deps });
+                }
+              }
+            }
+          };
+          walk(".");
+          projects.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+          const byPackage = new Map(projects.map((p) => [p.pkg, p]));
+          const done = new Set();
+          const ordered = [];
+          while (ordered.length < projects.length) {
+            const next = projects.find((p) => !done.has(p) && p.deps.every((d) => !byPackage.has(d) || byPackage.get(d) === p || done.has(byPackage.get(d))));
+            if (!next) {
+              console.error("::error::dependency cycle among publishable projects");
+              process.exit(1);
+            }
+            done.add(next);
+            ordered.push(next);
+          }
+          for (const p of ordered) console.log(p.name + " " + p.version + " " + p.dir + " " + p.pkg);
+          '
+        }
+        list=$(projects) || exit 1
+        while read -r project version dir name; do
+          [ -n "$project" ] || continue
+          packed=$(echo "$name" | sed 's/^@//; s|/|-|')
+          pnpm --filter "$name" sbom --sbom-format cyclonedx --sbom-spec-version 1.5 --prod --lockfile-only --out "dist/tarballs/$packed-$version.cdx.json"
+        done <<EOF
+        $list
+        EOF
+
   release:github:
     desc: "CI only: Create the GitHub Release for TAG as a draft, from the tarballs and kiln-devops notes."
     cmds:
@@ -209,16 +261,17 @@ tasks:
         if gh release view "$tag" --json isDraft --jq .isDraft >/dev/null 2>&1; then
           gh release delete "$tag" --yes
         fi
+        for tarball in dist/tarballs/*.tgz; do
+          if [ ! -f "${tarball%.tgz}.cdx.json" ]; then
+            echo "::error::No SBOM for $tarball"
+            exit 1
+          fi
+        done
         {{.DEVOPS}} notes CHANGELOG.md "${tag#v}" > "$RUNNER_TEMP/notes.md"
-        gh release create "$tag" dist/tarballs/*.tgz --verify-tag --title "$tag" --notes-file "$RUNNER_TEMP/notes.md" --draft
-
-  release:publish:
-    desc: "CI only: Publish to npm under DIST_TAG; FIRST_RELEASE_FLAG holds the flag, or nothing."
-    cmds:
-      - pnpm exec nx release publish --tag="$DIST_TAG" --excludeTaskDependencies $FIRST_RELEASE_FLAG
+        gh release create "$tag" dist/tarballs/*.tgz dist/tarballs/*.cdx.json --verify-tag --title "$tag" --notes-file "$RUNNER_TEMP/notes.md" --draft
 
   release:finalize:
-    desc: "CI only: Publish the draft GitHub Release for TAG, once npm has the version."
+    desc: "CI only: Publish the draft GitHub Release for TAG."
     cmds:
       - gh release edit "$TAG" --draft=false
 

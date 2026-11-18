@@ -35,9 +35,10 @@ lifecycle = false
 [kiln]
 # A kiln release tag, `v<version>`; a branch only before kiln's first
 # release. `kiln apply` pins the dev dependency and the CI install to it.
-ref = "feature/v1"
+ref = "9f3349ace048f0bcee89acfbbcd26d704a1b2ac4"
 
 # Settings of the repository's archetype, in one table named for it.
+track = "feature/v1"
 [archetype]
 
 # How the repo publishes its documentation.

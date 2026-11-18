@@ -15,7 +15,7 @@ name: CI
 # The repeated toolchain setup lives in .github/actions/setup, committed beside
 # this file. Each job checks out first: GitHub can only run a local action from
 # the checked-out tree. Every `uses:` is pinned to a commit SHA with the version
-# in a trailing comment. Pins move in kiln (cicd/pins.toml), not here; Dependabot
+# in a trailing comment. Pins move in kiln (core/pins.toml), not here; Dependabot
 # (.github/dependabot.yml, also generated) watches only the repository's own
 # actions and its uv dependencies.
 
@@ -217,7 +217,8 @@ jobs:
     if: ${{ !cancelled() && needs.checks-ok.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     permissions:
       contents: write # create GitHub Releases
-      id-token: write # npm OIDC trusted publishing
+      attestations: write # attest the tarballs and SBOMs
+      id-token: write # attest build provenance
     uses: ./.github/workflows/_release.yml # zizmor: ignore[self-repository] actionlint rejects the $/ form
     secrets:
       RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
