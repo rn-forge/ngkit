@@ -1,7 +1,13 @@
 // external imports
+import { httpResource, provideHttpClient } from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import {
   createEnvironmentInjector,
   EnvironmentInjector,
+  Injector,
   signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -327,5 +333,110 @@ describe('loadingTimings', () => {
       advance(50);
       expect(r.slow()).toBe(true);
     });
+  });
+});
+
+describe('loadingTimings over httpResource', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    TestBed.inject(HttpTestingController).verify();
+  });
+
+  const settle = async () => {
+    TestBed.tick();
+    await Promise.resolve();
+    TestBed.tick();
+  };
+
+  function start(url: () => string) {
+    const injector = TestBed.inject(Injector);
+    const resource = httpResource(url, { injector });
+    const timing = loadingTimings(resource.isLoading, { injector });
+    return { resource, timing, http: TestBed.inject(HttpTestingController) };
+  }
+
+  const advance = (ms: number) => vi.advanceTimersByTime(ms);
+
+  async function runToStalled() {
+    const { timing, http } = start(() => '/a');
+    await settle();
+    const req = http.expectOne('/a');
+    advance(299);
+    expect(timing.show()).toBe(false);
+    advance(1);
+    expect(timing.show()).toBe(true);
+    expect(timing.slow()).toBe(false);
+    advance(699);
+    expect(timing.slow()).toBe(false);
+    advance(1);
+    expect(timing.slow()).toBe(true);
+    expect(timing.stalled()).toBe(false);
+    advance(8999);
+    expect(timing.stalled()).toBe(false);
+    advance(1);
+    expect(timing.show()).toBe(true);
+    expect(timing.slow()).toBe(true);
+    expect(timing.stalled()).toBe(true);
+    return { timing, req };
+  }
+
+  const allFalse = (t: ReturnType<typeof loadingTimings>) => [
+    t.show(),
+    t.slow(),
+    t.stalled(),
+  ];
+
+  it('never shows a request flushed before delay', async () => {
+    const { timing, http } = start(() => '/a');
+    await settle();
+    advance(299);
+    http.expectOne('/a').flush({});
+    await settle();
+    advance(5000);
+    expect(allFalse(timing)).toEqual([false, false, false]);
+  });
+
+  it('sets each signal at its threshold and resets all on flush', async () => {
+    const { timing, req } = await runToStalled();
+    req.flush({});
+    await settle();
+    expect(allFalse(timing)).toEqual([false, false, false]);
+  });
+
+  it('resets all three on an error response', async () => {
+    const { timing, req } = await runToStalled();
+    req.flush('x', { status: 500, statusText: 'Server Error' });
+    await settle();
+    expect(allFalse(timing)).toEqual([false, false, false]);
+  });
+
+  it('keeps the clock running when the request changes while pending', async () => {
+    const id = signal('a');
+    const { resource, timing, http } = start(() => '/r' + id());
+    await settle();
+    advance(200);
+    id.set('b');
+    await settle();
+    expect(resource.isLoading()).toBe(true);
+    expect(allFalse(timing)).toEqual([false, false, false]);
+    const [first, second] = http.match(() => true);
+    expect(first.cancelled).toBe(true);
+    expect(second.cancelled).toBe(false);
+    advance(99);
+    expect(timing.show()).toBe(false);
+    advance(1);
+    expect(timing.show()).toBe(true);
+    advance(700);
+    expect(timing.slow()).toBe(true);
+    second.flush({});
+    await settle();
+    expect(allFalse(timing)).toEqual([false, false, false]);
   });
 });

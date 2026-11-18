@@ -21,7 +21,7 @@ owner approves.
 
 | Feature | Epic | State |
 | -- | -- | -- |
-| [F6.1 — `loadingTimings`](../../specs/epics/E6-asynchronous-resource/F6.1-loading-timings.md) | E6 | Active |
+| [F6.1 — `loadingTimings`](../../specs/epics/E6-asynchronous-resource/F6.1-loading-timings.md) | E6 | Closed |
 | [F19.1 — Short records and disposable build briefs](../../specs/epics/E19-ngkit-simplification/F19.1-specs-and-briefs.md) | E19 | Active |
 | [F19.2 — One current explanation per audience](../../specs/epics/E19-ngkit-simplification/F19.2-current-documentation.md) | E19 | New |
 | [F19.3 — Behavioral coverage and measured simplification](../../specs/epics/E19-ngkit-simplification/F19.3-behavioral-baselines.md) | E19 | New |

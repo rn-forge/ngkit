@@ -23,7 +23,7 @@ Angular's own composition API to be stable.
 
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
-| [F6.1 — `loadingTimings`](F6.1-loading-timings.md) | Active | release-5 | 1 New · 1 Closed |
+| [F6.1 — `loadingTimings`](F6.1-loading-timings.md) | Closed | release-5 | 2 Closed |
 | [F6.2 — `keepPrevious`](F6.2-keep-previous.md) | New | deferred | 1 New |
 
 <!-- END derived features -->

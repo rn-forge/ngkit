@@ -17,7 +17,7 @@ Jump to: [E1–E10](#e1e10) · [E11–E20](#e11e20)
 | [E3 — Core correctness](E3-core-correctness/index.md) | Closed | 2 Closed | — |
 | [E4 — Standard resource screen](E4-standard-resource-screen/index.md) | Closed | 3 Closed | release-1, release-2 |
 | [E5 — Session client auth](E5-session-client-auth/index.md) | Active | 1 New · 4 Closed | release-3, release-4 |
-| [E6 — Asynchronous resource](E6-asynchronous-resource/index.md) | Active | 1 Active · 1 New | release-5 |
+| [E6 — Asynchronous resource](E6-asynchronous-resource/index.md) | Active | 1 New · 1 Closed | release-5 |
 | [E7 — Theme controller](E7-theme-controller/index.md) | New (deferred) | — | — |
 | [E8 — `@rn-forge/ng-tailwind` package](E8-tailwind-package/index.md) | Closed | 4 Closed | release-2 |
 | [E9 — Presentation primitives](E9-presentation-primitives/index.md) | New (deferred) | — | — |
