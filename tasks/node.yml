@@ -4,9 +4,6 @@ version: "3"
 # The pnpm-managed Nx toolchain the frontend scaffold owns. Internal — reached
 # through the root wrappers, as `python`'s is.
 
-vars:
-  DEVOPS: 'uvx --from "rn-forge-kiln @ git+https://github.com/rn-forge/kiln@9f3349ace048f0bcee89acfbbcd26d704a1b2ac4" kiln-devops'
-
 tasks:
   install:
     desc: Install the frontend workspace's locked dependencies.

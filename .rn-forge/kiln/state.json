@@ -128,7 +128,7 @@
     },
     "Taskfile.yml": {
       "begin_marker": null,
-      "content_hash": "7b0f289af5c45357bee23c9ee5be675a771ab52a95bcc5fc56a7280768591167",
+      "content_hash": "4806bdad98a153406aaefccf0ca5de8a80e46eb76e547677dbf38dd613473943",
       "end_marker": null,
       "kind": "managed",
       "path": "Taskfile.yml"
@@ -303,28 +303,28 @@
     },
     "tasks/ci.yml": {
       "begin_marker": null,
-      "content_hash": "ac379a0d90241d331ca4d328f48ef8528fdc9ef93b9a50ff0928589ddae947cb",
+      "content_hash": "101f6494caf7a7fb5f985c87c1f9a444ca725b5d4209a865874797081efe4d8c",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/ci.yml"
     },
     "tasks/docs.yml": {
       "begin_marker": null,
-      "content_hash": "9f8cccaea589f3e16e3911894dfc0f846fdac3522cc53141cad52b7dde1fe349",
+      "content_hash": "8668f40c58447f7ab284329dac19d0c76f1f1d365b5c06215a52b45cc318035c",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/docs.yml"
     },
     "tasks/kiln.yml": {
       "begin_marker": null,
-      "content_hash": "b1f486e1159617d93d16fa635f6417ef88e8bd919e11376edc369385562a90d3",
+      "content_hash": "2da93e257ee979a41c653a4cba834cd987e7e0deae21fe3e8292201513adcf3c",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/kiln.yml"
     },
     "tasks/node.yml": {
       "begin_marker": null,
-      "content_hash": "ba5d3e3c964feff9ef1f4a16cd6744b097ebcc386abe7005f763b37b059913dc",
+      "content_hash": "f918aba7302a0a9591a4eec20a0fa27a53f9d9c7a427bd27aa60dbc173708602",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/node.yml"
@@ -345,7 +345,7 @@
     },
     "tasks/sonar.yml": {
       "begin_marker": null,
-      "content_hash": "91f7cc30701e16ec9a013d18550b8129b556351c24c7fdd98d52f9bda1178c29",
+      "content_hash": "b970a2debe6be326b3b64e3944cecb162e64d6845304ce96d8865715be78c6ce",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/sonar.yml"
@@ -359,7 +359,7 @@
     }
   },
   "metadata": {
-    "config_hash": "7d31c8e3b9bb75b45270402f0339706105a4744e6a0ca335159a5be2559a77b5",
+    "config_hash": "b888bd183a5692e49722ee6baa42aed8419d1f8f7f2911365b0d94cb5284f198",
     "config_provenance": {
       "ci.doctor_full": {
         "layer": "defaults",

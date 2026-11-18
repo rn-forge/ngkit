@@ -4,9 +4,6 @@ version: "3"
 # The CI module's check on the workflows it generates (zizmor and actionlint),
 # internal, run by `lint`.
 
-vars:
-  DEVOPS: 'uvx --from "rn-forge-kiln @ git+https://github.com/rn-forge/kiln@9f3349ace048f0bcee89acfbbcd26d704a1b2ac4" kiln-devops'
-
 tasks:
   lint:workflows:
     desc: Fail on a workflow security finding (zizmor) or a workflow syntax error (actionlint).
