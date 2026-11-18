@@ -27,7 +27,7 @@ and `rn-forge-django` v0.6.1 serve the auth contract (observed 2026-11-14).
 | [F5.2 — `@rn-forge/ng/auth` session client](../../specs/epics/E5-session-client-auth/F5.2-auth-wrapper.md) | E5 | Closed |
 | [F5.3 — Bootstrap auth UI](../../specs/epics/E5-session-client-auth/F5.3-bootstrap-auth-ui.md) | E5 | Closed |
 | [F5.4 — Acceptance against a session backend](../../specs/epics/E5-session-client-auth/F5.4-auth-acceptance.md) | E5 | Active |
-| [F11.1 — `@rn-forge/ng-plugin`](../../specs/epics/E11-workspace-generators/F11.1-ng-plugin.md) | E11 | Active |
+| [F11.1 — `@rn-forge/ng-plugin`](../../specs/epics/E11-workspace-generators/F11.1-ng-plugin.md) | E11 | Closed |
 
 <!-- END derived scope -->
 
@@ -36,6 +36,13 @@ and `rn-forge-django` v0.6.1 serve the auth contract (observed 2026-11-14).
 - [E11](../../specs/epics/E11-workspace-generators/index.md#decisions) (owner
   decision, 2026-10-17): the new `@rn-forge/ng-plugin` package joins the
   [ADR-0003](../../adr/ADR-0003.md) fixed group, tagged `publishable`.
+- [F11.1](../../specs/epics/E11-workspace-generators/F11.1-ng-plugin.md#decisions)
+  (owner decisions, 2026-11-17): `setup` adds the `@angular/localize/init`
+  polyfill; a package's peers are also its `devDependencies`, so pnpm writes a
+  lockfile importer for it.
+- The production audit ignores GHSA-fc5q-39xc-vjpf (`picomatch`, no patched
+  release) until a fix ships (owner decision, 2026-11-17;
+  [F12.12](../../specs/epics/E12-on-demand-features/index.md#f1212-remove-the-picomatch-audit-exception)).
 
 ## Breaking changes
 
@@ -55,7 +62,12 @@ None from F11.1: a new package is not a break.
 
 ## Progress
 
-F5.2 and F5.3 closed 2026-11-15; F5.4 is next; F11.1 runs alongside.
+F5.2 and F5.3 closed 2026-11-15. F5.4's stories closed 2026-11-16; the feature
+waits on its acceptance runs in CI. F11.1 closed 2026-11-17: the
+`@rn-forge/ng-plugin` package with six generators (`setup`,
+`add-bootstrap-table`, `configure-theme`, `scaffold-component`,
+`create-library`, `configure-testing`). E11 closes when the package releases
+with the group.
 
 ## Commits
 

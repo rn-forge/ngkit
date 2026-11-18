@@ -42,7 +42,7 @@ The shared design, package map and implementation standards are in
 
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
-| [F11.1 — `@rn-forge/ng-plugin`](F11.1-ng-plugin.md) | Active | release-4 | 8 Closed |
+| [F11.1 — `@rn-forge/ng-plugin`](F11.1-ng-plugin.md) | Closed | release-4 | 8 Closed |
 | [F11.2 — `@rn-forge/nx-plugin`](F11.2-nx-plugin.md) | Removed | — | — |
 | [F11.3 — `create-rn-forge-ng-workspace` CLI](F11.3-workspace-cli.md) | Removed | — | — |
 
