@@ -21,13 +21,13 @@
     "./generators.json": "./generators.json"
   },
   "devDependencies": {
-    "@nx/angular": "^24.0.0",
-    "@nx/devkit": "^24.0.0",
+    "@nx/angular": "^24.0.6",
+    "@nx/devkit": "^24.0.6",
     "typescript": "^5.4.0 || ^6.0.0"
   },
   "peerDependencies": {
-    "@nx/angular": "^24.0.0",
-    "@nx/devkit": "^24.0.0",
+    "@nx/angular": "^24.0.6",
+    "@nx/devkit": "^24.0.6",
     "typescript": "^5.4.0 || ^6.0.0"
   }
 }
