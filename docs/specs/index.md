@@ -12,11 +12,12 @@ the portable CI are implemented and shipped as
 as `v0.3.0` (2026-10-25). The owner moved E5 (F5.1–F5.4) and F11.1 to
 [Release 3](../releases/release-3/index.md) (2026-10-25), then closed Release
 3's scope as the kiln cutover release (2026-11-14): E17 and F5.1, which closed
-once a released server library served E5's auth contract. F5.2–F5.4 and F11.1
-are in [Release 4](../releases/release-4/index.md) (planned). E11's `nx-plugin`
-and workspace CLI (F11.2, F11.3) are retired: kiln owns repository-level setup.
-E6 is elaborated (2026-10-24) down to loading timings in `ng/core`, waiting on
-one open question and a release; everything else is deferred. E17 (2026-11-02)
+once a released server library served E5's auth contract. Release 3 shipped as
+`v0.4.0` (2026-11-14). [Release 4](../releases/release-4/index.md) (F5.2–F5.4
+and F11.1) shipped as `v0.5.0` (2026-11-18), closing E11. E11's `nx-plugin` and
+workspace CLI (F11.2, F11.3) are retired: kiln owns repository-level setup. E6
+is elaborated (2026-10-24) down to loading timings in `ng/core`, waiting on one
+open question and a release; everything else is deferred. E17 (2026-11-02)
 adopts kiln's `node-lib` archetype: F17.1 converts the docs to kiln's work
 model, F17.2 cuts the CI over; it is in Release 3, F17.1 started 2026-11-03, and
 E17 closed 2026-11-14.
@@ -30,7 +31,7 @@ release pages by `task docs:generate`; never edit inside their fence.
 
 | Release | Status | Features |
 | -- | -- | -- |
-| [Release 4](../releases/release-4/index.md) | in progress | 4 Closed |
+| [Release 4](../releases/release-4/index.md) | shipped (2026-11-18) | 4 Closed |
 | [Release 3](../releases/release-3/index.md) | shipped (2026-11-14) | 5 Closed · 1 Removed |
 | [Release 2](../releases/release-2/index.md) | shipped (2026-10-25) | 9 Closed |
 | [Release 1](../releases/release-1/index.md) | shipped (2026-10-14) | 7 Closed |
