@@ -2,11 +2,12 @@
 
 |  |  |
 | -- | -- |
-| **State** | Active |
+| **State** | Closed |
 | **Start Date** | 2026-10-17 |
+| **Closed Date** | 2026-11-18 |
 
-**Release:** F11.1 is in [Release 4](../../../releases/release-4/index.md); the
-owner moved it out of Release 3 on 2026-11-14.
+**Release:** F11.1 shipped in [Release 4](../../../releases/release-4/index.md)
+(`v0.5.0`, 2026-11-18); the owner moved it out of Release 3 on 2026-11-14.
 
 **Source:** former plan item "Workspace Setup Tooling"; owner decisions,
 2026-10-17.
@@ -74,3 +75,9 @@ set -euo pipefail
 pnpm exec nx run-many -t test build -p ng-plugin
 test "$(pnpm exec nx show project ng-plugin --json | jq -r '.tags | index("publishable") != null')" = true
 ```
+
+As run, 2026-11-18: `@rn-forge/ng-plugin` released with the group as `v0.5.0`
+(pull request #26, merge `d1a0180`). The `main` run
+[44246400078](https://github.com/rn-forge/ngkit/actions/runs/44246400078)
+passed, including `release` and `verify-release`, and the GitHub Release carries
+`rn-forge-ng-plugin-0.5.0.tgz`.

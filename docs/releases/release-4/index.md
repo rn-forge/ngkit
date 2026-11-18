@@ -2,8 +2,9 @@
 
 |  |  |
 | -- | -- |
-| **Status** | in progress |
+| **Status** | shipped |
 | **Start Date** | 2026-11-15 |
+| **Finish Date** | 2026-11-18 |
 
 [Back to releases](../index.md) · [Releasing](../../runbooks/releasing.md)
 
@@ -67,10 +68,13 @@ F5.2 and F5.3 closed 2026-11-15. F5.4's stories closed 2026-11-16, and the
 feature closed 2026-11-17 with its acceptance green on both CI paths and locally
 against Django. F11.1 closed 2026-11-17: the `@rn-forge/ng-plugin` package with
 six generators (`setup`, `add-bootstrap-table`, `configure-theme`,
-`scaffold-component`, `create-library`, `configure-testing`). The release is cut
-as `v0.5.0` (`task version -- minor` on `chore/release-4-cut`); it ships when
-that pull request merges and the `release` job runs. The Shipped table is
-recorded after that run. E11 closes when the package releases with the group.
+`scaffold-component`, `create-library`, `configure-testing`). The release was
+cut as `v0.5.0` (`task version -- minor` on `chore/release-4-cut`). Pull request
+#26 merged 2026-11-18 as `d1a0180`, and Release 4 shipped as `v0.5.0`: the
+`main` run (44246400078) passed, including `release` and `verify-release`, and
+the GitHub Release was published with the tarballs of all four `publishable`
+projects. E11 closed 2026-11-18, when `@rn-forge/ng-plugin` released with the
+group. Nothing remains.
 
 ## Commits
 
@@ -132,3 +136,12 @@ d32df2b F5.1 close: accept ADR-0006, settle the E5 wire contract
   `publishable` project.
 - `CHANGELOG.md` has an entry for the version.
 - `verify-consumer` passes on the released tarballs.
+
+## Shipped
+
+| Deliverable | Version | Tag | Commit | Verification |
+| -- | -- | -- | -- | -- |
+| `@rn-forge/ng` | `0.5.0` | `v0.5.0` | `d1a0180` | `rn-forge-ng-0.5.0.tgz` attached to the published GitHub Release [v0.5.0](https://github.com/rn-forge/ngkit/releases/tag/v0.5.0) (2026-11-18T05:56:43Z) |
+| `@rn-forge/ng-bootstrap` | `0.5.0` | `v0.5.0` | `d1a0180` | `rn-forge-ng-bootstrap-0.5.0.tgz` attached to the published GitHub Release [v0.5.0](https://github.com/rn-forge/ngkit/releases/tag/v0.5.0) (2026-11-18T05:56:43Z); the tarball declares `@rn-forge/ng` as `^0.5.0` |
+| `@rn-forge/ng-tailwind` | `0.5.0` | `v0.5.0` | `d1a0180` | `rn-forge-ng-tailwind-0.5.0.tgz` attached to the published GitHub Release [v0.5.0](https://github.com/rn-forge/ngkit/releases/tag/v0.5.0) (2026-11-18T05:56:43Z) |
+| `@rn-forge/ng-plugin` | `0.5.0` | `v0.5.0` | `d1a0180` | `rn-forge-ng-plugin-0.5.0.tgz` attached to the published GitHub Release [v0.5.0](https://github.com/rn-forge/ngkit/releases/tag/v0.5.0) (2026-11-18T05:56:43Z); `verify-release` passed in `main` run 44246400078 |
