@@ -1,133 +1,103 @@
+// external imports
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import {
-  ActivatedRouteSnapshot,
-  RouterStateSnapshot,
-  provideRouter,
-} from '@angular/router';
-import { RN_FORGE_APP_CONFIG_TOKEN } from '@rn-forge/ng/core';
-import {
-  RNF_AUTH_CONFIG_TOKEN,
-  RNF_PERMISSION,
-  RnForgeAuthConfig,
-} from './auth.config';
+import { Router, RouterStateSnapshot, provideRouter } from '@angular/router';
+
+// internal imports
+import { RNF_CREDENTIALS, RNF_PERMISSION } from './auth.config';
 import { AuthService } from './auth.services';
-import { AllowAnyPermission, Permission } from './auth.types';
-import { authRouteGuard } from './auth.guards';
+import { authGuard, permissionGuard } from './auth.guards';
+import {
+  AnonymousCredentials,
+  Credentials,
+  SessionCredentials,
+} from './auth.types';
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+describe('authGuard and permissionGuard', () => {
+  const credentials = signal<Credentials>(new AnonymousCredentials());
+  const startLogin = vi.fn();
 
-function mockRoute(data: Record<string, unknown> = {}): ActivatedRouteSnapshot {
-  return { data } as unknown as ActivatedRouteSnapshot;
-}
-function mockState(url: string): RouterStateSnapshot {
-  return { url } as unknown as RouterStateSnapshot;
-}
-
-const CONFIG: RnForgeAuthConfig = {
-  frontend: {
-    disableAuth: false,
-    loginPath: '/auth?mode=login',
-    ignoreAppRoutes: ['/auth'],
-  },
-  backend: {},
-};
-
-// ---------------------------------------------------------------------------
-// authRouteGuard
-// ---------------------------------------------------------------------------
-
-describe('authRouteGuard', () => {
-  let authService: AuthService;
-  let mockPermission: Permission;
-
-  function runGuard(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    return TestBed.runInInjectionContext(() => authRouteGuard(route, state));
-  }
-
-  beforeEach(async () => {
-    localStorage.clear();
-    mockPermission = new AllowAnyPermission();
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    credentials.set(new AnonymousCredentials());
+    startLogin.mockReset();
+    TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
+        { provide: RNF_CREDENTIALS, useValue: credentials },
         {
-          provide: RN_FORGE_APP_CONFIG_TOKEN,
-          useValue: { appName: 'test-app' },
+          provide: RNF_PERMISSION,
+          useValue: {
+            hasPermission: (key: string) => credentials().hasPermission(key),
+          },
         },
-        { provide: RNF_AUTH_CONFIG_TOKEN, useValue: CONFIG },
-        { provide: RNF_PERMISSION, useValue: mockPermission },
+        { provide: AuthService, useValue: { startLogin } },
       ],
     });
-    authService = TestBed.inject(AuthService);
-    vi.spyOn(authService, 'sendToLogin').mockImplementation(() => undefined);
   });
 
   afterEach(() => TestBed.resetTestingModule());
 
-  describe('ignoreAppRoutes passthrough', () => {
-    it('returns true when URL contains an ignored pattern', () => {
-      expect(runGuard(mockRoute(), mockState('/auth?mode=login'))).toBe(true);
-    });
+  const state = { url: '/items?q=a&sort=b' } as RouterStateSnapshot;
+  const run = (guard: typeof authGuard) =>
+    TestBed.runInInjectionContext(() => guard({} as never, state));
 
-    it('returns true for any URL that includes the pattern as a substring', () => {
-      expect(runGuard(mockRoute(), mockState('/auth/callback'))).toBe(true);
-    });
-
-    it('does not skip a URL that does not match any ignored pattern', () => {
-      expect(runGuard(mockRoute(), mockState('/dashboard'))).toBe(false);
-    });
+  it('starts login and denies an anonymous user', () => {
+    expect(run(authGuard)).toBe(false);
+    expect(startLogin).toHaveBeenCalledExactlyOnceWith(state.url);
   });
 
-  describe('unauthenticated user', () => {
-    it('returns false', () => {
-      expect(runGuard(mockRoute(), mockState('/dashboard'))).toBe(false);
-    });
-
-    it('calls sendToLogin with the current URL', () => {
-      runGuard(mockRoute(), mockState('/dashboard'));
-      expect(authService.sendToLogin).toHaveBeenCalledWith('/dashboard');
-    });
+  it('allows a signed-in user', () => {
+    credentials.set(
+      new SessionCredentials({
+        subject: 'ada',
+        provider: 'development',
+        roles: [],
+        permissions: [],
+        expiresAt: '2099-01-01T00:00:00Z',
+      }),
+    );
+    expect(run(authGuard)).toBe(true);
   });
 
-  describe('authenticated user — no permission requirement', () => {
-    beforeEach(() => {
-      vi.spyOn(authService, 'isAuthenticated', 'get').mockReturnValue(true);
-    });
-
-    it('returns true when route.data has no permission field', () => {
-      expect(runGuard(mockRoute(), mockState('/dashboard'))).toBe(true);
-    });
-
-    it('returns true when route.data is an empty object', () => {
-      expect(runGuard(mockRoute({}), mockState('/home'))).toBe(true);
-    });
+  it('allows a user with every required permission', () => {
+    credentials.set(
+      new SessionCredentials({
+        subject: 'ada',
+        provider: 'development',
+        roles: [],
+        permissions: ['a.read', 'a.update'],
+        expiresAt: '2099-01-01T00:00:00Z',
+      }),
+    );
+    const guard = permissionGuard('a.read', 'a.update');
+    expect(run(guard)).toBe(true);
   });
 
-  describe('authenticated user — with permission requirement', () => {
-    beforeEach(() => {
-      vi.spyOn(authService, 'isAuthenticated', 'get').mockReturnValue(true);
-    });
+  it('returns the forbidden UrlTree when a permission is missing', () => {
+    credentials.set(
+      new SessionCredentials({
+        subject: 'ada',
+        provider: 'development',
+        roles: [],
+        permissions: ['a.read'],
+        expiresAt: '2099-01-01T00:00:00Z',
+      }),
+    );
+    const result = run(permissionGuard('a.read', 'a.update'));
+    expect(
+      TestBed.inject(Router).serializeUrl(
+        result as ReturnType<Router['createUrlTree']>,
+      ),
+    ).toBe('/forbidden');
+  });
 
-    it('returns true when RNF_PERMISSION grants the required permission', () => {
-      vi.spyOn(mockPermission, 'hasPermission').mockReturnValue(true);
-      expect(
-        runGuard(mockRoute({ permission: 'admin' }), mockState('/admin')),
-      ).toBe(true);
-    });
+  it('starts login for an anonymous user on a permission guard', () => {
+    const result = run(permissionGuard('a.read', 'a.update'));
+    expect(result).toBe(false);
+    expect(startLogin).toHaveBeenCalledExactlyOnceWith(state.url);
+  });
 
-    it('returns false when RNF_PERMISSION denies the required permission', () => {
-      vi.spyOn(mockPermission, 'hasPermission').mockReturnValue(false);
-      expect(
-        runGuard(mockRoute({ permission: 'admin' }), mockState('/admin')),
-      ).toBe(false);
-    });
-
-    it('does not call sendToLogin when blocking due to missing permission', () => {
-      vi.spyOn(mockPermission, 'hasPermission').mockReturnValue(false);
-      runGuard(mockRoute({ permission: 'admin' }), mockState('/admin'));
-      expect(authService.sendToLogin).not.toHaveBeenCalled();
-    });
+  it('rejects a permission guard with no keys when constructed', () => {
+    expect(() => permissionGuard()).toThrow(/^\[rn-forge\.ng\.auth\]/);
   });
 });

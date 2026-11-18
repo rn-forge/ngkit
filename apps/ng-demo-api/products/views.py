@@ -1,8 +1,10 @@
 from django.db.models import QuerySet
 from rest_framework.filters import BaseFilterBackend
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rn_forge.django.auth.drf.authorization import PermissionKeyPermission
 from rn_forge.django.drf import CacheIdempotencyStore, OrderByFilter, etag_for, idempotent
 from rn_forge.django.drf.transfer import (
     BatchCreateMixin,
@@ -44,6 +46,12 @@ class ProductViewSet(
     export_resource_class = ProductResource
     import_resource_class = ProductResource
     export_filename = "products"
+    permission_classes = [PermissionKeyPermission]
+    permission_key = "demo.products"
+
+    def get_audit_user_identifier(self) -> str:
+        """Hand-written: audit the session principal rather than a Django user."""
+        return self.get_request_user().subject
 
     def get_renderers(self):
         renderers = super().get_renderers()
@@ -63,6 +71,9 @@ class ProductViewSet(
 
 class ResetView(APIView):
     """Test-only: restores the seed data."""
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
         reset_products()

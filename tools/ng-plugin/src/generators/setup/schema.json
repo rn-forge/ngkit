@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "RnForgeNgPluginSetup",
+  "title": "Set up an Angular application for the rn-forge Angular packages",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Angular application project to configure.",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Which Angular application should be configured?"
+    },
+    "packageManager": {
+      "type": "string",
+      "enum": ["pnpm", "npm", "yarn"],
+      "default": "pnpm",
+      "description": "Package manager used to install dependencies."
+    },
+    "skipInstall": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip dependency installation."
+    },
+    "skipStyles": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip application stylesheet injection."
+    },
+    "skipConfig": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip allowedCommonJsDependencies, the @angular/localize/init polyfill and the app.config.ts provider."
+    },
+    "includeBootstrapTable": {
+      "type": "boolean",
+      "default": true,
+      "description": "Add the Bootstrap Table dependencies during setup."
+    },
+    "includeTheme": {
+      "type": "boolean",
+      "default": true,
+      "description": "Include rn-forge theme and style wiring during setup."
+    }
+  },
+  "required": ["project"]
+}

@@ -1,11 +1,16 @@
+// external imports
 import { makeEnvironmentProviders } from '@angular/core';
-import { RN_FORGE_BOOTSTRAP_CONFIG_PARTS } from '@rn-forge/ng-bootstrap';
 
-import type { AuthOptions } from './auth/auth.component';
+// internal imports
+import {
+  ConfigOptions,
+  RN_FORGE_BOOTSTRAP_CONFIG_PARTS,
+} from '@rn-forge/ng-bootstrap';
+
 import type { UserOptions } from './user/user.component';
 
 /**
- * Configuration for auth EP UI components.
+ * Configuration for the login page and user components.
  * Keys match each component's `configKey`.
  *
  * Note: `user.profile` and `user.settings` sub-options are nested
@@ -13,13 +18,13 @@ import type { UserOptions } from './user/user.component';
  * configKey paths used by those sub-components.
  */
 export interface AuthUiConfig {
-  auth?: Partial<AuthOptions>;
+  login?: Partial<ConfigOptions>;
   user?: Partial<UserOptions>;
 }
 
 /**
- * Provides configuration for auth EP UI components (auth form, user menu).
- * This is distinct from `provideRnForgeAuthConfig` in `@rn-forge/ng/auth`,
+ * Provides configuration for the login page and user menu.
+ * This is distinct from `provideRnForgeAuth` in `@rn-forge/ng/auth`,
  * which configures the authentication service.
  */
 export const provideRnForgeAuthUiConfig = (config: AuthUiConfig) => {

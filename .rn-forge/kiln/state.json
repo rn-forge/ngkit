@@ -30,7 +30,7 @@
     },
     ".github/workflows/_release.yml": {
       "begin_marker": null,
-      "content_hash": "aaec96126cc7991238cbf304d89282b81a6c520d714ee200ff029f3bd515e70e",
+      "content_hash": "678ceb941c6a8653d0419cdcc91646b91970f55b175a1ee979943e6cd86c993a",
       "end_marker": null,
       "kind": "managed",
       "path": ".github/workflows/_release.yml"
@@ -58,7 +58,7 @@
     },
     ".github/workflows/ci.yml": {
       "begin_marker": null,
-      "content_hash": "e2a83a61c89e5d9bd97f3807012a9fa8680df96b94adfa2cf94159b3cf1a2502",
+      "content_hash": "408610a3a875193d5d8b5299a3dd26727f8b9e8af0d59e98364018afdab62a0c",
       "end_marker": null,
       "kind": "managed",
       "path": ".github/workflows/ci.yml"
@@ -79,7 +79,7 @@
     },
     ".nx/workflows/agents.yaml": {
       "begin_marker": null,
-      "content_hash": "27c985825d0c05c7bdc90dc004161b320c1d5d74d173d94f5ee20d0c0711436f",
+      "content_hash": "6bdd62c716e4ca62cdd88e479acd052c5f35d5b0876206ab0990ccfbbcd29191",
       "end_marker": null,
       "kind": "managed",
       "path": ".nx/workflows/agents.yaml"
@@ -100,7 +100,7 @@
     },
     ".rn-forge/kiln/standard.md": {
       "begin_marker": null,
-      "content_hash": "e0a5f83d4fd4eac70f0a70d029522e2b323c520c1f6cdbc8c6de4e966a60f67b",
+      "content_hash": "792e9b6af1aab1ab293bd55691400553ec63fbb2701ed7f1a6a1c7793b03fc2b",
       "end_marker": null,
       "kind": "managed",
       "path": ".rn-forge/kiln/standard.md"
@@ -121,14 +121,14 @@
     },
     "AGENTS.md#rn-forge kiln": {
       "begin_marker": "<!-- BEGIN rn-forge kiln -->",
-      "content_hash": "feb1496c6302422c5043b83031129c096fae48c0d3aa22e5f4e0f6aac65d4532",
+      "content_hash": "42ebe14244ff6b9e22f99d4227842c6cc4649fd58307a20922483abcf3a2da87",
       "end_marker": "<!-- END rn-forge kiln -->",
       "kind": "block",
       "path": "AGENTS.md"
     },
     "Taskfile.yml": {
       "begin_marker": null,
-      "content_hash": "7b0f289af5c45357bee23c9ee5be675a771ab52a95bcc5fc56a7280768591167",
+      "content_hash": "4806bdad98a153406aaefccf0ca5de8a80e46eb76e547677dbf38dd613473943",
       "end_marker": null,
       "kind": "managed",
       "path": "Taskfile.yml"
@@ -303,28 +303,28 @@
     },
     "tasks/ci.yml": {
       "begin_marker": null,
-      "content_hash": "f32deed40cda490d995ab616ffabfd7f969c6d70a0be33c2ce6f6878d895c22a",
+      "content_hash": "101f6494caf7a7fb5f985c87c1f9a444ca725b5d4209a865874797081efe4d8c",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/ci.yml"
     },
     "tasks/docs.yml": {
       "begin_marker": null,
-      "content_hash": "b1d02d9070f30eb6fc6a70d1264d91f78cca4371a1a293c258e5b889f488d6a4",
+      "content_hash": "8668f40c58447f7ab284329dac19d0c76f1f1d365b5c06215a52b45cc318035c",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/docs.yml"
     },
     "tasks/kiln.yml": {
       "begin_marker": null,
-      "content_hash": "be60873f48ca442bedb34430e99ad55610ad86fbe1b50d44bffc64fe67d944be",
+      "content_hash": "2da93e257ee979a41c653a4cba834cd987e7e0deae21fe3e8292201513adcf3c",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/kiln.yml"
     },
     "tasks/node.yml": {
       "begin_marker": null,
-      "content_hash": "7cb213b2da695cef3417b0144d2bee34ebe6e9f443007292eb732d848fb47547",
+      "content_hash": "f918aba7302a0a9591a4eec20a0fa27a53f9d9c7a427bd27aa60dbc173708602",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/node.yml"
@@ -345,7 +345,7 @@
     },
     "tasks/sonar.yml": {
       "begin_marker": null,
-      "content_hash": "356677e40f184b8aebb0a277f8b14e1432193ca68589f16cc0c249f143658586",
+      "content_hash": "b970a2debe6be326b3b64e3944cecb162e64d6845304ce96d8865715be78c6ce",
       "end_marker": null,
       "kind": "managed",
       "path": "tasks/sonar.yml"
@@ -359,7 +359,7 @@
     }
   },
   "metadata": {
-    "config_hash": "2b7481b09e0bafc63ad58ed35a4999c345127f5b680427d6479faec163f3e258",
+    "config_hash": "b888bd183a5692e49722ee6baa42aed8419d1f8f7f2911365b0d94cb5284f198",
     "config_provenance": {
       "ci.doctor_full": {
         "layer": "defaults",

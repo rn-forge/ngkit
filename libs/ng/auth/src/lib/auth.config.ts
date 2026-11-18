@@ -9,99 +9,70 @@ import {
   Permission,
 } from './auth.types';
 
-// type definitions
-/** Frontend (Angular router / directive) auth configuration. */
-export interface AuthFrontendConfig {
-  /** Route to redirect unauthenticated users to. Default: `'/auth?mode=login'`. */
-  loginPath?: string;
-  /** Route to redirect users to after logout. Default: `'/auth?mode=logout'`. */
-  logoutPath?: string;
-  /** App routes that bypass the `authRouteGuard` (e.g. `['/auth']`). */
-  ignoreAppRoutes?: string[];
-  /** Expected JWT `aud` claim value used for token validation. */
-  audience?: string;
-  /** Required permissions for the guard to allow navigation. */
-  permissions?: string[];
-  /** Set to `true` during development to bypass all auth checks. */
-  disableAuth?: boolean;
+/** Same-origin session endpoints, client routes and security settings. */
+export interface AuthConfig {
+  /** Session probe URL; default: '/auth/session'. */
+  readonly sessionUrl: string;
+  /** Provider list URL; default: '/auth/providers'. */
+  readonly providersUrl: string;
+  /** Navigating login URL, with the provider ID appended; default: '/auth/login'. */
+  readonly loginUrl: string;
+  /** Password login URL; default: '/auth/login/password'. */
+  readonly passwordLoginUrl: string;
+  /** Logout URL; default: '/auth/logout'. */
+  readonly logoutUrl: string;
+  /** API prefixes handled by auth policy; default: ['/api']. */
+  readonly apiUrls: readonly string[];
+  /** Client login route; default: '/login'. */
+  readonly loginPath: string;
+  /** Client login error route; default: '/login/error'. */
+  readonly errorPath: string;
+  /** Client permission-denied route; default: '/forbidden'. */
+  readonly forbiddenPath: string;
+  /** Client route after logout without a redirect; default: '/login'. */
+  readonly loggedOutPath: string;
+  /** Readable XSRF cookie name; default: 'XSRF-TOKEN'. */
+  readonly xsrfCookieName: string;
+  /** XSRF request header name; default: 'X-XSRF-TOKEN'. */
+  readonly xsrfHeaderName: string;
+  /** Login loop detection window in milliseconds; default: 10_000. */
+  readonly loopGuardMs: number;
+  /** Session expiry warning lead time in milliseconds; default: 300_000. */
+  readonly expiryLeadMs: number;
 }
 
-/** Backend (HTTP interceptor / API) auth configuration. */
-export interface AuthBackendConfig {
-  /**
-   * Base URL `AuthBackendService` prepends to its login/logout requests
-   * (e.g. `'https://api.example.test'`, or `''` for the current origin).
-   * Optional here because most of `RnForgeAuthConfig` works without it, but
-   * `AuthBackendService` requires it and throws a clear error if it is
-   * `undefined` when constructed.
-   */
-  baseUrl?: string;
-  /** API root prefix for auth endpoints (e.g. `'/auth'`). */
-  authApiRoot?: string;
-  /** Login endpoint path relative to `authApiRoot`. Default: `'/login'`. */
-  loginPath?: string;
-  /** Logout endpoint path relative to `authApiRoot`. Default: `'/logout'`. */
-  logoutPath?: string;
-  /** URL patterns that skip the `authHttpInterceptor` (e.g. `['/auth/']`). */
-  ignoreBackendURLs?: string[];
-  /** Custom token refresh function; called when the interceptor receives a 401. */
-  refreshToken?: (token: string) => Promise<string>;
-}
+/** Frozen session client defaults, including the API prefix array. */
+export const DEFAULT_AUTH_CONFIG: AuthConfig = Object.freeze({
+  sessionUrl: '/auth/session',
+  providersUrl: '/auth/providers',
+  loginUrl: '/auth/login',
+  passwordLoginUrl: '/auth/login/password',
+  logoutUrl: '/auth/logout',
+  apiUrls: Object.freeze(['/api']),
+  loginPath: '/login',
+  errorPath: '/login/error',
+  forbiddenPath: '/forbidden',
+  loggedOutPath: '/login',
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+  loopGuardMs: 10_000,
+  expiryLeadMs: 300_000,
+});
 
-/**
- * Top-level auth configuration for `@rn-forge/ng/auth`.
- * Pass to {@link provideRnForgeAuthConfig} at app bootstrap.
- */
-export interface RnForgeAuthConfig {
-  frontend?: AuthFrontendConfig;
-  backend?: AuthBackendConfig;
-}
-
-// default config
-export const DEFAULT_RN_FORGE_AUTH_CONFIG: RnForgeAuthConfig = {
-  frontend: {
-    loginPath: '/auth?mode=login',
-    logoutPath: '/auth?mode=logout',
-    ignoreAppRoutes: ['/auth'],
-    disableAuth: true,
-  },
-  backend: {
-    authApiRoot: '/auth',
-    loginPath: '/login',
-    logoutPath: '/logout',
-    ignoreBackendURLs: ['/auth/'],
-  },
-};
-
-// ---------------------------------------------------------------------------
-// Config token (both names supported for backward compat during transition)
-// ---------------------------------------------------------------------------
-
-export const RNF_AUTH_CONFIG_TOKEN = new InjectionToken<RnForgeAuthConfig>(
+/** Session configuration token; defaults to DEFAULT_AUTH_CONFIG. */
+export const RNF_AUTH_CONFIG_TOKEN = new InjectionToken<AuthConfig>(
   'RNF_AUTH_CONFIG_TOKEN',
   {
-    providedIn: 'root',
-    factory: () => DEFAULT_RN_FORGE_AUTH_CONFIG,
+    factory: () => DEFAULT_AUTH_CONFIG,
   },
 );
 
-/** @deprecated Use RNF_AUTH_CONFIG_TOKEN */
-export const RN_FORGE_AUTH_CONFIG_TOKEN = RNF_AUTH_CONFIG_TOKEN;
-
-// ---------------------------------------------------------------------------
-// RNF_PERMISSION — authorization policy token
-// Zero-config default: allow everything (no auth required)
-// ---------------------------------------------------------------------------
-
+/** Permission policy token; defaults to AllowAnyPermission without auth wiring. */
 export const RNF_PERMISSION = new InjectionToken<Permission>('RNF_PERMISSION', {
   factory: () => new AllowAnyPermission(),
 });
 
-// ---------------------------------------------------------------------------
-// RNF_CREDENTIALS — user identity token (Signal<Credentials>)
-// Zero-config default: anonymous unauthenticated user
-// ---------------------------------------------------------------------------
-
+/** Reactive identity token; defaults to anonymous credentials without auth wiring. */
 export const RNF_CREDENTIALS = new InjectionToken<Signal<Credentials>>(
   'RNF_CREDENTIALS',
   {

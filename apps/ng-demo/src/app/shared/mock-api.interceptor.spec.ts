@@ -1,3 +1,4 @@
+// external imports
 import {
   HttpClient,
   HttpErrorResponse,
@@ -10,8 +11,9 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
+
+// internal imports
 import { environment } from '../../environments/environment';
-import { getJwtForEmail } from './demo-jwt';
 import { mockApiInterceptor, resetMockApi } from './mock-api.interceptor';
 
 // ---------------------------------------------------------------------------
@@ -92,25 +94,120 @@ describe('mockApiInterceptor', () => {
     expect(status).toBe(500);
   });
 
-  it('returns an access token keyed on the submitted email for login', async () => {
-    const { http } = setup();
+  it.each([true, false])(
+    'returns the demo session with mockProducts=%s',
+    async (mockProducts) => {
+      const { http, controller } = setup();
+      const previous = environment.mockProducts;
+      environment.mockProducts = mockProducts;
+      try {
+        const res = await firstValueFrom(
+          http.get('/auth/session?refresh=true'),
+        );
+        expect(res).toEqual({
+          subject: 'demo-admin',
+          name: 'Demo Admin',
+          provider: 'development',
+          roles: ['admin'],
+          permissions: [
+            'demo.dashboard',
+            'demo.products',
+            'demo.products.list',
+            'demo.products.read',
+            'demo.products.create',
+            'demo.products.update',
+            'demo.products.delete',
+            'demo.products.import',
+            'demo.products.export',
+            'demo.forms',
+            'demo.org-chart',
+          ],
+          expiresAt: '2099-01-01T00:00:00Z',
+        });
+        controller.expectNone('/auth/session?refresh=true');
+      } finally {
+        environment.mockProducts = previous;
+      }
+    },
+  );
 
-    const res: unknown = await firstValueFrom(
-      http.post('/api/auth/', { user: 'readonly@example.com' }),
-    );
+  describe('auth routes', () => {
+    beforeEach(() => resetMockApi());
 
-    expect(res).toEqual({
-      access_token: getJwtForEmail('readonly@example.com'),
+    it('serves only the password provider', async () => {
+      const { http, controller } = setup();
+
+      await expect(
+        firstValueFrom(http.get('/auth/providers')),
+      ).resolves.toEqual([
+        { id: 'password', name: 'Password', kind: 'password' },
+      ]);
+      controller.expectNone('/auth/providers');
     });
-  });
 
-  it('defaults login to admin@example.com when no user is given', async () => {
-    const { http } = setup();
+    it('logs in with the demo password and returns the demo session', async () => {
+      const { http, controller } = setup();
+      await firstValueFrom(http.post('/auth/logout', {}));
 
-    const res: unknown = await firstValueFrom(http.post('/api/auth/', {}));
+      await expect(
+        firstValueFrom(
+          http.post('/auth/login/password', {
+            username: 'ada',
+            password: 'demo',
+          }),
+        ),
+      ).resolves.toMatchObject({
+        subject: 'demo-admin',
+        provider: 'development',
+      });
+      await expect(
+        firstValueFrom(http.get('/auth/session')),
+      ).resolves.toMatchObject({ subject: 'demo-admin' });
+      controller.expectNone('/auth/logout');
+      controller.expectNone('/auth/login/password');
+      controller.expectNone('/auth/session');
+    });
 
-    expect(res).toEqual({
-      access_token: getJwtForEmail('admin@example.com'),
+    it('rejects a wrong password without restoring the signed-out session', async () => {
+      const { http, controller } = setup();
+      await firstValueFrom(http.post('/auth/logout', {}));
+
+      const error = await firstValueFrom(
+        http.post('/auth/login/password', {
+          username: 'ada',
+          password: 'wrong',
+        }),
+      ).catch((caught: HttpErrorResponse) => caught);
+      expect(error).toBeInstanceOf(HttpErrorResponse);
+      expect((error as HttpErrorResponse).status).toBe(401);
+      const signedOut = await firstValueFrom(http.get('/auth/session')).catch(
+        (caught: HttpErrorResponse) => caught,
+      );
+      expect(signedOut).toBeInstanceOf(HttpErrorResponse);
+      expect((signedOut as HttpErrorResponse).status).toBe(401);
+      controller.expectNone('/auth/logout');
+      controller.expectNone('/auth/login/password');
+      controller.expectNone('/auth/session');
+    });
+
+    it('logs out, rejects session refresh, and resets signed in', async () => {
+      const { http, controller } = setup();
+
+      await expect(
+        firstValueFrom(http.post('/auth/logout', {})),
+      ).resolves.toEqual({ redirect: null });
+      const signedOut = await firstValueFrom(http.get('/auth/session')).catch(
+        (error: HttpErrorResponse) => error,
+      );
+      expect(signedOut).toBeInstanceOf(HttpErrorResponse);
+      expect((signedOut as HttpErrorResponse).status).toBe(401);
+      controller.expectNone('/auth/logout');
+      controller.expectNone('/auth/session');
+
+      resetMockApi();
+      await expect(
+        firstValueFrom(http.get('/auth/session')),
+      ).resolves.toMatchObject({ subject: 'demo-admin' });
     });
   });
 

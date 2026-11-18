@@ -81,8 +81,9 @@ changing anything structural.
 
 - **Archetype:** `node-lib` · **Docs profile:** `mkdocs` · **CI:** GitHub
   Actions, Sonar on
-- **Entrypoint:** `task`. Never invoke `uv`, `mkdocs`, `pnpm`, `npx`, `nx`, `ng`
-  or `kiln` directly, in a workflow or in a document — the ten root verbs are
+- **Entrypoint:** `task`. Workflows and the gate never invoke `uv`, `mkdocs`,
+  `pnpm`, `npx`, `nx`, `ng` or `kiln` directly; a document may name a
+  project-scoped native command no verb covers — the ten root verbs are
   `setup validate lint format typecheck test test:coverage build clean version`,
   plus `docs:build docs:serve docs:generate`.
 - **Generated files** carry a provenance header naming kiln. They are owned by

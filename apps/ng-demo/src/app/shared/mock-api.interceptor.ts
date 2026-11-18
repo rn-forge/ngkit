@@ -1,3 +1,4 @@
+// external imports
 import {
   HttpErrorResponse,
   HttpEvent,
@@ -7,8 +8,10 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
+
+// internal imports
+import { Session } from '@rn-forge/ng/auth';
 import { environment } from '../../environments/environment';
-import { getJwtForEmail } from './demo-jwt';
 
 interface MockProduct {
   id: number;
@@ -33,9 +36,32 @@ let products: MockProduct[] = [];
 let versions = new Map<number, number>();
 let nextId = 100;
 let idempotent = new Map<string, MockProduct>();
+let signedIn = true;
+
+const DEMO_SESSION: Session = {
+  subject: 'demo-admin',
+  name: 'Demo Admin',
+  provider: 'development',
+  roles: ['admin'],
+  permissions: [
+    'demo.dashboard',
+    'demo.products',
+    'demo.products.list',
+    'demo.products.read',
+    'demo.products.create',
+    'demo.products.update',
+    'demo.products.delete',
+    'demo.products.import',
+    'demo.products.export',
+    'demo.forms',
+    'demo.org-chart',
+  ],
+  expiresAt: '2099-01-01T00:00:00Z',
+};
 
 /** Resets the in-memory store to the seed data (used by tests). */
 export function resetMockApi(): void {
+  signedIn = true;
   products = SEED_PRODUCTS.map((p) => ({ ...p }));
   versions = new Map(products.map((p) => [p.id, 1]));
   nextId = 100;
@@ -203,6 +229,47 @@ function handleProductsRoute(
 export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
   const { url, method } = req;
 
+  const path = url.split('?')[0];
+  if (
+    environment.mockAuth &&
+    method === 'GET' &&
+    path.endsWith('/auth/session')
+  ) {
+    if (!signedIn) return problem(401, 'Unauthorized');
+    return respond(200, DEMO_SESSION);
+  }
+
+  if (
+    environment.mockAuth &&
+    method === 'POST' &&
+    path.endsWith('/auth/logout')
+  ) {
+    signedIn = false;
+    return respond(200, { redirect: null });
+  }
+
+  if (
+    environment.mockAuth &&
+    method === 'GET' &&
+    path.endsWith('/auth/providers')
+  ) {
+    return respond(200, [
+      { id: 'password', name: 'Password', kind: 'password' },
+    ]);
+  }
+
+  if (
+    environment.mockAuth &&
+    method === 'POST' &&
+    path.endsWith('/auth/login/password')
+  ) {
+    if ((req.body as { password?: string } | null)?.password !== 'demo') {
+      return problem(401, 'Invalid credentials');
+    }
+    signedIn = true;
+    return respond(200, DEMO_SESSION);
+  }
+
   if (!url.includes('/api/')) {
     return next(req);
   }
@@ -215,17 +282,6 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
           statusText: 'Internal Server Error',
         }),
     );
-  }
-
-  // Strip query string for path matching
-  const path = url.split('?')[0];
-
-  // Auth login — return token keyed on email
-  if (method === 'POST' && path.endsWith('/api/auth/')) {
-    const body = req.body as { user?: string } | null;
-    return respond(200, {
-      access_token: getJwtForEmail(body?.user ?? 'admin@example.com'),
-    });
   }
 
   if (!environment.mockProducts) {

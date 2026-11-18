@@ -7,7 +7,9 @@
 
 <div class="row mt-2">
   @if (config.profile.enabled && subpath === 'profile') {
-    <rnf-user-profile [profile]="userProfile" />
+    @if (session; as profile) {
+      <rnf-user-profile [profile]="profile" />
+    }
   }
   @if (config.settings.enabled && subpath === 'settings') {
     <rnf-user-settings />

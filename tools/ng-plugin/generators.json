@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "generators": {
+    "setup": {
+      "factory": "./src/generators/setup/generator",
+      "schema": "./src/generators/setup/schema.json",
+      "description": "Configure an Angular application to consume @rn-forge/ng and @rn-forge/ng-bootstrap."
+    },
+    "add-bootstrap-table": {
+      "factory": "./src/generators/add-bootstrap-table/generator",
+      "schema": "./src/generators/add-bootstrap-table/schema.json",
+      "description": "Add the Bootstrap Table dependencies to an Angular application and optionally scaffold an example component."
+    },
+    "configure-theme": {
+      "factory": "./src/generators/configure-theme/generator",
+      "schema": "./src/generators/configure-theme/schema.json",
+      "description": "Import the rn-forge Bootstrap theme into an Angular application's SCSS stylesheet."
+    },
+    "scaffold-component": {
+      "factory": "./src/generators/scaffold-component/generator",
+      "schema": "./src/generators/scaffold-component/schema.json",
+      "description": "Scaffold a standalone Angular component, page, table or form in an application or library."
+    },
+    "create-library": {
+      "factory": "./src/generators/create-library/generator",
+      "schema": "./src/generators/create-library/schema.json",
+      "description": "Create a publishable Angular library with the release, coverage, Storybook and Compodoc settings applied."
+    },
+    "configure-testing": {
+      "factory": "./src/generators/configure-testing/generator",
+      "schema": "./src/generators/configure-testing/schema.json",
+      "description": "Set an Angular project's Vitest test target to rn-forge's coverage defaults and patch its tsconfig.spec.json."
+    }
+  }
+}

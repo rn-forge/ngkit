@@ -1,0 +1,12 @@
+export { default as setupGenerator } from './generators/setup/generator';
+export type { SetupGeneratorSchema } from './generators/setup/schema';
+export { default as addBootstrapTableGenerator } from './generators/add-bootstrap-table/generator';
+export type { AddBootstrapTableGeneratorSchema } from './generators/add-bootstrap-table/schema';
+export { default as configureThemeGenerator } from './generators/configure-theme/generator';
+export type { ConfigureThemeGeneratorSchema } from './generators/configure-theme/schema';
+export { default as scaffoldComponentGenerator } from './generators/scaffold-component/generator';
+export type { ScaffoldComponentGeneratorSchema } from './generators/scaffold-component/schema';
+export { default as createLibraryGenerator } from './generators/create-library/generator';
+export type { CreateLibraryGeneratorSchema } from './generators/create-library/schema';
+export { default as configureTestingGenerator } from './generators/configure-testing/generator';
+export type { ConfigureTestingGeneratorSchema } from './generators/configure-testing/schema';

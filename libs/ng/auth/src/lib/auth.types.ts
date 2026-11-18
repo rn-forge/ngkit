@@ -1,216 +1,85 @@
-// external imports
-import { Signal, signal } from '@angular/core';
-import { jwtDecode } from 'jwt-decode';
-import { get, map, set, union } from 'lodash-es';
+/** Supported backend login provider kinds. */
+export type AuthProviderKind = 'oidc' | 'oauth2' | 'development' | 'password';
 
-// internal imports
-import { GenericType } from '@rn-forge/ng/core';
-
-// type definitions
-/** Shape of the JWT token pair returned by the login endpoint. */
-export interface LoginResponse extends GenericType {
-  readonly access_token: string;
-  readonly refresh_token: string;
+/** Login provider advertised by the backend. */
+export interface AuthProvider {
+  readonly id: string;
+  readonly name: string;
+  readonly kind: AuthProviderKind;
 }
 
-// ---------------------------------------------------------------------------
-// Permission interface — authorization policy
-// ---------------------------------------------------------------------------
+/** Expected password login failures that a login form can display. */
+export type PasswordLoginFailure = 'invalid-credentials' | 'rate-limited';
 
-/**
- * Authorisation policy contract. Implement this interface (or use one of the built-in
- * implementations) and provide it via `RNF_PERMISSION` to control what the authenticated
- * user may do.
- *
- * Built-in implementations: {@link AllowAnyPermission} (no-auth), and the internal
- * `CredentialPermission` wired by {@link provideRnForgeAuthConfig}.
- */
+/** Typed password failure, deliberately mapping HTTP statuses for login forms. */
+export class PasswordLoginError extends Error {
+  constructor(readonly reason: PasswordLoginFailure) {
+    super(`[rn-forge.ng.auth] Password login failed: ${reason}`);
+  }
+}
+
+/** Readonly identity and permissions returned by the backend session endpoint. */
+export interface Session {
+  readonly subject: string;
+  readonly name?: string;
+  readonly email?: string;
+  readonly picture?: string;
+  readonly provider: string;
+  readonly roles: readonly string[];
+  readonly permissions: readonly string[];
+  readonly attributes?: Readonly<Record<string, unknown>>;
+  readonly authTime?: string;
+  readonly amr?: readonly string[];
+  readonly expiresAt: string;
+}
+
+/** Permission policy for individual or alternative permission keys. */
 export interface Permission {
   hasPermission(key: string): boolean;
   hasAnyPermission(...keys: string[]): boolean;
 }
 
-// ---------------------------------------------------------------------------
-// Credentials interface — user identity
-// ---------------------------------------------------------------------------
-
-/**
- * Shape of the user object embedded in the JWT `profile` claim.
- * All fields are readonly — the profile is derived from the token and never mutated locally.
- */
-export interface UserProfile {
-  readonly id: number;
-  readonly email: string;
-  readonly first_name: string;
-  readonly last_name: string;
-  readonly name: string;
-  readonly role: string;
-  readonly avatar: string;
-  readonly is_staff: boolean;
-  readonly is_superuser: boolean;
-  readonly groups: {
-    id: number;
-    name: string;
-    permissions: string[];
-  }[];
-  readonly permissions: string[];
-  readonly status: string;
-  readonly created_by: string;
-  readonly created_at: string;
-  readonly updated_by: string;
-  readonly updated_at: string;
-}
-
-/**
- * User identity contract. Injected via `RNF_CREDENTIALS` as a `Signal<Credentials>`.
- *
- * Built-in implementations:
- * - {@link AnonymousCredentials} — default unauthenticated state
- * - {@link JwtCredentials} — populated after a successful JWT login
- */
-export interface Credentials {
+/** Current session identity with permission checks independent of display roles. */
+export interface Credentials extends Permission {
   readonly isAuthenticated: boolean;
-  readonly userProfile: Signal<Partial<UserProfile>>;
-  hasPermission(key: string): boolean;
-  hasAnyPermission(...keys: string[]): boolean;
+  readonly session: Session | null;
+  readonly roles: readonly string[];
 }
 
-// ---------------------------------------------------------------------------
-// AllowAnyPermission — no-auth policy (all checks pass)
-// ---------------------------------------------------------------------------
-
-/** {@link Permission} implementation that grants every permission check — the default when auth is disabled. */
+/** Zero-configuration permission policy. */
 export class AllowAnyPermission implements Permission {
   hasPermission(_key: string): boolean {
     return true;
   }
-
   hasAnyPermission(..._keys: string[]): boolean {
     return true;
   }
 }
 
-// ---------------------------------------------------------------------------
-// AnonymousCredentials — unauthenticated user identity (Django's AnonymousUser)
-// ---------------------------------------------------------------------------
-
-/** {@link Credentials} implementation representing an unauthenticated visitor. All permission checks return `false`. */
+/** Unauthenticated identity with no session, no roles and no granted permissions. */
 export class AnonymousCredentials implements Credentials {
   readonly isAuthenticated = false;
-  readonly userProfile: Signal<Partial<UserProfile>> = signal({});
-
+  readonly session = null;
+  readonly roles: readonly string[] = [];
   hasPermission(_key: string): boolean {
     return false;
   }
-
   hasAnyPermission(..._keys: string[]): boolean {
     return false;
   }
 }
 
-// ---------------------------------------------------------------------------
-// JwtCredentials — authenticated user identity derived from JWT payload
-// ---------------------------------------------------------------------------
-
-/**
- * {@link Credentials} implementation for an authenticated JWT user.
- * Parses permissions from both top-level `permissions[]` and the union of each group's
- * `permissions[]` embedded in the JWT `profile` claim.
- */
-export class JwtCredentials implements Credentials {
+/** Authenticated identity whose permission checks use only session.permissions. */
+export class SessionCredentials implements Credentials {
   readonly isAuthenticated = true;
-  readonly userProfile: Signal<Partial<UserProfile>>;
-
-  private readonly _permissions: string[];
-
-  constructor(private readonly jwtToken: JwtToken) {
-    const profile = jwtToken.getAttribute<UserProfile>('profile') ?? {};
-    this.userProfile = signal(profile);
-    this._permissions = [
-      ...new Set(
-        union(
-          (profile as UserProfile).permissions ?? [],
-          map((profile as UserProfile).groups, 'permissions').flat(),
-        ),
-      ),
-    ];
+  readonly roles: readonly string[];
+  constructor(readonly session: Session) {
+    this.roles = session.roles;
   }
-
   hasPermission(key: string): boolean {
-    return this.hasAnyPermission(key);
+    return this.session.permissions.includes(key);
   }
-
   hasAnyPermission(...keys: string[]): boolean {
-    return this._permissions.some((p) => keys.includes(p));
-  }
-}
-
-// ---------------------------------------------------------------------------
-// JwtToken — raw JWT parsing and attribute access
-// ---------------------------------------------------------------------------
-
-/**
- * Decodes and wraps a raw JWT string, exposing standard claims as typed properties
- * and arbitrary payload attributes via `getAttribute()` / `setAttribute()`.
- *
- * Standard claim mapping:
- * | JWT claim   | Property   |
- * |-------------|------------|
- * | `token_type`| `type`     |
- * | `jti`       | `id`       |
- * | `iss`       | `issuer`   |
- * | `sub`       | `subject`  |
- * | `aud`       | `audience` |
- * | `exp`       | `expiry`   |
- * | `iat`       | `issuedAt` |
- */
-export class JwtToken {
-  private static readonly _JWT_ATTRS: Record<string, string> = {
-    token_type: 'type',
-    jti: 'id',
-    iss: 'issuer',
-    sub: 'subject',
-    aud: 'audience',
-    exp: 'expiry',
-    iat: 'issuedAt',
-  };
-
-  readonly token: string;
-  readonly type!: string;
-  readonly id!: string;
-  readonly issuer!: string;
-  readonly subject!: string;
-  readonly audience!: string;
-  readonly expiry!: number;
-  readonly issuedAt!: number;
-
-  constructor(token: string) {
-    this.token = token;
-
-    const payload = jwtDecode(token);
-    Object.entries(payload).forEach((value: [string, unknown]) => {
-      const mappedKey =
-        value[0] in JwtToken._JWT_ATTRS
-          ? JwtToken._JWT_ATTRS[value[0]]
-          : value[0];
-      set(this, mappedKey, value[1]);
-    });
-
-    this.audience = Array.isArray(this.audience)
-      ? this.audience[0]
-      : this.audience;
-    this.expiry = Number(this.expiry) * 1000;
-  }
-
-  get isValid(): boolean {
-    return this.expiry > Date.now();
-  }
-
-  getAttribute<T>(attr: string): T {
-    return get(this, attr) as T;
-  }
-
-  setAttribute(attr: string, value: unknown): void {
-    set(this, attr, value);
+    return keys.some((key) => this.hasPermission(key));
   }
 }

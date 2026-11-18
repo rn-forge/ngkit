@@ -6,7 +6,7 @@
 | **Start Date** | 2026-11-14 |
 
 **Release:** F5.1 is in [Release 3](../../../releases/release-3/index.md); F5.2,
-F5.3 and F5.4 are in the backlog (owner decision, 2026-11-14).
+F5.3 and F5.4 are in [Release 4](../../../releases/release-4/index.md).
 
 **Source:** former roadmap item H5; redefined by the owner on 2026-10-16 around
 a backend-for-frontend session model.
@@ -54,9 +54,9 @@ carries E5 must announce it.
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
 | [F5.1 — Client model and wire contract](F5.1-client-model.md) | Closed | release-3 | 2 Closed |
-| [F5.2 — `@rn-forge/ng/auth` session client](F5.2-auth-wrapper.md) | New | — | 5 New |
-| [F5.3 — Bootstrap auth UI](F5.3-bootstrap-auth-ui.md) | New | — | 3 New |
-| [F5.4 — Acceptance against a session backend](F5.4-auth-acceptance.md) | New | — | 2 New |
+| [F5.2 — `@rn-forge/ng/auth` session client](F5.2-auth-wrapper.md) | Closed | release-4 | 5 Closed |
+| [F5.3 — Bootstrap auth UI](F5.3-bootstrap-auth-ui.md) | Closed | release-4 | 3 Closed |
+| [F5.4 — Acceptance against a session backend](F5.4-auth-acceptance.md) | Closed | release-4 | 2 Closed |
 | [F5.5 — Situational client extensions](F5.5-situational-client-extensions.md) | New | deferred | — |
 
 <!-- END derived features -->

@@ -1,13 +1,10 @@
+// external imports
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { RN_FORGE_APP_CONFIG_TOKEN } from '@rn-forge/ng/core';
-import { RN_FORGE_AUTH_CONFIG_TOKEN } from '@rn-forge/ng/auth';
-import { UserComponent } from './user.component';
 
-const AUTH_CONFIG = {
-  frontend: { disableAuth: true, loginPath: '/auth', ignoreAppRoutes: [] },
-  backend: { ignoreBackendURLs: [] },
-};
+// internal imports
+import { RN_FORGE_APP_CONFIG_TOKEN } from '@rn-forge/ng/core';
+import { UserComponent } from './user.component';
 
 describe('UserComponent', () => {
   let component: UserComponent;
@@ -19,7 +16,6 @@ describe('UserComponent', () => {
       providers: [
         provideRouter([]),
         { provide: RN_FORGE_APP_CONFIG_TOKEN, useValue: { name: 'test-app' } },
-        { provide: RN_FORGE_AUTH_CONFIG_TOKEN, useValue: AUTH_CONFIG },
       ],
     });
     fixture = TestBed.createComponent(UserComponent);
@@ -31,6 +27,13 @@ describe('UserComponent', () => {
 
   it('creates the component', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('does not render a profile for an anonymous user', () => {
+    component.subpath = 'profile';
+    fixture.detectChanges();
+    expect(component.session).toBeNull();
+    expect(fixture.nativeElement.querySelector('rnf-user-profile')).toBeNull();
   });
 
   it('has configKey "user"', () => {

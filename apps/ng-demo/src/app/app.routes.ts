@@ -1,22 +1,32 @@
+// external imports
 import { Route } from '@angular/router';
-import { authRouteGuard } from '@rn-forge/ng/auth';
+
+// internal imports
+import { authGuard, permissionGuard } from '@rn-forge/ng/auth';
 import { ErrorComponent } from '@rn-forge/ng-bootstrap';
-import { AuthComponent, UserComponent } from '@rn-forge/ng-bootstrap/auth';
+import {
+  AuthErrorComponent,
+  ForbiddenComponent,
+  LoginComponent,
+  UserComponent,
+} from '@rn-forge/ng-bootstrap/auth';
 import { DashboardPageComponent } from './dashboard/dashboard.page';
 import { FormsPageComponent } from './forms/forms.page';
 import { OrgChartPageComponent } from './org-chart/org-chart.page';
 import { ProductsPageComponent } from './products/products.page';
-import { DEMO_USERS } from './shared/demo-jwt';
 
 export const appRoutes: Route[] = [
   {
-    path: 'auth',
-    component: AuthComponent,
-    data: {
-      options: {
-        users: DEMO_USERS,
-      },
-    },
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
+    path: 'login/error',
+    component: AuthErrorComponent,
+  },
+  {
+    path: 'forbidden',
+    component: ForbiddenComponent,
   },
   {
     path: 'error',
@@ -35,27 +45,27 @@ export const appRoutes: Route[] = [
   },
   {
     path: '',
-    canActivateChild: [authRouteGuard],
+    canActivateChild: [authGuard],
     children: [
       {
         path: 'dashboard',
         component: DashboardPageComponent,
-        data: { permission: 'demo.dashboard' },
+        canActivate: [permissionGuard('demo.dashboard')],
       },
       {
         path: 'products',
         component: ProductsPageComponent,
-        data: { permission: 'demo.products' },
+        canActivate: [permissionGuard('demo.products')],
       },
       {
         path: 'forms',
         component: FormsPageComponent,
-        data: { permission: 'demo.forms' },
+        canActivate: [permissionGuard('demo.forms')],
       },
       {
         path: 'org-chart',
         component: OrgChartPageComponent,
-        data: { permission: 'demo.org-chart' },
+        canActivate: [permissionGuard('demo.org-chart')],
       },
       { path: 'user/profile', component: UserComponent },
       { path: 'user/settings', component: UserComponent },

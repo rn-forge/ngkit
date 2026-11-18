@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "RnForgeNgPluginConfigureTesting",
+  "title": "Configure Vitest testing for an Angular project",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Angular application or library whose Vitest test target is configured.",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Which Angular project should be configured?"
+    },
+    "coverageThreshold": {
+      "type": "number",
+      "default": 35,
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Minimum statements, branches, functions and lines coverage."
+    },
+    "reporters": {
+      "type": "string",
+      "default": "text,html,json",
+      "description": "Comma-separated coverage reporters."
+    },
+    "skipInstall": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip dependency installation."
+    }
+  },
+  "required": ["project"]
+}

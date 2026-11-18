@@ -27,7 +27,8 @@ jobs:
       cancel-in-progress: false # never cancel a running release
     permissions:
       contents: write # create GitHub Releases
-      id-token: write # npm OIDC trusted publishing
+      attestations: write # attest the tarballs and SBOMs
+      id-token: write # attest build provenance
     # The tag this run published; empty when the version was already released.
     outputs:
       tag: ${{ steps.state.outputs.mode != 'released' && steps.state.outputs.tag || '' }}
@@ -48,11 +49,9 @@ jobs:
           filter: tree:0
           persist-credentials: true # the tag is pushed with this token
 
-      # npm >= 11.5.1 is required for OIDC publishing (Node version from .nvmrc)
       - uses: ./.github/actions/setup # zizmor: ignore[self-repository] actionlint rejects the $/ form
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          registry-url: 'https://registry.npmjs.org'
 
       # A version counts as shipped only when its GitHub Release is published.
       - name: Detect release state
@@ -77,28 +76,33 @@ jobs:
         if: ${{ steps.state.outputs.mode != 'released' }}
         run: task ci:release:verify
 
+      - name: Generate SBOMs
+        if: ${{ steps.state.outputs.mode != 'released' }}
+        run: task ci:release:sbom
+
+      # Attested before anything is published, because the release, not the
+      # tag, is the record: a failure here leaves nothing published.
+      - name: Attest the tarballs and SBOMs
+        if: ${{ steps.state.outputs.mode != 'released' }}
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: |
+            dist/tarballs/*.tgz
+            dist/tarballs/*.cdx.json
+
       - name: Push the tag
         if: ${{ steps.state.outputs.mode == 'new' }}
         run: task ci:release:push
         env:
           TAG: ${{ steps.state.outputs.tag }}
 
-      # A draft until npm has the version, so a published release is a finished one.
+      # A draft until every step before it has passed, so a published release is a finished one.
       - name: Create the draft GitHub Release
         if: ${{ steps.state.outputs.mode != 'released' }}
         run: task ci:release:github
         env:
           TAG: ${{ steps.state.outputs.tag }}
           GH_TOKEN: ${{ github.token }}
-
-      # --excludeTaskDependencies to not invalidate cache and use the dist/ the
-      # verify step built. nx skips a version npm already has.
-      - name: Publish
-        if: ${{ steps.state.outputs.mode != 'released' }}
-        run: task ci:release:publish
-        env:
-          DIST_TAG: ${{ steps.state.outputs.dist-tag }}
-          FIRST_RELEASE_FLAG: ${{ steps.state.outputs.first-release == 'true' && '--first-release' || '' }}
 
       - name: Publish the GitHub Release
         if: ${{ steps.state.outputs.mode != 'released' }}

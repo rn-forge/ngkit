@@ -49,30 +49,38 @@ across the whole workspace. CI runs the `task ci:*` tasks in `tasks/ci.yml`
 
 ### Backend fixture
 
-`ng-demo-api` is a Django fixture for the resource screen's wire acceptance
+`ng-demo-api-fastapi` is the default backend fixture for the resource screen's
+wire acceptance
 ([F4.3](../specs/epics/E4-standard-resource-screen/F4.3-wire-acceptance.md)). It
 needs [`uv`](https://docs.astral.sh/uv/), which provides the Python it declares.
 Run it beside the demo built for it:
 
 ```sh
-pnpm nx run ng-demo-api:serve       # http://localhost:8100, fresh seeded SQLite on each start
-pnpm nx run ng-demo:serve:fixture   # http://localhost:4200, /api proxied to the fixture
+pnpm nx run ng-demo-api-fastapi:serve  # http://localhost:8100
+pnpm nx run ng-demo:serve:fixture      # http://localhost:4200, /api and /auth proxied to the fixture
 ```
 
-`POST /api/_test/reset` restores the seed data. `pnpm nx e2e ng-demo-e2e` starts
-both servers itself, so it needs `uv` too. The plain `pnpm nx serve ng-demo`
-keeps the in-browser mock.
+Both fixtures expose the development identity provider and accounts `demo-admin`
+(role `admin`) and `demo-reader` (role `reader`). The admin has
+`demo.dashboard`, `demo.products`, `demo.products.list`, `demo.products.read`,
+`demo.products.create`, `demo.products.update`, `demo.products.delete`,
+`demo.products.import`, `demo.products.export`, `demo.forms`, `demo.org-chart`,
+and `demo.products.upload`. The reader has `demo.products`,
+`demo.products.list`, and `demo.products.read`. To sign in by hand, open
+`/auth/login/development?account=demo-admin` in the fixture demo. The fixtures
+require an authenticated session for product routes and an XSRF token on unsafe
+requests. `POST /api/_test/reset` restores the seed data. The e2e command starts
+both servers itself. The plain `pnpm nx serve ng-demo` keeps the in-browser
+mock.
 
-`ng-demo-api-fastapi` serves the same resource and routes on the same port from
-FastAPI, so run it instead of `ng-demo-api`
-(`pnpm nx run ng-demo-api-fastapi:serve`). To run the e2e suite against it, set
-`NG_DEMO_BACKEND`; unset or `django` selects the Django fixture:
+`ng-demo-api` is the Django fixture. Set `NG_DEMO_BACKEND=django` to run the
+same suite against it; unset `NG_DEMO_BACKEND` selects FastAPI:
 
 ```sh
-NG_DEMO_BACKEND=fastapi pnpm nx e2e ng-demo-e2e
+NG_DEMO_BACKEND=django pnpm nx e2e ng-demo-e2e
 ```
 
-CI runs the Django backend only (see
+CI runs the FastAPI backend by default (see
 [F4.3](../specs/epics/E4-standard-resource-screen/F4.3-wire-acceptance.md)).
 
 ### Scaffolding projects
@@ -153,6 +161,9 @@ flags), then work through this list once:
    already have: `description`, `license`, `repository`, and
    `publishConfig.access: "public"`. Without it the package isn't really
    consumable externally even if it builds fine.
+1. It lists each of its peers in `devDependencies` with the same range, as
+   `ng-bootstrap` does, because pnpm writes no lockfile importer for a package
+   whose only dependencies are peers. `create-library` does this itself.
 1. Tag it `publishable` in its `project.json`. The tag puts it in
    `nx.json#release.projects`, `preVersionCommand`, the release and CI's
    `smoke` job, so none of them is edited

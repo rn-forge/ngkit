@@ -21,7 +21,6 @@
     "content-disposition": "^3.0.0",
     "jquery": "^4.0.0",
     "jquery-treegrid": "^0.3.0",
-    "jwt-decode": "^4.0.0",
     "lodash-es": "^4.18.1",
     "ngx-quill": "^31.0.1",
     "quill": "^2.0.3",

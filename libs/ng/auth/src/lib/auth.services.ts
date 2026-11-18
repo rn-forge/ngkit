@@ -1,255 +1,209 @@
 // external imports
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { DestroyRef, Injectable, Signal, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import {
-  Injectable,
-  Signal,
-  WritableSignal,
-  inject,
-  signal,
-} from '@angular/core';
-import { buildUrl } from 'build-url-ts';
-import { map, union } from 'lodash-es';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+  Observable,
+  catchError,
+  ignoreElements,
+  map,
+  of,
+  tap,
+  throwError,
+} from 'rxjs';
 
 // internal imports
-import {
-  LocalStorageService,
-  RouteService,
-  isDebugMode,
-} from '@rn-forge/ng/core';
-import { RNF_AUTH_CONFIG_TOKEN, RnForgeAuthConfig } from './auth.config';
+import { RNF_AUTH_CONFIG_TOKEN } from './auth.config';
+import { FullPageNavigation } from './auth.navigation';
 import {
   AnonymousCredentials,
+  AuthProvider,
   Credentials,
-  JwtCredentials,
-  JwtToken,
-  LoginResponse,
-  UserProfile,
+  PasswordLoginError,
+  Session,
+  SessionCredentials,
 } from './auth.types';
 
-// global constants
-const JWT_TOKEN_KEY = '_RN_FORGE_AUTH_TOKEN';
-
-/**
- * Manages JWT-based authentication state.
- *
- * New in this version: `credentials: Signal<Credentials>` exposes reactive auth state
- * for injection via RNF_CREDENTIALS (wired by provideRnForgeAuthConfig).
- *
- * Note: `disableAuth` branching still exists here for backward compat with guards/interceptors
- * that have not yet migrated to the token-based API (Phase 2 removes all AuthService imports
- * from ng-bootstrap; Phase 3+ updates guards/interceptors).
- *
- * Decision 18: disableAuth not fully stripped from AuthService in Phase 1 — guards and
- * interceptors still inject AuthService directly. Full strip happens when those consumers
- * migrate to RNF_CREDENTIALS/RNF_PERMISSION in Phase 2/3.
- */
+/** Fetches the backend session and exposes the current reactive credentials. */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly routeService: RouteService = inject(RouteService);
-  private readonly localStorageService: LocalStorageService =
-    inject(LocalStorageService);
-  private readonly config: Partial<RnForgeAuthConfig> = inject(
-    RNF_AUTH_CONFIG_TOKEN,
-  );
-  private readonly authDisabled: boolean =
-    this.config.frontend?.disableAuth ?? false;
-
-  private readonly _credentials: WritableSignal<Credentials> = signal(
+  private readonly http = inject(HttpClient);
+  private readonly config = inject(RNF_AUTH_CONFIG_TOKEN);
+  private readonly navigation = inject(FullPageNavigation);
+  private readonly router = inject(Router);
+  private readonly currentCredentials = signal<Credentials>(
     new AnonymousCredentials(),
   );
-
-  /** Reactive user identity — consumed via RNF_CREDENTIALS token (wired by provideRnForgeAuthConfig) */
-  readonly credentials: Signal<Credentials> = this._credentials.asReadonly();
-
-  // PubSubService compatibility — replaces the former extends PubSubService<boolean>
-  protected readonly subject: BehaviorSubject<boolean>;
-
-  private _jwtToken?: JwtToken;
-  private _userProfile?: UserProfile;
-  private _userPermissions?: string[];
+  /** Readonly reactive identity, initially anonymous. */
+  readonly credentials: Signal<Credentials> =
+    this.currentCredentials.asReadonly();
+  private readonly currentExpiryWarning = signal(false);
+  private expiryTimer: ReturnType<typeof setTimeout> | undefined;
+  private returnedAt: number | undefined;
+  /** Whether the current session has reached its configured expiry warning lead time. */
+  readonly expiryWarning: Signal<boolean> =
+    this.currentExpiryWarning.asReadonly();
 
   constructor() {
-    this.subject = new BehaviorSubject<boolean>(this.initialValue());
+    if (sessionStorage.getItem('rnf.auth.loginStartedAt') !== null) {
+      sessionStorage.removeItem('rnf.auth.loginStartedAt');
+      this.returnedAt = Date.now();
+    }
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.expiryTimer));
+  }
 
-    if (this.authDisabled) {
-      this.subject.next(true);
+  private setCredentials(credentials: Credentials): void {
+    this.currentCredentials.set(credentials);
+    this.recomputeExpiryWarning();
+  }
+
+  private recomputeExpiryWarning(): void {
+    clearTimeout(this.expiryTimer);
+    this.expiryTimer = undefined;
+    const session = this.currentCredentials().session;
+    const due = session
+      ? Date.parse(session.expiresAt) - this.config.expiryLeadMs - Date.now()
+      : undefined;
+    this.currentExpiryWarning.set(due !== undefined && due <= 0);
+    if (due !== undefined && due > 0) {
+      this.expiryTimer = setTimeout(
+        () => this.recomputeExpiryWarning(),
+        Math.min(due, 2_147_483_647),
+      );
+    }
+  }
+
+  /** Set anonymous credentials locally, without calling the backend. */
+  clear(): void {
+    this.setCredentials(new AnonymousCredentials());
+  }
+
+  /** Start a provider login or open the login page for the return path. */
+  startLogin(returnTo: string): void {
+    if (
+      this.returnedAt !== undefined &&
+      Date.now() - this.returnedAt < this.config.loopGuardMs
+    ) {
+      this.returnedAt = undefined;
+      void this.router.navigateByUrl(
+        this.router.createUrlTree([this.config.errorPath], {
+          queryParams: { error: 'session_not_established' },
+        }),
+      );
       return;
     }
+    const openLoginPage = () =>
+      void this.router.navigateByUrl(
+        this.router.createUrlTree([this.config.loginPath], {
+          queryParams: { returnTo },
+        }),
+      );
+    this.providers().subscribe({
+      next: (providers) => {
+        const navigating = providers.filter((provider) =>
+          ['oidc', 'oauth2', 'development'].includes(provider.kind),
+        );
+        if (
+          navigating.length === 1 &&
+          !providers.some((provider) => provider.kind === 'password')
+        )
+          this.login(navigating[0].id, returnTo);
+        else openLoginPage();
+      },
+      error: openLoginPage,
+    });
+  }
 
-    const storedJwtToken = this.localStorageService.get(JWT_TOKEN_KEY);
-    if (storedJwtToken) {
-      this.login(storedJwtToken);
+  /** Start a full-page provider login with a relative application return path. */
+  login(provider: string, returnTo: string): void {
+    if (
+      !returnTo.startsWith('/') ||
+      returnTo[1] === '/' ||
+      returnTo[1] === '\\'
+    ) {
+      throw new Error(
+        '[rn-forge.ng.auth] returnTo must be a relative path within the application',
+      );
     }
-  }
-
-  initialValue(): boolean {
-    return false;
-  }
-
-  get jwtToken(): JwtToken | undefined {
-    return this._jwtToken;
-  }
-
-  get userProfile(): UserProfile | undefined {
-    return this._userProfile;
-  }
-
-  get userPermissions(): string[] | undefined {
-    return this._userPermissions;
-  }
-
-  get bearerToken(): string {
-    return this._jwtToken ? `Bearer ${this._jwtToken.token}` : '';
-  }
-
-  get isAuthenticated(): boolean {
-    if (this.authDisabled) {
-      return true;
-    }
-
-    if (this.subject.value) {
-      if (this._jwtToken?.isValid) {
-        return true;
-      }
-      this.logout();
-    }
-
-    return false;
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.hasAnyPermission(permission);
-  }
-
-  hasAnyPermission(...permissions: string[]): boolean {
-    if (this.authDisabled) {
-      return true;
-    }
-
-    if (!this.isAuthenticated) {
-      return false;
-    }
-
-    return (
-      this._userPermissions?.some((permission) =>
-        permissions.includes(permission),
-      ) || false
+    sessionStorage.setItem('rnf.auth.loginStartedAt', String(Date.now()));
+    this.navigation.assign(
+      `${this.config.loginUrl}/${encodeURIComponent(provider)}?return_to=${encodeURIComponent(returnTo)}`,
     );
   }
 
-  sendToLogin(currentUrl?: string): void {
-    currentUrl ??= window.location.pathname;
-    if (isDebugMode()) console.log('AuthService.sendToLogin:', currentUrl);
-    const loginUrl = buildUrl(this.config.frontend?.loginPath, {
-      queryParams: { returnUrl: currentUrl },
-    });
-    this.routeService.navigateByUrl(loginUrl);
+  /** Sign in locally, mapping expected password failures for the login form. */
+  loginWithPassword(
+    username: string,
+    password: string,
+  ): Observable<Credentials> {
+    return this.http
+      .post<Session>(this.config.passwordLoginUrl, { username, password })
+      .pipe(
+        map((session): Credentials => new SessionCredentials(session)),
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 401)
+            return throwError(
+              () => new PasswordLoginError('invalid-credentials'),
+            );
+          if (error.status === 429)
+            return throwError(() => new PasswordLoginError('rate-limited'));
+          return throwError(() => error);
+        }),
+        tap((credentials) => this.setCredentials(credentials)),
+      );
   }
 
-  login(accessToken: string): JwtToken | undefined {
-    if (isDebugMode()) console.debug('AuthService.login.start');
-    const jwtToken = new JwtToken(accessToken);
-    if (!jwtToken.isValid) {
-      this.logout();
-      return undefined;
-    }
-
-    if (isDebugMode()) console.debug('AuthService.login.jwtToken', jwtToken);
-
-    this.localStorageService.set(JWT_TOKEN_KEY, jwtToken.token);
-    this._jwtToken = jwtToken;
-    this._userProfile = jwtToken.getAttribute<UserProfile>('profile');
-    this._userPermissions = [
-      ...new Set(
-        union(
-          this._userProfile?.permissions ?? [],
-          map(this._userProfile?.groups, 'permissions').flat(),
+  /** List supported providers, always warning about unknown kinds to expose contract drift. */
+  providers(): Observable<readonly AuthProvider[]> {
+    return this.http
+      .get<readonly AuthProvider[]>(this.config.providersUrl)
+      .pipe(
+        map((providers) =>
+          providers.filter((provider) => {
+            if (
+              ['oidc', 'oauth2', 'development', 'password'].includes(
+                provider.kind,
+              )
+            )
+              return true;
+            console.warn(
+              `[rn-forge.ng.auth] unknown provider kind ${provider.kind}`,
+            );
+            return false;
+          }),
         ),
+      );
+  }
+
+  /** End the session and navigate away, completing without a value. */
+  logout(): Observable<void> {
+    return this.http
+      .post<{ redirect: string | null }>(this.config.logoutUrl, {})
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          error.status === 401
+            ? of({ redirect: null })
+            : throwError(() => error),
+        ),
+        tap(({ redirect }) => {
+          this.setCredentials(new AnonymousCredentials());
+          if (typeof redirect === 'string') this.navigation.assign(redirect);
+          else void this.router.navigateByUrl(this.config.loggedOutPath);
+        }),
+        ignoreElements(),
+      );
+  }
+
+  /** Fetch and emit credentials; a 401 becomes anonymous, while other errors pass through. */
+  refresh(): Observable<Credentials> {
+    return this.http.get<Session>(this.config.sessionUrl).pipe(
+      map((session): Credentials => new SessionCredentials(session)),
+      catchError((error: HttpErrorResponse) =>
+        error.status === 401
+          ? of(new AnonymousCredentials())
+          : throwError(() => error),
       ),
-    ];
-
-    // Update signal-based credentials
-    this._credentials.set(new JwtCredentials(jwtToken));
-
-    this.subject.next(true);
-    return jwtToken;
-  }
-
-  logout(): void {
-    if (isDebugMode()) console.debug('AuthService.logout');
-    this._jwtToken = undefined;
-    this._userProfile = undefined;
-    this._userPermissions = undefined;
-    this.localStorageService.remove(JWT_TOKEN_KEY);
-
-    // Reset signal-based credentials
-    this._credentials.set(new AnonymousCredentials());
-
-    this.subject.next(false);
-  }
-
-  subscribe(callback: (value: boolean) => void): Subscription {
-    return this.subject.subscribe((changedValue) => {
-      callback(changedValue);
-    });
-  }
-}
-
-/**
- * Interacts with the backend authentication API.
- * Used by AuthComponent for login/logout HTTP operations.
- *
- * `baseUrl`/`authApiRoot`/`loginPath`/`logoutPath` are application-owned
- * configuration from `RnForgeAuthConfig.backend`, not OpenAPI plumbing — this
- * class builds the documented request itself with native `HttpClient`.
- */
-@Injectable({ providedIn: 'root' })
-export class AuthBackendService {
-  protected readonly http: HttpClient = inject(HttpClient);
-  protected authConfig: Partial<RnForgeAuthConfig> = inject(
-    RNF_AUTH_CONFIG_TOKEN,
-  );
-
-  private readonly baseUrl: string = requireAuthBackendBaseUrl(this.authConfig);
-
-  login(user: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.baseUrl}${this.loginPath}`, {
-      user: user,
-    });
-  }
-
-  logout(): Observable<string> {
-    return this.http.post<string>(`${this.baseUrl}${this.logoutPath}`, {});
-  }
-
-  private get loginPath(): `/${string}` {
-    const path = `${this.authConfig.backend?.authApiRoot ?? '/auth'}${
-      this.authConfig.backend?.loginPath ?? '/login'
-    }`;
-    return path as `/${string}`;
-  }
-
-  private get logoutPath(): `/${string}` {
-    const path = `${this.authConfig.backend?.authApiRoot ?? '/auth'}${
-      this.authConfig.backend?.logoutPath ?? '/logout'
-    }`;
-    return path as `/${string}`;
-  }
-}
-
-/**
- * `backend.baseUrl` is optional on `RnForgeAuthConfig` because most of the
- * config works without it, but `AuthBackendService` needs an unambiguous
- * value — `''` for the current origin is valid, `undefined` is not.
- */
-function requireAuthBackendBaseUrl(config: Partial<RnForgeAuthConfig>): string {
-  const baseUrl = config.backend?.baseUrl;
-  if (baseUrl === undefined) {
-    throw new Error(
-      '[rn-forge.ng.auth] RnForgeAuthConfig.backend.baseUrl is not configured. ' +
-        "Pass provideRnForgeAuthConfig({ backend: { baseUrl: '...' } }) in your application bootstrap.",
+      tap((credentials) => this.setCredentials(credentials)),
     );
   }
-  return baseUrl;
 }

@@ -1,0 +1,45 @@
+@if (credentials().session; as session) {
+  <div class="dropdown">
+    <button
+      type="button"
+      class="btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-expanded="false">
+      @if (session.picture) {
+        <img
+          [src]="session.picture"
+          width="24"
+          height="24"
+          class="rounded-circle me-2"
+          alt="" />
+      }
+      {{ session.name ?? session.subject }}
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li>
+        <div class="dropdown-header">
+          <div>{{ session.name ?? session.subject }}</div>
+          @if (session.email) {
+            <div>{{ session.email }}</div>
+          }
+          <div>Signed in with {{ session.provider }}</div>
+        </div>
+      </li>
+      <li><hr class="dropdown-divider" /></li>
+      @if (profileUrl(); as url) {
+        <li><a class="dropdown-item" [routerLink]="url">Profile</a></li>
+      }
+      @if (settingsUrl(); as url) {
+        <li><a class="dropdown-item" [routerLink]="url">Settings</a></li>
+      }
+      <li>
+        <button
+          type="button"
+          class="dropdown-item"
+          (click)="auth.logout().subscribe()">
+          Sign out
+        </button>
+      </li>
+    </ul>
+  </div>
+}

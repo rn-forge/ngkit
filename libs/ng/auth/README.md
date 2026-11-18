@@ -1,17 +1,170 @@
 # @rn-forge/ng/auth
 
-Secondary entry point of `@rn-forge/ng`. It can be used by importing from
-`@rn-forge/ng/auth`.
-
-`AuthBackendService` (used by `AuthComponent`'s login/logout) calls native
-`HttpClient` directly and requires `backend.baseUrl` in `RnForgeAuthConfig` —
-pass `''` for the current origin, or the backend's absolute URL:
+Same-origin session client, imported from `@rn-forge/ng/auth`.
 
 ```ts
-provideRnForgeAuthConfig({
-  backend: { baseUrl: '/api' },
-});
+provideHttpClient(withInterceptors([authInterceptor])),
+provideRnForgeAuth({ sessionUrl: '/auth/session' }),
 ```
 
-It throws a clear error at construction if `backend.baseUrl` is left
-`undefined`. Apps that never render `AuthComponent` don't need it.
+`provideRnForgeAuth(config?: Partial<AuthConfig>)` shallow-merges and freezes
+configuration, including `apiUrls`, and configures Angular XSRF names. URL and
+path values must start with `/`; `apiUrls` must be nonempty. Timing values must
+be finite and positive, and XSRF names must be nonempty. Invalid configuration
+throws synchronously with an `[rn-forge.ng.auth]` message naming the field.
+
+| Field | Default |
+| -- | -- |
+| `sessionUrl` | `/auth/session` |
+| `providersUrl` | `/auth/providers` |
+| `loginUrl` | `/auth/login` |
+| `passwordLoginUrl` | `/auth/login/password` |
+| `logoutUrl` | `/auth/logout` |
+| `apiUrls` | `['/api']` |
+| `loginPath` | `/login` |
+| `errorPath` | `/login/error` |
+| `forbiddenPath` | `/forbidden` |
+| `loggedOutPath` | `/login` |
+| `xsrfCookieName` | `XSRF-TOKEN` |
+| `xsrfHeaderName` | `X-XSRF-TOKEN` |
+| `loopGuardMs` | `10_000` |
+| `expiryLeadMs` | `300_000` |
+
+Startup awaits `AuthService.refresh()`, which fetches `GET sessionUrl`. A `200`
+sets `SessionCredentials`; a `401` sets `AnonymousCredentials`. Other startup
+errors set anonymous credentials and log once; the app still starts. Startup
+never navigates. Outside startup, `refresh()` passes non-401 errors to its
+caller.
+
+Window focus refetches the session; focus events during an in-flight focus
+refresh are ignored. A non-401 failure logs once and preserves credentials. The
+listener is removed when the application is destroyed. There is no interval
+refetch or backend polling to keep a session alive.
+
+`AuthService.expiryWarning` is a readonly `Signal<boolean>`. It becomes `true`
+`expiryLeadMs` before the session's `expiresAt` (five minutes by default), or
+immediately when already within that window. Each credentials update cancels the
+previous timer and recomputes the warning. Anonymous credentials set it to
+`false`; a fresh session with a later expiry resets it to `false`. Distant
+expiry dates use capped timers to avoid timeout overflow. Timers make no HTTP
+requests.
+
+`login(provider, returnTo)` starts a full-page login and records its start in
+`sessionStorage`. `returnTo` must start with `/` followed by neither `/` nor
+`\`; invalid paths throw synchronously before any side effect.
+
+`loginWithPassword(username, password)` posts local credentials using Angular's
+XSRF support and emits the new credentials without navigating. A `401` becomes
+`PasswordLoginError` with reason `invalid-credentials`; a `429` uses
+`rate-limited`. Other HTTP errors pass through. Failures leave credentials
+unchanged.
+
+`providers()` fetches the backend provider list, keeping `oidc`, `oauth2`,
+`development` and `password` kinds and warning for each unknown kind.
+
+`logout()` posts to the backend, clears credentials, and follows its redirect
+with full-page navigation, or routes to `loggedOutPath` when there is no
+redirect. A `401` also clears credentials and routes to `loggedOutPath`; other
+errors pass through without changing credentials. It completes without emitting
+a value. In the demo, reload the page to sign in again.
+
+`AuthService.credentials` is a `Signal<Credentials>`, also available through
+`RNF_CREDENTIALS`. Credentials expose `session`, `isAuthenticated`, `roles`,
+`hasPermission()` and `hasAnyPermission()`. Permission checks use only the
+session's permission keys, never roles. `RNF_PERMISSION` follows these
+credentials when the provider is installed; without it the existing zero-config
+`AllowAnyPermission` default remains.
+
+`authGuard` allows signed-in users and calls `startLogin(state.url)` for
+anonymous users, returning `false`. Put it on a parent's `canActivateChild`. Use
+`canActivate: [permissionGuard('items.read', 'items.update')]` on a child to
+require every key through `RNF_PERMISSION`; missing permissions return a
+`UrlTree` to `forbiddenPath`. Anonymous users follow `authGuard`'s login path.
+Both guards support `canActivate` and `canActivateChild`. Calling
+`permissionGuard()` without keys throws immediately with an `[rn-forge.ng.auth]`
+message. Permission directives continue to use `RNF_PERMISSION`.
+
+Install `authInterceptor` with
+`provideHttpClient(withInterceptors([authInterceptor]))`. It handles relative
+URLs equal to an `apiUrls` entry or beneath it, ignoring query strings. Absolute
+URLs, nonmatching prefixes and the session, providers, password-login and logout
+endpoints pass through untouched. It handles HTTP errors only and never adds an
+identity header.
+
+A handled `401` clears credentials and calls `startLogin()` with the current
+route. That method discovers providers: one navigating provider with no password
+provider starts full-page login; otherwise, including discovery failure, it
+opens `loginPath` with `returnTo`. Parallel failures start one login until
+credentials become authenticated again. At startup, a recorded login start is
+consumed by `AuthService`. Within `loopGuardMs` of that return, every login
+`startLogin` would start, whether from a `401` or from `authGuard`, opens
+`errorPath` with `error=session_not_established` instead. This guard is
+one-shot: trying again from the error page starts a login. The original error
+reaches the caller. `clear()` sets anonymous credentials locally without a
+backend call.
+
+A `403` whose problem `type` ends in `csrf-failed` refetches the session and
+retries once, replacing the configured XSRF header with the current cookie token
+on unsafe methods. A second failure reaches the caller; if the refetch fails,
+the original `403` reaches the caller. Other `403`s share one in-flight session
+refetch, then navigate once to `forbiddenPath`; each caller receives its
+original error. A `403` never calls `clear()` or starts login.
+
+## Testing
+
+Import `provideRnForgeAuthTesting` and `FakeAuthService` from
+`@rn-forge/ng/auth/testing` to seed tests or stories. Use this provider in place
+of `provideRnForgeAuth`; it needs no `HttpClient` and installs no startup probe,
+XSRF providers or focus listener. It supplies `DEFAULT_AUTH_CONFIG`, credentials
+and a permission policy that denies every permission for anonymous sessions.
+Keep this testing entry point out of production imports.
+
+```ts
+import { TestBed } from '@angular/core/testing';
+import { AuthService } from '@rn-forge/ng/auth';
+import {
+  FakeAuthService,
+  provideRnForgeAuthTesting,
+} from '@rn-forge/ng/auth/testing';
+
+TestBed.configureTestingModule({
+  providers: [
+    provideRnForgeAuthTesting({
+      subject: 'ada',
+      provider: 'dev',
+      roles: [],
+      permissions: ['orders.read'],
+      expiresAt: '2099-01-01T00:00:00Z',
+    }),
+  ],
+});
+
+const fake = TestBed.inject(FakeAuthService);
+const auth = TestBed.inject(AuthService); // the same instance
+fake.setSession(null);
+expect(auth.credentials().isAuthenticated).toBe(false);
+```
+
+Pass `null` for an anonymous initial state. `setSession(session)` replaces the
+credentials and updates permission answers; `clear()` and `logout()` set an
+anonymous session. `logout()` completes without emitting or navigating.
+`setExpiryWarning(value)` controls the readonly warning signal without timers.
+`setProviders(providers)` replaces the list returned by `providers()` (empty by
+default). `login(provider, returnTo)` appends to `logins` without navigating,
+and `startLogin(returnTo)` does nothing. `loginWithPassword()` and `refresh()`
+emit the current credentials. Override methods with `vi.spyOn(fake, 'method')`
+to simulate failures or custom responses.
+
+## Breaking changes
+
+- `provideRnForgeAuthConfig`, `RnForgeAuthConfig`, `AuthFrontendConfig`,
+  `AuthBackendConfig`, `DEFAULT_RN_FORGE_AUTH_CONFIG` and
+  `RN_FORGE_AUTH_CONFIG_TOKEN` are removed; use `provideRnForgeAuth`,
+  `AuthConfig`, `DEFAULT_AUTH_CONFIG` and `RNF_AUTH_CONFIG_TOKEN`.
+- JWT storage, bearer headers, `JwtToken`, `JwtCredentials`, `LoginResponse`,
+  `UserProfile`, `AuthBackendService` and `authHttpInterceptor` are removed.
+- `AuthService` exposes session credentials, refresh, provider login, password
+  login, providers and logout; its former token and profile APIs are removed.
+- Credentials expose `session` instead of `userProfile`; role and scope checks
+  are removed. `authComponentMixin` exposes `session` and drops `authService`.
+- `disableAuth` and route/backend ignore lists are removed.

@@ -5,8 +5,8 @@
 | **State** | Active |
 | **Start Date** | 2026-10-17 |
 
-**Backlog:** F11.1 has no release; the owner moved it out of Release 3 on
-2026-11-14.
+**Release:** F11.1 is in [Release 4](../../../releases/release-4/index.md); the
+owner moved it out of Release 3 on 2026-11-14.
 
 **Source:** former plan item "Workspace Setup Tooling"; owner decisions,
 2026-10-17.
@@ -42,7 +42,7 @@ The shared design, package map and implementation standards are in
 
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
-| [F11.1 — `@rn-forge/ng-plugin`](F11.1-ng-plugin.md) | New | — | 7 New |
+| [F11.1 — `@rn-forge/ng-plugin`](F11.1-ng-plugin.md) | Closed | release-4 | 8 Closed |
 | [F11.2 — `@rn-forge/nx-plugin`](F11.2-nx-plugin.md) | Removed | — | — |
 | [F11.3 — `create-rn-forge-ng-workspace` CLI](F11.3-workspace-cli.md) | Removed | — | — |
 
@@ -59,14 +59,10 @@ with its rejected options.
 - **Ownership:** repository-level setup belongs to kiln (see **Retired** above).
   Angular library scaffolding is `ng-plugin:create-library`, which writes the
   project's own publishable settings ([F11.1](F11.1-ng-plugin.md#design)).
-- **`setup` wiring:** packages, theme `@use`, `allowedCommonJsDependencies`,
-  `provideRnForgeBootstrapConfig()`; no `scripts`, `polyfills`, `assets` or
-  path-alias patching ([F11.1](F11.1-ng-plugin.md#design)).
-
-## Open questions
-
-One, on [F11.1](F11.1-ng-plugin.md#open-questions): whether `setup` must add the
-`@angular/localize/init` polyfill.
+- **`setup` wiring:** packages, theme `@use`, `allowedCommonJsDependencies`, the
+  `@angular/localize/init` polyfill (owner decision, 2026-11-17),
+  `provideRnForgeBootstrapConfig()`; no `scripts`, `assets`, other polyfills
+  or path-alias patching ([F11.1](F11.1-ng-plugin.md#design)).
 
 ## Acceptance
 

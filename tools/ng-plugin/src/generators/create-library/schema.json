@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "RnForgeNgPluginCreateLibrary",
+  "title": "Create a publishable Angular library",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the library project.",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "What is the library name?"
+    },
+    "importPath": {
+      "type": "string",
+      "description": "Import path (package name) of the library, for example @acme/my-ui."
+    },
+    "directory": {
+      "type": "string",
+      "description": "Folder of the library. Defaults to libs/<name>."
+    },
+    "secondaryEntryPoints": {
+      "type": "string",
+      "description": "Comma-separated names of secondary entry points to create."
+    },
+    "storybook": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add a Storybook configuration and build-storybook target."
+    },
+    "compodoc": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add a Compodoc configuration and target."
+    },
+    "coverageThreshold": {
+      "type": "number",
+      "default": 35,
+      "description": "Minimum coverage percentage for statements, branches, functions and lines."
+    },
+    "skipInstall": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip dependency installation."
+    }
+  },
+  "required": ["name", "importPath"]
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "RnForgeNgPluginScaffoldComponent",
+  "title": "Scaffold a standalone Angular component",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Angular application or library to add the component to.",
+      "x-prompt": "Which Angular project should get the component?"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the component.",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "What is the name of the component?"
+    },
+    "directory": {
+      "type": "string",
+      "description": "Folder under the project's source root to write the component folder in."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["component", "page", "table", "form"],
+      "default": "component",
+      "description": "Shape of the component."
+    },
+    "export": {
+      "type": "boolean",
+      "default": false,
+      "description": "Export the component from the library's public API."
+    },
+    "withStory": {
+      "type": "boolean",
+      "default": false,
+      "description": "Write a Storybook story when the project uses Storybook."
+    },
+    "withTest": {
+      "type": "boolean",
+      "default": true,
+      "description": "Write a spec file."
+    }
+  },
+  "required": ["project", "name"]
+}

@@ -1,4 +1,5 @@
-/** Built for the `ng-demo-api` fixture: `/api/products` goes to the proxy. */
-export const environment: { mockProducts: boolean } = {
+/** Built for the API fixture: `/api` and `/auth` go to the proxy. */
+export const environment: { mockProducts: boolean; mockAuth: boolean } = {
   mockProducts: false,
+  mockAuth: false,
 };

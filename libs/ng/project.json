@@ -51,6 +51,7 @@
         "include": [
           "../core/src/**/*.spec.ts",
           "../auth/src/**/*.spec.ts",
+          "../auth/testing/src/**/*.spec.ts",
           "../crud/src/**/*.spec.ts"
         ],
         "coverage": true,
@@ -58,6 +59,7 @@
         "coverageInclude": [
           "libs/ng/core/src/**",
           "libs/ng/auth/src/**",
+          "libs/ng/auth/testing/src/**",
           "libs/ng/crud/src/**"
         ],
         "coverageExclude": ["**/*.config.ts"],

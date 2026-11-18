@@ -8,6 +8,11 @@ allowBuilds:
   msgpackr-extract: true
   nx: true
   unrs-resolver: true
+auditConfig:
+  ignoreGhsas:
+    # picomatch (high, no patched release) via @angular/localize > tinyglobby, Angular's
+    # localize build tooling, not the browser bundle. Remove when a fix ships: E12 F12.12.
+    - GHSA-fc5q-39xc-vjpf
 autoInstallPeers: true
 packages:
   - 'apps/**'

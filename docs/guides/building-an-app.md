@@ -46,7 +46,7 @@ If the ngkit repo is available locally or cloned (`github.com/rn-forge/ngkit`):
 
 ```text
 libs/ng/core/src/lib/          core.components|config|services|types|utils.ts  — BaseComponent, LocalStorageService, FormUtil, DateUtil, ObjectUtil
-libs/ng/auth/src/lib/          auth.config|services|guards|interceptors|directives|types.ts
+libs/ng/auth/src/lib/          auth.config|services|guards|directives|types.ts
 libs/ng-bootstrap/src/lib/     bootstrap.component.ts (ConfigurableComponent — read this one early), abstract-page.ts,
                                bootstrap.config.ts, alert/, button/, error/, modal/, table/
 libs/ng-bootstrap/shell/src/   header/, footer/, navbar/, offcanvas/, color-mode/, shell.config.ts
@@ -77,7 +77,7 @@ signals, zoneless change detection:
 
 | Package | Secondary entry points | What it gives you |
 | -- | -- | -- |
-| `@rn-forge/ng` | `/core`, `/auth`, `/crud` | No UI. Base component class, config/DI helpers, JWT auth (service + guards + interceptors + permission directives). No HTTP wrapper — use Angular `HttpClient` (§5.3). |
+| `@rn-forge/ng` | `/core`, `/auth`, `/crud` | No UI. Base component class, config/DI helpers, Session auth (service + guard + permission directives). No HTTP wrapper — use Angular `HttpClient` (§5.3). |
 | `@rn-forge/ng-bootstrap` | (root), `/shell`, `/form`, `/auth`, `/crud`, `/assets` | Bootstrap 5 UI: alert, button, error page, modal, data table (bootstrap-table + treegrid), app shell (header/footer/navbar/offcanvas/dark-mode), reactive-form fields, login/profile/settings screens, generic CRUD screen. |
 
 `ng-bootstrap` depends on `ng`. Both are pre-1.0 and fixed/grouped-versioned
@@ -139,11 +139,11 @@ them directly: `@angular/cdk`, `@angular/localize`,
 `@ng-bootstrap/ng-bootstrap`, `bootstrap`, `bootstrap-icons`, `bootstrap-table`,
 `jquery`, `jquery-treegrid`, `lodash-es`, `ngx-quill`, `quill`, `uuid` for
 `@rn-forge/ng-bootstrap`, and `@angular/common`/`core`/`forms`/`router` plus
-`rxjs` for both. Since 0.1.2, `@rn-forge/ng`'s own `build-url-ts`, `jwt-decode`
-and `lodash-es` are regular `dependencies` and install automatically. **Read the
-exact ranges from the packages' own `package.json#peerDependencies`** (in the
-tarball, or `libs/*/package.json` in the repo) — don't copy versions from memory
-or from this document. The Angular major must match ngkit's peer range.
+`rxjs` for both. `@rn-forge/ng`'s own `content-disposition` is a regular
+dependency and installs automatically. **Read the exact ranges from the
+packages' own `package.json#peerDependencies`** (in the tarball, or
+`libs/*/package.json` in the repo) — don't copy versions from memory or from
+this document. The Angular major must match ngkit's peer range.
 
 ______________________________________________________________________
 
@@ -181,10 +181,10 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(), // ngkit's demo runs zoneless — prefer for new apps
     provideRouter(appRoutes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authHttpInterceptor()])), // your interceptors alongside
+    provideHttpClient(), // add app-owned interceptors here
 
     provideRnForgeCoreConfig({ appName: 'my-app' }), // namespaces localStorage; required broadly
-    provideRnForgeAuthConfig({ backend: { baseUrl: environment.apiUrl } /* + frontend; omit for a no-auth app */ }), // backend.baseUrl required if AuthComponent is rendered
+    provideRnForgeAuth(), // fetches the same-origin session at startup; omit for a no-auth app
     { provide: API_URL, useValue: environment.apiUrl }, // app-owned token, one per backend (§5.3)
     provideRnForgeBootstrapConfig({ table: { minWidth: 700 } }), // required if using ANY ng-bootstrap component
     provideRnForgeShellConfig({}), // required (even empty) if using header/footer/navbar/color-mode
@@ -221,13 +221,15 @@ object — see §5.5 and copy the real shape from `apps/ng-demo/src/app/app.ts`.
 
 ```ts
 export const appRoutes: Route[] = [
-  { path: 'auth', component: AuthComponent, data: { options: { users: [...] } } },
+  { path: 'login', component: LoginComponent },
+  { path: 'login/error', component: AuthErrorComponent },
+  { path: 'forbidden', component: ForbiddenComponent },
   { path: 'error', component: ErrorComponent, data: { options: { code: 500 } } },
   {
     path: '',
-    canActivateChild: [authRouteGuard],                      // gates everything below
+    canActivateChild: [authGuard],                          // gates everything below
     children: [
-      { path: 'dashboard', component: DashboardPageComponent, data: { permission: 'app.dashboard' } },
+      { path: 'dashboard', component: DashboardPageComponent, canActivate: [permissionGuard('app.dashboard')] },
       { path: 'user/profile', component: UserComponent },
       { path: 'user/settings', component: UserComponent },   // same component, branches on URL
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -237,8 +239,9 @@ export const appRoutes: Route[] = [
 ];
 ```
 
-`route.data.permission` is read by `authRouteGuard`; `route.data.options` is
-read by page components as a per-route config override layered on global config.
+`permissionGuard(...keys)` requires every permission key; `route.data.options`
+is read by page components as a per-route config override layered on global
+config.
 
 ______________________________________________________________________
 
@@ -264,7 +267,7 @@ every call site.
 
 **Pages** extend `AbstractPage<TOptions>` (root EP, auth-free) or
 `AbstractAuthPage<TOptions>` (`/auth` EP, adds
-`isAuthenticated`/`userProfile`/`hasPermission()`). Both wire a
+`isAuthenticated`/`session`/`hasPermission()`). Both wire a
 `@ViewChild(AlertComponent) alert` plus `handleErrorResponse(httpError)` — call
 it from failed HTTP subscriptions so errors surface consistently through the
 page's alert. Default to `AbstractPage`; use `AbstractAuthPage` only when the
@@ -304,18 +307,31 @@ Utility layer, no UI. Reach for it when you need:
 
 ### 5.2 `@rn-forge/ng/auth`
 
-JWT auth. **Zero-config default is fully open** (all permission checks pass) —
-auth only activates once `provideRnForgeAuthConfig(...)` is called. Reach for:
+Same-origin session auth. Install `provideRnForgeAuth()` alongside
+`provideHttpClient()` to fetch `/auth/session` before startup completes. A `200`
+sets session credentials; a `401` sets anonymous credentials. Other startup
+errors log once and allow startup with anonymous credentials. Startup never
+navigates. Without the provider, permission checks retain their open defaults.
 
-- **`authRouteGuard`** on a parent route's `canActivateChild` — never write a
-  custom guard.
-- **`authHttpInterceptor()`** in the `provideHttpClient` chain — never manually
-  attach bearer tokens.
+- **`authGuard`** on a parent route's `canActivateChild` allows signed-in users;
+  anonymous users start login with the current route as the return path.
+- **`permissionGuard(...keys)`** on a child's `canActivate` requires every key,
+  returning a forbidden `UrlTree` for signed-in users missing a key. Anonymous
+  users start login; calling it without keys throws immediately.
 - **`*rnfHasPermission` / `*rnfHasAnyPermission`** structural directives for
-  conditional rendering — never hand-write
-  `@if (user.permissions.includes(...))`.
-- **`AuthService`** for `login`/`logout`/`isAuthenticated`/`credentials` signal
-  when you need programmatic access.
+  conditional rendering based on session permissions.
+- **`AuthService`** exposes the `credentials` signal and `refresh()` for a new
+  session fetch. `RNF_CREDENTIALS` exposes the same signal; credentials
+  contain `session`, `roles` and permission checks. Roles do not grant
+  permissions.
+- **`AuthConfig`** configures same-origin endpoint URLs, client route paths,
+  XSRF names and timing defaults. Read `auth.config.ts` for the complete
+  shape.
+
+Install `provideHttpClient(withInterceptors([authInterceptor]))`: API `401`s
+start one login with a return-loop guard; `403`s refetch the session, retrying
+CSRF failures once and routing other denials to the forbidden page. Angular's
+built-in XSRF support uses the names configured by `provideRnForgeAuth()`.
 
 ### 5.3 HTTP — Angular `HttpClient`, no ngkit wrapper
 
@@ -417,13 +433,20 @@ of your validators, so don't use it for optional or short fields.
 ### 5.7 `@rn-forge/ng-bootstrap/auth`
 
 UI layer over `@rn-forge/ng/auth` (configured separately — most apps call both
-`provideRnForgeAuthConfig` and `provideRnForgeAuthUiConfig`).
+`provideRnForgeAuth` and `provideRnForgeAuthUiConfig`).
 
-- **`AuthComponent`** — handles login and logout via `?mode=`. Its default is a
-  **demo "pick a user" dropdown, not a production credential form** — plan to
-  replace it (§8).
+- **`LoginComponent`** — chooses an available sign-in provider or shows a
+  password form; successful sign-in returns to `returnTo` (default `/`).
+- **`AuthErrorComponent`** — shows a known sign-in error at `/login/error` and
+  links back to the configured login page.
+- **`ForbiddenComponent`** — explains denied access at `/forbidden` and links
+  home without restarting login.
 - **`UserComponent`** — profile and settings screens; route _both_
   `/user/profile` and `/user/settings` to this one component.
+- **`UserMenuComponent`** — `rnf-user-menu` shows session identity, optional
+  `profileUrl` and `settingsUrl` links, and Sign out.
+- **`SessionExpiryNoticeComponent`** — `rnf-session-expiry-notice` offers
+  sign-in again at the current URL and dismissal when expiry approaches.
 - **`UserSettingsService`** — per-user persisted settings (theme, color mode,
   custom keys).
 
@@ -521,9 +544,11 @@ ______________________________________________________________________
   list/create/edit/delete screen.
 - **Don't duplicate global config.** Same setting on every table → set it once
   in `provideRnForgeBootstrapConfig`, not on every `[options]`.
-- **Don't write custom auth guards, interceptors, or permission checks** —
-  `authRouteGuard`, `authHttpInterceptor()`, `*rnfHasPermission` cover route
-  gating, token attachment, and conditional rendering.
+- **Use the auth guards and permission directives** — `authGuard`,
+  `permissionGuard` and `*rnfHasPermission` cover route gating and conditional
+  rendering. Install `provideHttpClient(withInterceptors([authInterceptor]))`
+  for API errors: `401`s start one login with loop protection; `403`s refetch,
+  retry CSRF once, or open the forbidden page.
 - **API services use `HttpClient` directly** (§5.3) — don't write a generic HTTP
   wrapper class; if the screen is standard CRUD, use `standardDataSource()`
   (or implement `CrudDataSource`) and extend `AbstractCrudManager`.
@@ -547,9 +572,8 @@ ______________________________________________________________________
 
 Resolve before writing an implementation plan:
 
-1. **Auth or no auth?** If yes: real credentials vs. the demo dropdown (expect
-   to build a real login form), what permission keys exist,
-   `loginPath`/`ignoreAppRoutes`.
+1. **Auth or no auth?** If yes: same-origin session endpoints, permission keys
+   and client paths such as `loginPath`; plan the application's login UI.
 1. **What are the CRUD resources?** Each is a 4-file quartet (§5.8). Enumerate
    them up front — one plan work-item per resource, not a generic "build the
    tables" task.
@@ -582,8 +606,8 @@ So the agent doesn't assume these exist:
 - **No design system beyond Bootstrap 5 + Bootstrap Icons** — anything outside
   Bootstrap's visual vocabulary is app CSS.
 - **No charting** — pair with Chart.js/ngx-charts if needed.
-- **No production login form** — `AuthComponent`'s default is a demo
-  user-picker; a real app must replace it.
+- **Login UI** — `LoginComponent` provides provider selection and a password
+  form for configured password providers.
 - **No i18n wiring** beyond `@angular/localize` being a peer dep.
 - **No SSR support story** — components assume a browser (`window`, `document`,
   jQuery plugins). Verify before assuming SSR compatibility.

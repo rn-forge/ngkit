@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "RnForgeNgPluginAddBootstrapTable",
+  "title": "Add Bootstrap Table to an Angular application",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Angular application project to add Bootstrap Table to.",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Which Angular application should get Bootstrap Table?"
+    },
+    "skipInstall": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip dependency installation."
+    },
+    "scaffoldExample": {
+      "type": "boolean",
+      "default": false,
+      "description": "Add an example standalone component that renders rnf-table."
+    }
+  },
+  "required": ["project"]
+}
