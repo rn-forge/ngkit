@@ -209,6 +209,94 @@ describe('createEventStream', () => {
     });
   });
 
+  describe('a failed source', () => {
+    const instances = FakeEventSource.instances;
+
+    it('schedules one timer for repeated CLOSED errors from one source', () => {
+      const s = stream();
+      const a = latest();
+      a.fail(2);
+      a.fail(2);
+      a.fail(2);
+      expect(vi.getTimerCount()).toBe(1);
+      expect(a.closeCalls).toBe(1);
+      vi.advanceTimersByTime(500);
+      expect(instances).toHaveLength(2);
+      expect(s.source()).toBe(latest());
+      expect(instances[0].readyState).toBe(2);
+      expect(instances[1].readyState).not.toBe(2);
+    });
+
+    it('ignores a stale error after the replacement opened', () => {
+      const s = stream();
+      const a = latest();
+      a.fail(2);
+      vi.advanceTimersByTime(500);
+      const b = latest();
+      b.open();
+      a.fail(2);
+      expect(s.connected()).toBe(true);
+      expect(s.source()).toBe(b);
+      expect(b.closeCalls).toBe(0);
+      expect(vi.getTimerCount()).toBe(0);
+      vi.runAllTimers();
+      expect(instances).toHaveLength(2);
+    });
+
+    it('ignores a stale open while the replacement is connecting', () => {
+      const s = stream();
+      const a = latest();
+      a.fail(2);
+      vi.advanceTimersByTime(500);
+      a.open();
+      expect(s.connected()).toBe(false);
+    });
+
+    it('close() after repeated errors cancels pending work', () => {
+      const s = stream();
+      const a = latest();
+      a.fail(2);
+      a.fail(2);
+      s.close();
+      expect(vi.getTimerCount()).toBe(0);
+      vi.runAllTimers();
+      expect(instances).toHaveLength(1);
+      expect(s.source()).toBeNull();
+    });
+
+    it('destroying the injector after repeated errors opens nothing', () => {
+      const s = stream();
+      const a = latest();
+      a.fail(2);
+      a.fail(2);
+      injector.destroy();
+      vi.runAllTimers();
+      expect(instances.every((i) => i.readyState === 2)).toBe(true);
+      expect(s.source()).toBeNull();
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('ignores a stale error after close()', () => {
+      const s = stream();
+      const a = latest();
+      s.close();
+      a.fail(2);
+      expect(vi.getTimerCount()).toBe(0);
+      expect(instances).toHaveLength(1);
+    });
+
+    it('a CLOSED error on the current source still reconnects once', () => {
+      const s = stream();
+      latest().fail(2);
+      expect(vi.getTimerCount()).toBe(1);
+      vi.advanceTimersByTime(500);
+      expect(instances).toHaveLength(2);
+      expect(s.connected()).toBe(false);
+      latest().open();
+      expect(s.connected()).toBe(true);
+    });
+  });
+
   describe('teardown', () => {
     it('closes the source when the injector is destroyed', () => {
       const s = stream();

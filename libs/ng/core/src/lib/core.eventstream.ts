@@ -87,10 +87,12 @@ export function createEventStream(options: EventStreamOptions): EventStream {
     const url = typeof options.url === 'function' ? options.url() : options.url;
     const es = create(url, { withCredentials: options.withCredentials });
     es.addEventListener('open', () => {
+      if (source() !== es) return;
       attempt = 0;
       connected.set(true);
     });
     es.addEventListener('error', () => {
+      if (source() !== es) return;
       connected.set(false);
       if (es.readyState !== CLOSED || closed) return;
       es.close();
@@ -98,7 +100,9 @@ export function createEventStream(options: EventStreamOptions): EventStream {
       const cap = Math.min(baseMs * 2 ** attempt, maxMs);
       attempt++;
       timer = setTimeout(
-        () => open(create),
+        () => {
+          if (!closed) open(create);
+        },
         cap / 2 + Math.random() * (cap / 2),
       );
     });
