@@ -130,6 +130,8 @@ b126d75 E17 Elaboration
 
 ## Shipped
 
-| Version | Date | Release | Evidence |
-| -- | -- | -- | -- |
-| `v0.4.0` | 2026-11-14 | [v0.4.0](https://github.com/rn-forge/ngkit/releases/tag/v0.4.0) | PR #22 merged (merge commit `01e981f`, which the `v0.4.0` tag points at); the GitHub Release was published 2026-11-15T04:42:57Z. It has `rn-forge-ng-0.4.0.tgz`, `rn-forge-ng-bootstrap-0.4.0.tgz` and `rn-forge-ng-tailwind-0.4.0.tgz`. `libs/*/package.json` on `main` are at `0.4.0`. |
+| Deliverable | Version | Tag | Commit | Verification |
+| -- | -- | -- | -- | -- |
+| `@rn-forge/ng` | `0.4.0` | `v0.4.0` | `01e981f` | `rn-forge-ng-0.4.0.tgz` attached to the published GitHub Release [v0.4.0](https://github.com/rn-forge/ngkit/releases/tag/v0.4.0) (2026-11-15T04:42:57Z) |
+| `@rn-forge/ng-bootstrap` | `0.4.0` | `v0.4.0` | `01e981f` | `rn-forge-ng-bootstrap-0.4.0.tgz` attached to the published GitHub Release [v0.4.0](https://github.com/rn-forge/ngkit/releases/tag/v0.4.0) (2026-11-15T04:42:57Z) |
+| `@rn-forge/ng-tailwind` | `0.4.0` | `v0.4.0` | `01e981f` | `rn-forge-ng-tailwind-0.4.0.tgz` attached to the published GitHub Release [v0.4.0](https://github.com/rn-forge/ngkit/releases/tag/v0.4.0) (2026-11-15T04:42:57Z) |
