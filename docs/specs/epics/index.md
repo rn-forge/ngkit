@@ -35,6 +35,6 @@ Jump to: [E1–E10](#e1e10) · [E11–E20](#e11e20)
 | [E16 — Key invalidation for `httpResource`](E16-resource-invalidation/index.md) | Closed | 1 Closed | release-2 |
 | [E17 — kiln adoption](E17-kiln-adoption/index.md) | Closed | 4 Closed · 1 Removed | release-3 |
 | [E18 — npm publishing and independent versions](E18-npm-publishing-and-independent-versions/index.md) | New (deferred) | — | — |
-| [E19 — ngkit simplification](E19-ngkit-simplification/index.md) | Active | 7 New · 1 Closed | release-5 |
+| [E19 — ngkit simplification](E19-ngkit-simplification/index.md) | Active | 1 Active · 6 New · 1 Closed | release-5 |
 
 <!-- END derived epics -->

@@ -4,7 +4,11 @@ import { TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Observable, of, throwError } from 'rxjs';
 import { RNF_PERMISSION } from '@rn-forge/ng/auth';
-import { AppUtil, RN_FORGE_APP_CONFIG_TOKEN } from '@rn-forge/ng/core';
+import {
+  AppUtil,
+  GenericType,
+  RN_FORGE_APP_CONFIG_TOKEN,
+} from '@rn-forge/ng/core';
 import {
   CrudDataSource,
   ImportReport,
@@ -64,12 +68,31 @@ class TestManager extends AbstractCrudManager<TestWrite, TestRead> {
   override fromAddUpdateFormValue(): TestWrite {
     return { name: 'typed' };
   }
-  /** Exposes protected members to the tests. */
-  call(method: string, ...args: unknown[]) {
-    return (this as unknown as Record<string, (...a: unknown[]) => unknown>)[
-      method
-    ](...args);
+  /** Widen protected members to public for the tests. */
+  override toRequestParams<T>(rawValue: GenericType): T {
+    return super.toRequestParams<T>(rawValue);
   }
+  override errorMessage(error: unknown): string {
+    return super.errorMessage(error);
+  }
+  override validateAddUpdate(): boolean {
+    return super.validateAddUpdate();
+  }
+  override get config(): CrudOptions {
+    return super.config;
+  }
+}
+
+/** Presses the toolbar button labelled `label`, as a user would. */
+function press(
+  manager: Pick<AbstractCrudManager<TestWrite, TestRead>, 'tableOptions'>,
+  label: string,
+) {
+  const button = manager
+    .tableOptions()
+    .toolbarButtons?.find((b) => b.label === label);
+  if (!button) throw new Error(`no toolbar button "${label}"`);
+  button.callback?.();
 }
 
 const APP_CONFIG_PROVIDER = {
@@ -162,9 +185,11 @@ describe('AbstractCrudManager', () => {
 
     it('config falls back to empty sections', async () => {
       const { manager } = await setup();
-      expect(
-        (manager as unknown as { config: CrudOptions }).config,
-      ).toMatchObject({ list: {}, addUpdate: {}, delete: {} });
+      expect(manager.config).toMatchObject({
+        list: {},
+        addUpdate: {},
+        delete: {},
+      });
     });
 
     it('addUpdateFormOptions() takes controls from the subclass', async () => {
@@ -327,7 +352,7 @@ describe('AbstractCrudManager', () => {
     it('startAdd() resets the form and switches mode', async () => {
       const { manager, ctx } = await setup();
       manager.init(ctx);
-      manager.call('startAdd');
+      press(manager, 'Add');
       expect(ctx.addUpdateForm.updateOptions).toHaveBeenCalledWith({
         header: 'Add Widget',
       });
@@ -340,7 +365,7 @@ describe('AbstractCrudManager', () => {
       manager.init(ctx);
       await settle();
       manager.list.select([1]);
-      manager.call('startUpdate');
+      press(manager, 'Update');
       expect(manager.source.get).toHaveBeenCalledWith(1);
       expect(ctx.addUpdateForm.update).toHaveBeenCalledWith({
         id: 1,
@@ -353,12 +378,12 @@ describe('AbstractCrudManager', () => {
       const { manager, ctx } = await setup();
       manager.init(ctx);
       await settle();
-      manager.call('startUpdate');
+      press(manager, 'Update');
       expect(manager.source.get).not.toHaveBeenCalled();
 
       manager.source = makeSource({ get: () => throwError(() => http(404)) });
       manager.list.select([1]);
-      manager.call('startUpdate');
+      press(manager, 'Update');
       expect(ctx.alert.error).toHaveBeenCalled();
       expect(manager.currentMode()).toBe('list');
     });
@@ -368,7 +393,7 @@ describe('AbstractCrudManager', () => {
       manager.init(ctx);
       const create = vi.fn(() => throwError(() => http(500)));
       manager.source = makeSource({ create });
-      manager.call('startAdd');
+      press(manager, 'Add');
 
       manager.submitAddUpdate();
       manager.submitAddUpdate();
@@ -392,7 +417,7 @@ describe('AbstractCrudManager', () => {
       const { manager, ctx } = await setup();
       manager.init(ctx);
       await settle();
-      manager.call('startAdd');
+      press(manager, 'Add');
       const listCalls = (manager.source.list as ReturnType<typeof vi.fn>).mock
         .calls.length;
       manager.submitAddUpdate();
@@ -411,7 +436,7 @@ describe('AbstractCrudManager', () => {
       manager.init(ctx);
       await settle();
       manager.list.select([1]);
-      manager.call('startUpdate');
+      press(manager, 'Update');
       manager.submitAddUpdate();
       expect(manager.source.update).toHaveBeenCalledWith(
         1,
@@ -426,9 +451,7 @@ describe('AbstractCrudManager', () => {
     it('skips the request when validateAddUpdate() rejects', async () => {
       const { manager, ctx } = await setup();
       manager.init(ctx);
-      (
-        manager as unknown as { validateAddUpdate: () => boolean }
-      ).validateAddUpdate = () => false;
+      manager.validateAddUpdate = () => false;
       manager.submitAddUpdate();
       expect(manager.source.create).not.toHaveBeenCalled();
       expect(ctx.addUpdateForm.enable).toHaveBeenCalled();
@@ -439,7 +462,7 @@ describe('AbstractCrudManager', () => {
       manager.init(ctx);
       await settle();
       manager.list.select([1]);
-      manager.call('startUpdate');
+      press(manager, 'Update');
       manager.source = makeSource({
         update: vi.fn(() =>
           throwError(() => http(412, { title: 'Precondition Failed' })),
@@ -474,7 +497,7 @@ describe('AbstractCrudManager', () => {
 
       await settle();
       manager.list.select([1]);
-      manager.call('startUpdate');
+      press(manager, 'Update');
       manager.source = makeSource({ get: () => throwError(() => http(500)) });
       manager.reloadConflict();
       expect(ctx.alert.error).toHaveBeenCalled();
@@ -492,7 +515,7 @@ describe('AbstractCrudManager', () => {
             }),
           ),
       });
-      manager.call('startAdd');
+      press(manager, 'Add');
       manager.submitAddUpdate();
       expect(formGroup.get('name')?.errors).toEqual({ server: ['taken'] });
       expect(ctx.alert.error).toHaveBeenCalledWith('Invalid');
@@ -505,7 +528,7 @@ describe('AbstractCrudManager', () => {
       manager.source = makeSource({
         create: () => throwError(() => http(500)),
       });
-      manager.call('startAdd');
+      press(manager, 'Add');
       manager.submitAddUpdate();
       expect(ctx.alert.error).toHaveBeenCalled();
       expect(formGroup.get('name')?.errors).toBeNull();
@@ -515,7 +538,7 @@ describe('AbstractCrudManager', () => {
       const { manager, ctx } = await setup();
       manager.init(ctx);
       manager.conflict.set(true);
-      manager.call('startAdd');
+      press(manager, 'Add');
       manager.cancelAddUpdate();
       expect(manager.conflict()).toBe(false);
       expect(manager.currentMode()).toBe('list');
@@ -523,9 +546,11 @@ describe('AbstractCrudManager', () => {
 
     it('toRequestParams() nulls empties and takes ids from objects', async () => {
       const { manager } = await setup();
-      expect(
-        manager.call('toRequestParams', { a: '', b: { id: 3 }, c: 'x' }),
-      ).toEqual({ a: null, b: 3, c: 'x' });
+      expect(manager.toRequestParams({ a: '', b: { id: 3 }, c: 'x' })).toEqual({
+        a: null,
+        b: 3,
+        c: 'x',
+      });
     });
   });
 
@@ -535,7 +560,7 @@ describe('AbstractCrudManager', () => {
       manager.init(ctx);
       await settle();
       manager.list.select([1, 2]);
-      manager.call('startDelete');
+      press(manager, 'Delete');
       expect(ctx.deleteModal.updateOptions).toHaveBeenCalledWith({
         context: { name: 'Widget', count: 2 },
       });
@@ -619,7 +644,7 @@ describe('AbstractCrudManager', () => {
         of(report({ validateOnly: o.validateOnly })),
       );
       const { manager, ctx } = await withImport(importFn);
-      manager.call('startImport');
+      press(manager, 'Import');
       expect(manager.currentMode()).toBe('import');
       manager.setImportFile(file);
 
@@ -671,7 +696,7 @@ describe('AbstractCrudManager', () => {
           }),
         ),
       );
-      manager.call('startImport');
+      press(manager, 'Import');
       manager.setImportFile(file);
       manager.commitImport();
       expect(ctx.alert.warning).toHaveBeenCalledWith(
@@ -695,11 +720,12 @@ describe('AbstractCrudManager', () => {
 
     it('choosing a new file clears the last outcome; cancel returns to the list', async () => {
       const { manager } = await setup();
+      manager.source = makeSource({ import: vi.fn() });
       manager.init(makeContext().ctx);
       manager.importOutcome.set({ errors: [], canCommit: true });
       manager.setImportFile(file);
       expect(manager.importOutcome()).toBeUndefined();
-      manager.call('startImport');
+      press(manager, 'Import');
       manager.cancelImport();
       expect(manager.currentMode()).toBe('list');
     });
@@ -758,7 +784,7 @@ describe('AbstractCrudManager', () => {
   describe('error messages', () => {
     it('prefers a problem detail, then title, then the response message', async () => {
       const { manager } = await setup();
-      const msg = (e: unknown) => manager.call('errorMessage', e);
+      const msg = (e: unknown) => manager.errorMessage(e);
       expect(msg(http(422, { detail: 'd', title: 't' }))).toBe('d');
       expect(msg(http(422, { title: 't' }))).toBe('t');
       expect(msg(http(500, 'x'))).toContain('Http failure response');
