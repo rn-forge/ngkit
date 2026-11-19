@@ -416,6 +416,13 @@ protected formOptions: Partial<FormOptions> = {
 </ng-template>
 ```
 
+**Option changes:** a change to the set of control names rebuilds the group (new
+defaults, pristine, enabled; old values and state are discarded). Any other
+change is applied in place and keeps value, touched, dirty and disabled state,
+including `validators.validateDateRange` and `contextParams`. A same-name change
+to a control definition (default, `FormControl`, control-level validator) is not
+applied; rename the control or recreate the form.
+
 **Submitting auto-disables the form group** — call `form.enable()` in the
 `(formSubmit)` handler or it stays disabled.
 
