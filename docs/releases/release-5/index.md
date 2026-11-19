@@ -66,7 +66,8 @@ returns a disposer
 
 ## Progress
 
-Not started.
+F6.1 and F19.1–F19.8 closed 2026-11-18, closing E19. The cut, `0.6.0`, follows
+once this work is on `main`.
 
 ## Commits
 
