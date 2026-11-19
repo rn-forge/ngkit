@@ -308,7 +308,7 @@ export function summarize(samples: readonly number[]): {
   const mid = Math.floor(sorted.length / 2);
   const median =
     sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-  return { median, min: sorted[0], max: sorted[sorted.length - 1] };
+  return { median, min: sorted[0], max: sorted.at(-1)! };
 }
 
 export function round(value: number, digits = 3): number {

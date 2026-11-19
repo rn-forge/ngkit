@@ -112,8 +112,7 @@ export class FormComponent
 
       const last = this._lastControlKeys;
       if (
-        last &&
-        last.length === controlKeys.length &&
+        last?.length === controlKeys.length &&
         last.every((key, i) => key === controlKeys[i])
       ) {
         if (!FormComponent._sameArray(dateRange, this._lastDateRange)) {

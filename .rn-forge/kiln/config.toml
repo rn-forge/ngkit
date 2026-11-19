@@ -120,6 +120,7 @@ sonar_coverage_exclusions = [
     "apps/*-e2e/**",
     "apps/*/src/environments/**",
     "apps/*/src/app/app.config.ts",
+    "libs/*/src/lib/measure/*.fixtures.ts",
 ]
 
 # Extra jobs, each calling one reusable workflow after `validate`. Changing

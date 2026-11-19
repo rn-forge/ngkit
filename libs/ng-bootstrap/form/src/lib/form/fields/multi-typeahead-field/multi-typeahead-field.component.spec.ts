@@ -103,7 +103,7 @@ describe('MultiTypeaheadFieldComponent inside a reactive form', () => {
     expect(control().value).toEqual(['alpha', 'beta']);
     expect(control().dirty).toBe(true);
     expect(input().value).toBe('');
-    expect(options().length).toBe(0);
+    expect(options()).toHaveLength(0);
     expect(chipTexts()).toEqual(['alpha', 'beta']);
   });
 
@@ -127,9 +127,9 @@ describe('MultiTypeaheadFieldComponent inside a reactive form', () => {
     expect(input().value).toBe('be');
     host.fg.reset();
     fixture.detectChanges();
-    expect(chips().length).toBe(0);
+    expect(chips()).toHaveLength(0);
     expect(input().value).toBe('');
-    expect(options().length).toBe(0);
+    expect(options()).toHaveLength(0);
   });
 
   it('removing a chip writes the remaining array', () => {
@@ -153,10 +153,10 @@ describe('MultiTypeaheadFieldComponent inside a reactive form', () => {
     control().disable();
     fixture.detectChanges();
     expect(input().disabled).toBe(true);
-    expect(closeButtons().length).toBe(1);
+    expect(closeButtons()).toHaveLength(1);
     expect(closeButtons().every((b) => b.disabled)).toBe(true);
     type('be');
-    expect(options().length).toBe(0);
+    expect(options()).toHaveLength(0);
     cmp.addValue('beta');
     cmp.removeValue('alpha');
     fixture.detectChanges();
@@ -187,7 +187,7 @@ describe('MultiTypeaheadFieldComponent inside a reactive form', () => {
   });
 
   it('keeps accessible labels', () => {
-    expect(closeButtons().length).toBe(1);
+    expect(closeButtons()).toHaveLength(1);
     expect(closeButtons()[0].getAttribute('aria-label')).toBe('Remove');
     const label = el().querySelector('label');
     expect(label?.getAttribute('for')).toBe(input().id);
@@ -200,7 +200,7 @@ describe('MultiTypeaheadFieldComponent inside a reactive form', () => {
         control().setValue(v);
         fixture.detectChanges();
       }).not.toThrow();
-      expect(chips().length).toBe(0);
+      expect(chips()).toHaveLength(0);
     }
   });
 });

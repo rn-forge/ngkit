@@ -309,7 +309,7 @@ export class TableComponent
   private _rowsById(id: unknown) {
     return this._table
       .find('tr[data-uniqueid]')
-      .filter((_, tr) => tr.getAttribute('data-uniqueid') === String(id));
+      .filter((_, tr) => tr.dataset['uniqueid'] === String(id));
   }
 
   private readonly _highlightTimers = new Set<number>();

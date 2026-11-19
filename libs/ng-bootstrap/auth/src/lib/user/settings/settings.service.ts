@@ -92,7 +92,7 @@ export class UserSettingsService {
    * {@link clearStoredSettings}.
    */
   hasStoredSetting(key: string): boolean {
-    return Object.prototype.hasOwnProperty.call(this._storedUserSettings, key);
+    return Object.hasOwn(this._storedUserSettings, key);
   }
 
   /**

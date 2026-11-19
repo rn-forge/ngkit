@@ -104,18 +104,18 @@ describe('TableComponent rendered host', () => {
 
   it('renders a row per loaded item', () => {
     expect(table.rendered).toBe(true);
-    expect(el().querySelectorAll('tbody tr').length).toBe(2);
+    expect(el().querySelectorAll('tbody tr')).toHaveLength(2);
     expect(table.getData()).toEqual(rows);
   });
 
   it('selecting a row updates the selection and the linked toolbar buttons', () => {
     expect(buttons().every((b) => b.disabled)).toBe(true);
     click(rowChecks()[0]);
-    expect(table.getSelectedRows().length).toBe(1);
-    expect(buttons().length).toBe(2);
+    expect(table.getSelectedRows()).toHaveLength(1);
+    expect(buttons()).toHaveLength(2);
     expect(buttons().every((b) => !b.disabled)).toBe(true);
     click(rowChecks()[0]);
-    expect(table.getSelectedRows().length).toBe(0);
+    expect(table.getSelectedRows()).toHaveLength(0);
     expect(buttons().every((b) => b.disabled)).toBe(true);
   });
 
@@ -151,7 +151,7 @@ describe('TableComponent rendered host', () => {
     table.destroy();
     expect(table.rendered).toBe(false);
     fixture.detectChanges();
-    expect(el().querySelectorAll('rnf-button').length).toBe(0);
+    expect(el().querySelectorAll('rnf-button')).toHaveLength(0);
   });
 
   it('destroying the fixture after destroy() is safe', async () => {

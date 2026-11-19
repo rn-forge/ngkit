@@ -233,7 +233,7 @@ describe.skipIf(!process.env['NGKIT_MEASURE'])(
             const t = summarize(times);
             const perOp = (ms: number) => round((ms / workload.ops) * 1000, 3);
             const retained = afters.map((a, i) => a - befores[i]);
-            expect(times.length).toBe(RUNS);
+            expect(times).toHaveLength(RUNS);
             log({
               kind: 'time',
               widget,
