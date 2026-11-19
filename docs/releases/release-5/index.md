@@ -29,7 +29,7 @@ owner approves.
 | [F19.5 — Configuration and widgets with explicit owners](../../specs/epics/E19-ngkit-simplification/F19.5-configuration-and-widgets.md) | E19 | Active |
 | [F19.6 — Forms and CRUD preserve application values](../../specs/epics/E19-ngkit-simplification/F19.6-forms-and-crud.md) | E19 | Active |
 | [F19.7 — Settings notifications with consumer lifetimes](../../specs/epics/E19-ngkit-simplification/F19.7-settings-lifetimes.md) | E19 | Active |
-| [F19.8 — Executable package boundaries and consumer contracts](../../specs/epics/E19-ngkit-simplification/F19.8-boundaries-and-consumers.md) | E19 | New |
+| [F19.8 — Executable package boundaries and consumer contracts](../../specs/epics/E19-ngkit-simplification/F19.8-boundaries-and-consumers.md) | E19 | Active |
 
 <!-- END derived scope -->
 
