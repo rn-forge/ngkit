@@ -46,7 +46,7 @@ If the ngkit repo is available locally or cloned (`github.com/rn-forge/ngkit`):
 
 ```text
 libs/ng/core/src/lib/          core.components|config|services|types|utils.ts  — BaseComponent, LocalStorageService, FormUtil, DateUtil, ObjectUtil
-libs/ng/auth/src/lib/          auth.config|services|guards|directives|types.ts
+libs/ng/auth/src/lib/          auth.config|services|guards|interceptors|directives|types.ts
 libs/ng-bootstrap/src/lib/     bootstrap.component.ts (ConfigurableComponent — read this one early), abstract-page.ts,
                                bootstrap.config.ts, alert/, button/, error/, modal/, table/
 libs/ng-bootstrap/shell/src/   header/, footer/, navbar/, offcanvas/, color-mode/, shell.config.ts
@@ -79,6 +79,12 @@ signals, zoneless change detection:
 | -- | -- | -- |
 | `@rn-forge/ng` | `/core`, `/auth`, `/crud` | No UI. Base component class, config/DI helpers, Session auth (service + guard + permission directives). No HTTP wrapper — use Angular `HttpClient` (§5.3). |
 | `@rn-forge/ng-bootstrap` | (root), `/shell`, `/form`, `/auth`, `/crud`, `/assets` | Bootstrap 5 UI: alert, button, error page, modal, data table (bootstrap-table + treegrid), app shell (header/footer/navbar/offcanvas/dark-mode), reactive-form fields, login/profile/settings screens, generic CRUD screen. |
+
+`@rn-forge/ng-tailwind` (Tailwind-friendly tokens and button;
+[README](https://github.com/rn-forge/ngkit/blob/main/libs/ng-tailwind/README.md))
+and `@rn-forge/ng-plugin` (Nx generators that configure an app;
+[README](https://github.com/rn-forge/ngkit/blob/main/tools/ng-plugin/README.md))
+are separate packages this guide does not cover.
 
 `ng-bootstrap` depends on `ng`. Both are pre-1.0 and fixed/grouped-versioned
 together — they always release as a matched pair, so never mix versions between
@@ -122,8 +128,9 @@ gh release view <tag> --repo rn-forge/ngkit    # exact asset filenames
 clone of the ngkit repo and vendor them:
 
 ```sh
-pnpm install
-pnpm nx run-many -t pack --projects=ng,ng-bootstrap
+task setup
+pnpm exec nx pack ng
+pnpm exec nx pack ng-bootstrap
 # → dist/tarballs/rn-forge-ng-<version>.tgz, rn-forge-ng-bootstrap-<version>.tgz
 ```
 

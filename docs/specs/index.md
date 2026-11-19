@@ -32,7 +32,7 @@ release pages by `task docs:generate`; never edit inside their fence.
 
 | Release | Status | Features |
 | -- | -- | -- |
-| [Release 5](../releases/release-5/index.md) | planned | 1 Active · 8 Closed |
+| [Release 5](../releases/release-5/index.md) | planned | 9 Closed |
 | [Release 4](../releases/release-4/index.md) | shipped (2026-11-18) | 4 Closed |
 | [Release 3](../releases/release-3/index.md) | shipped (2026-11-14) | 5 Closed · 1 Removed |
 | [Release 2](../releases/release-2/index.md) | shipped (2026-10-25) | 9 Closed |

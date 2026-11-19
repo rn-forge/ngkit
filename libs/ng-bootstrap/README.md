@@ -1,6 +1,7 @@
 # ng-bootstrap
 
-This library was generated with [Nx](https://nx.dev).
+`@rn-forge/ng-bootstrap`: Bootstrap 5 UI components, app shell, form fields,
+auth screens and the generic CRUD screen, built on `@rn-forge/ng`.
 
 ## Setup
 

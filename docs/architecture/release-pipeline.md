@@ -36,12 +36,14 @@ runs only on a push to `main`, after `checks-ok`, and never commits. In order:
    `GITHUB_TOKEN` cannot bypass it.
 1. `ci:release:github` creates the GitHub Release for the tag as a draft, with
    the tarballs and the `CHANGELOG.md` section as notes.
-1. `ci:release:publish` runs
-   `nx release publish --tag=<dist-tag> --excludeTaskDependencies`, so it uses
-   the `dist/` the verify step built. It is a dry run while npm is disabled.
 1. `ci:release:finalize` publishes the draft, so a published release is a
    finished one.
 1. `ci:release:latest` moves the rolling `latest` release to the tag.
+
+No step publishes to npm: npm is disabled, and the per-project
+`nx-release-publish` targets stay `dryRun: true`. A publish step would be a
+change to the generated release workflow; recorded in
+[Tooling gaps](../guides/development.md#tooling-gaps).
 
 **Modes.** A version counts as shipped when its GitHub Release is published (not
 a draft).
@@ -254,6 +256,19 @@ vendor and icon styles, lazy vendor chunks and no `workspace:` range.
 that the vendor plugins exist before the first render, the app starts without
 errors, and the root, form and CRUD components and the theme work. It runs in
 the `smoke` job and the release.
+
+### Angular versions
+
+Three separate facts, each with its own owner; a document states the owner, not
+a copy of the number.
+
+| Fact | What it says | Owner |
+| -- | -- | -- |
+| Workspace version | what the repository builds and develops against | the root `package.json` |
+| Published peer floor | what a consumer must satisfy | each `libs/*/package.json` `peerDependencies` ([ADR-0002](../adr/ADR-0002.md)) |
+| Consumer matrix | what the release proves | each `workspace-ci.consumer.cells` (the cells above) |
+
+`ng-plugin` declares no consumer cells; it has `verify-dist` only.
 
 ## What a repository declares
 

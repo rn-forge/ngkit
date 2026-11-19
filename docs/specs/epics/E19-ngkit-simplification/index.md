@@ -2,15 +2,16 @@
 
 |  |  |
 | -- | -- |
-| **State** | Active |
+| **State** | Closed |
 | **Start Date** | 2026-11-18 |
+| **Closed Date** | 2026-11-18 |
 
 <!-- BEGIN derived features -->
 
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
 | [F19.1 — Short records and disposable build briefs](F19.1-specs-and-briefs.md) | Closed | release-5 | 2 Closed |
-| [F19.2 — One current explanation per audience](F19.2-current-documentation.md) | Active | release-5 | 1 New · 1 Closed |
+| [F19.2 — One current explanation per audience](F19.2-current-documentation.md) | Closed | release-5 | 2 Closed |
 | [F19.3 — Behavioral coverage and measured simplification](F19.3-behavioral-baselines.md) | Closed | release-5 | 2 Closed |
 | [F19.4 — Bounded stream and permission-view lifetimes](F19.4-core-and-permissions.md) | Closed | release-5 | 2 Closed |
 | [F19.5 — Configuration and widgets with explicit owners](F19.5-configuration-and-widgets.md) | Closed | release-5 | 2 Closed |
@@ -84,6 +85,11 @@ through `task`, with actual results distinguished from skipped or blocked
 checks. The completed epic passes `task validate` and idempotent
 `task docs:generate`. Measurements name workload, environment, time, memory and
 operation counts; fewer lines alone establish no performance improvement.
+
+As run, 2026-11-18: every feature closed with its regression tests;
+`task validate` passed at each feature close and on the epic's final tree, and
+`task docs:generate` is idempotent. S19.5.1's time criterion could not be
+measured under load; the owner accepted it on operation counts.
 
 ## Considered and rejected
 

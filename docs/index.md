@@ -1,8 +1,9 @@
 # ngkit
 
 An [Nx](https://nx.dev) monorepo for the rn-forge Angular toolkit: reusable
-libraries published as `@rn-forge/ng` and `@rn-forge/ng-bootstrap`, plus a demo
-app used for local development and e2e testing.
+libraries published as `@rn-forge/ng`, `@rn-forge/ng-bootstrap` and
+`@rn-forge/ng-tailwind`, an Nx plugin published as `@rn-forge/ng-plugin`, plus a
+demo app used for local development and e2e testing.
 
 ## Read in this order
 
@@ -11,7 +12,7 @@ app used for local development and e2e testing.
 1. **[Decisions](adr/index.md)**: the ADR log, each decision with the
    alternatives that were rejected.
 1. **[Workspace](architecture/workspace.md)**: the projects, entry points and
-   how they depend on each other.
+   how they depend on each other. It links each library's README.
 1. **[Building an app](guides/building-an-app.md)** and
    **[Developing ngkit](guides/development.md)**.
 1. **[Releasing](runbooks/releasing.md)**.

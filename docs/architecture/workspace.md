@@ -6,26 +6,31 @@ The projects, entry points and dependency direction of the ngkit monorepo.
 
 | Project | Type | Description |
 | -- | -- | -- |
-| `ng` | library | Core Angular utilities (`libs/ng`), published as `@rn-forge/ng` |
-| `ng-bootstrap` | library | Bootstrap-based UI kit (`libs/ng-bootstrap`), published as `@rn-forge/ng-bootstrap`, depends on `ng` |
-| `ng-tailwind` | library | Tailwind-friendly UI package (`libs/ng-tailwind`), published as `@rn-forge/ng-tailwind`: `--rnf-*` tokens and prebuilt component CSS, no Bootstrap |
-| `ng-plugin` | library | Nx plugin (`tools/ng-plugin`), published as `@rn-forge/ng-plugin`: generators that set up Angular apps for the rn-forge libraries |
-| `ng-demo` | app | Demo/dev app exercising both libraries (`apps/ng-demo`) |
+| [`ng`](https://github.com/rn-forge/ngkit/blob/main/libs/ng/README.md) | library | Core Angular utilities (`libs/ng`), published as `@rn-forge/ng` |
+| [`ng-bootstrap`](https://github.com/rn-forge/ngkit/blob/main/libs/ng-bootstrap/README.md) | library | Bootstrap-based UI kit (`libs/ng-bootstrap`), published as `@rn-forge/ng-bootstrap`, depends on `ng` |
+| [`ng-tailwind`](https://github.com/rn-forge/ngkit/blob/main/libs/ng-tailwind/README.md) | library | Tailwind-friendly UI package (`libs/ng-tailwind`), published as `@rn-forge/ng-tailwind`: `--rnf-*` tokens and prebuilt component CSS, no Bootstrap |
+| [`ng-plugin`](https://github.com/rn-forge/ngkit/blob/main/tools/ng-plugin/README.md) | library | Nx plugin (`tools/ng-plugin`), published as `@rn-forge/ng-plugin`: generators that set up Angular apps for the rn-forge libraries |
+| `ng-demo` | app | Demo/dev app exercising `ng` and `ng-bootstrap` (`apps/ng-demo`) |
 | `ng-demo-e2e` | e2e app | Playwright tests for `ng-demo` (`apps/ng-demo-e2e`) |
 | `ng-bootstrap-e2e` | e2e app | Playwright checks over applications built from the packed `ng-bootstrap` and `ng` tarballs (`apps/ng-bootstrap-e2e`) |
 | `ng-tailwind-e2e` | e2e app | Playwright and axe-core checks over the built `ng-tailwind` Storybook (`apps/ng-tailwind-e2e`) |
+| `ng-demo-api` | app | Django backend fixture serving `ng-demo`'s `products` over the wire standards (`apps/ng-demo-api`) |
+| `ng-demo-api-fastapi` | app | FastAPI backend fixture serving the same resource on the same port (`apps/ng-demo-api-fastapi`) |
 
-Run `pnpm nx show project <name> --web` to see a project's full, resolved target
-list.
+Run `pnpm exec nx show project <name> --web` to see a project's full, resolved
+target list.
 
 ## Entry points
 
-Both packages are standalone components, signals and zoneless change detection.
+`ng` and `ng-bootstrap` are standalone components, signals and zoneless change
+detection.
 
 | Package | Secondary entry points | What it gives you |
 | -- | -- | -- |
 | `@rn-forge/ng` | `/core`, `/auth`, `/crud` | No UI. Base component class, config/DI helpers, JWT auth (service + guards + interceptors + permission directives), and the resource screen's controller and data contract. No HTTP wrapper: use Angular `HttpClient`. |
 | `@rn-forge/ng-bootstrap` | (root), `/shell`, `/form`, `/auth`, `/crud`, `/assets` | Bootstrap 5 UI: alert, button, error page, modal, data table (bootstrap-table + treegrid), app shell (header/footer/navbar/offcanvas/dark-mode), reactive-form fields, login/profile/settings screens, generic CRUD screen. |
+| `@rn-forge/ng-tailwind` | (root), `./tokens.css`, `./base.css`, `./tailwind.css` | `RnfButton` and prebuilt CSS on `--rnf-*` design tokens, with an optional Tailwind bridge; no Bootstrap. |
+| `@rn-forge/ng-plugin` | (root), `./generators.json` | Nx generators that set up and scaffold Angular apps and libraries for the rn-forge packages (setup, scaffold and library generators; see its README). |
 
 ## Source path map
 
@@ -52,12 +57,14 @@ libraries only render. See [ADR-0002](../adr/ADR-0002.md).
 
 - `pack` (`ng`, `ng-bootstrap`, `ng-tailwind`, `ng-plugin`): builds the library
   and writes an installable tarball under `dist/tarballs/`.
-- `verify-consumer` (`ng`, `ng-tailwind`): kiln's `consumer` command installs
-  the packed tarball into throwaway consumer projects, one per declared cell;
-  see [Release pipeline](release-pipeline.md#consumer-verification).
-- `consumer-fixture` (`ng-tailwind`): builds the `tailwind-22.1-zoneless` cell
-  (`dist/consumer-fixtures/rn-forge-ng-tailwind-<version>/`) from the packed
-  tarball, for the e2e cascade checks; see
+- `verify-consumer` (`ng`, `ng-bootstrap`, `ng-tailwind`): kiln's `consumer`
+  command installs the packed tarball into throwaway consumer projects, one
+  per declared cell; see
+  [Release pipeline](release-pipeline.md#consumer-verification).
+- `consumer-fixture` (`ng-bootstrap`, `ng-tailwind`): builds a consumer cell
+  from the packed tarball for the e2e checks (for `ng-tailwind`, the
+  `tailwind-22.1-zoneless` cell in
+  `dist/consumer-fixtures/rn-forge-ng-tailwind-<version>/`); see
   [Release pipeline](release-pipeline.md#consumer-verification).
 - `compodoc` (`ng`, `ng-bootstrap`, `ng-tailwind`): generates the API reference
   published on the docs site.
