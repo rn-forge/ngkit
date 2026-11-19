@@ -86,4 +86,16 @@ describe('ColorMode settings listener lifetime', () => {
     expect(spy).toHaveBeenCalledWith('light');
     live.destroy();
   });
+
+  it('follows a clear to the default mode', async () => {
+    const settings = TestBed.inject(UserSettingsService);
+    const live = await mount();
+    settings.updateSetting('colorMode', 'dark');
+    const spy = vi.spyOn(TestBed.inject(StyleHelper), 'setColorMode');
+
+    settings.clearStoredSettings();
+
+    expect(spy).toHaveBeenLastCalledWith('auto');
+    live.destroy();
+  });
 });

@@ -75,6 +75,15 @@ export class UserSettingsService {
   }
 
   /**
+   * Tells whether the user explicitly saved a value for `key`, as opposed to
+   * the key only holding its declared default. False after
+   * {@link clearStoredSettings}.
+   */
+  hasStoredSetting(key: string): boolean {
+    return Object.prototype.hasOwnProperty.call(this._storedUserSettings, key);
+  }
+
+  /**
    * Updates a user setting.
    */
   updateSetting(key: string, value: string): void {
@@ -96,15 +105,21 @@ export class UserSettingsService {
   }
 
   /**
-   * Clears all stored user settings.
+   * Clears all stored user settings: the effective settings are rebuilt from a
+   * fresh copy of the declared defaults, the empty override set is persisted,
+   * and live listeners are notified of their reset values (`undefined` for a
+   * key without a declared default).
    */
   clearStoredSettings(): void {
     if (isDebugMode()) console.debug('UserSettingsService.clearStoredSettings');
     this._storedUserSettings = {};
-    this._currentUserSettings = DEFAULT_USER_SETTINGS;
+    this.buildCurrentUserSettings();
     this.localStorageService.setJSON(
       USER_SETTINGS_STORAGE_KEY,
       this._storedUserSettings,
+    );
+    Object.entries(this._changeListeners).forEach(([key, subject]) =>
+      subject.next(this._currentUserSettings[key]),
     );
   }
 

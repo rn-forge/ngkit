@@ -104,4 +104,63 @@ describe('HeaderComponent settings listener lifetime', () => {
     expect(live.componentInstance.color()).toBe('dark');
     live.destroy();
   });
+
+  it('returns to the default navbar color after a clear', () => {
+    const settings = TestBed.inject(UserSettingsService);
+    const live = TestBed.createComponent(TestHeader);
+    live.detectChanges();
+
+    settings.updateSetting('navbarColor', 'dark');
+    settings.clearStoredSettings();
+
+    expect(live.componentInstance.color()).toBe('default');
+    live.destroy();
+  });
+
+  describe('navbar color precedence (stored choice beats config)', () => {
+    function mountWithConfig(): ComponentFixture<TestHeader> {
+      const f = TestBed.createComponent(TestHeader);
+      f.componentRef.setInput('options', { navbarColor: 'primary' });
+      f.detectChanges();
+      return f;
+    }
+
+    it('shows the config color on mount with nothing stored', () => {
+      const f = mountWithConfig();
+      expect(f.componentInstance.color()).toBe('primary');
+      f.destroy();
+    });
+
+    it('shows the stored color on mount when one was saved', () => {
+      TestBed.inject(UserSettingsService).updateSetting(
+        'navbarColor',
+        'danger',
+      );
+      const f = mountWithConfig();
+      expect(f.componentInstance.color()).toBe('danger');
+      f.destroy();
+    });
+
+    it('follows a saved update', () => {
+      const f = mountWithConfig();
+      TestBed.inject(UserSettingsService).updateSetting(
+        'navbarColor',
+        'success',
+      );
+      f.detectChanges();
+      expect(f.componentInstance.color()).toBe('success');
+      f.destroy();
+    });
+
+    it('returns to the config color after a clear', () => {
+      const settings = TestBed.inject(UserSettingsService);
+      const f = mountWithConfig();
+      settings.updateSetting('navbarColor', 'success');
+      f.detectChanges();
+      settings.clearStoredSettings();
+      f.detectChanges();
+      expect(f.componentInstance.color()).toBe('primary');
+      f.destroy();
+    });
+  });
 });
