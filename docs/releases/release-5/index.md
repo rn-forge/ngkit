@@ -24,7 +24,7 @@ owner approves.
 | [F6.1 — `loadingTimings`](../../specs/epics/E6-asynchronous-resource/F6.1-loading-timings.md) | E6 | Closed |
 | [F19.1 — Short records and disposable build briefs](../../specs/epics/E19-ngkit-simplification/F19.1-specs-and-briefs.md) | E19 | Closed |
 | [F19.2 — One current explanation per audience](../../specs/epics/E19-ngkit-simplification/F19.2-current-documentation.md) | E19 | New |
-| [F19.3 — Behavioral coverage and measured simplification](../../specs/epics/E19-ngkit-simplification/F19.3-behavioral-baselines.md) | E19 | Active |
+| [F19.3 — Behavioral coverage and measured simplification](../../specs/epics/E19-ngkit-simplification/F19.3-behavioral-baselines.md) | E19 | Closed |
 | [F19.4 — Bounded stream and permission-view lifetimes](../../specs/epics/E19-ngkit-simplification/F19.4-core-and-permissions.md) | E19 | Closed |
 | [F19.5 — Configuration and widgets with explicit owners](../../specs/epics/E19-ngkit-simplification/F19.5-configuration-and-widgets.md) | E19 | Active |
 | [F19.6 — Forms and CRUD preserve application values](../../specs/epics/E19-ngkit-simplification/F19.6-forms-and-crud.md) | E19 | Active |
