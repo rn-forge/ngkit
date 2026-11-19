@@ -19,6 +19,7 @@ the version pinned in `package.json#packageManager`.
 | `ng-plugin` | library | Nx plugin (`tools/ng-plugin`), published as `@rn-forge/ng-plugin`: generators that set up Angular apps for the rn-forge libraries |
 | `ng-demo` | app | Demo/dev app exercising both libraries (`apps/ng-demo`) |
 | `ng-demo-e2e` | e2e app | Playwright tests for `ng-demo` (`apps/ng-demo-e2e`) |
+| `ng-bootstrap-e2e` | e2e app | Playwright checks over applications built from the packed `ng-bootstrap` and `ng` tarballs (`apps/ng-bootstrap-e2e`) |
 | `ng-tailwind-e2e` | e2e app | Playwright and axe-core checks over the built `ng-tailwind` Storybook (`apps/ng-tailwind-e2e`) |
 | `ng-demo-api` | app | Django backend fixture serving `ng-demo`'s `products` over the wire standards (`apps/ng-demo-api`) |
 | `ng-demo-api-fastapi` | app | FastAPI backend fixture serving the same resource on the same port (`apps/ng-demo-api-fastapi`) |

@@ -178,6 +178,10 @@ flags), then work through this list once:
    `dryRun: true` while npm is disabled. The release's publish step passes
    `--excludeTaskDependencies`, so it publishes the `dist/` its verify step
    built.
+1. If it depends on a sibling publishable library, its consumer cells list the
+   sibling's packed tarball as a dependency
+   (`"file:../../../tarballs/<tarball>.tgz"`) and its `verify-consumer` target
+   depends on `^pack`, as `ng-bootstrap` does for `ng`.
 1. If the library ships non-TS assets alongside compiled entry points, declare
    their subpaths in its source `package.json` `exports`, as `ng-bootstrap`
    does ([details](../architecture/release-pipeline.md#asset-subpaths)).

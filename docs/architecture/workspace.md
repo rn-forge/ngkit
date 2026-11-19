@@ -12,6 +12,7 @@ The projects, entry points and dependency direction of the ngkit monorepo.
 | `ng-plugin` | library | Nx plugin (`tools/ng-plugin`), published as `@rn-forge/ng-plugin`: generators that set up Angular apps for the rn-forge libraries |
 | `ng-demo` | app | Demo/dev app exercising both libraries (`apps/ng-demo`) |
 | `ng-demo-e2e` | e2e app | Playwright tests for `ng-demo` (`apps/ng-demo-e2e`) |
+| `ng-bootstrap-e2e` | e2e app | Playwright checks over applications built from the packed `ng-bootstrap` and `ng` tarballs (`apps/ng-bootstrap-e2e`) |
 | `ng-tailwind-e2e` | e2e app | Playwright and axe-core checks over the built `ng-tailwind` Storybook (`apps/ng-tailwind-e2e`) |
 
 Run `pnpm nx show project <name> --web` to see a project's full, resolved target
@@ -67,5 +68,10 @@ libraries only render. See [ADR-0002](../adr/ADR-0002.md).
   `apps/ng-tailwind-e2e/serve.mjs`; a second runs
   `ng-tailwind:consumer-fixture` and serves the fixture's `out/browser` on
   port 4403 (`ROOT`, `SPA`); Chromium only.
+- `e2e` and `e2e-ci` (`ng-bootstrap-e2e`): two Playwright web servers run
+  `ng-bootstrap:consumer-fixture:floor` (`22.0-zone`, port 4404) and
+  `ng-bootstrap:consumer-fixture` (`22.1-zoneless`, port 4405) and serve each
+  fixture's `out/browser` with `apps/ng-tailwind-e2e/serve.mjs`; Chromium
+  only.
 - `e2e-ci` (`ng-demo-e2e`): the atomized Playwright target Nx Cloud distributes;
   see [Release pipeline](release-pipeline.md#ci).

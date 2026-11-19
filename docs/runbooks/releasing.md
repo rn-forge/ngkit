@@ -17,7 +17,10 @@ trigger: the `release` job in `ci.yml` runs on a push to `main` after
    under the npm dist-tag `<id>` instead of `latest`). It bumps both
    libraries, writes the `CHANGELOG.md` section and formats it. `task version`
    with no argument prints the current version. Bumps apply as given, also
-   below `1.0.0`.
+   below `1.0.0`. Then replace the version in the four `@rn-forge/ng` `file:`
+   strings (`rn-forge-ng-<version>.tgz`) in `libs/ng-bootstrap/package.json`
+   with the one now in `libs/ng/package.json`; a stale string fails the pull
+   request's `smoke` job with `ENOENT` for the named tarball.
 1. Check the `CHANGELOG.md` section (see
    [Breaking changes](#2-breaking-changes)) and open a pull request.
 1. Merge it once `ci-ok` passes. The push to `main` runs the checks again, then

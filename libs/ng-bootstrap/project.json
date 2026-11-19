@@ -36,6 +36,33 @@
     },
     "pack": {},
     "verify-dist": {},
+    "verify-consumer": {
+      "dependsOn": ["pack", "^pack"]
+    },
+    "consumer-fixture": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["pack", "^pack"],
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/tools/consumer/ng-bootstrap-app.mjs"
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/consumer-fixtures/rn-forge-ng-bootstrap-*/22.1-zoneless/out"
+      ],
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "task ci:consumer -- libs/ng-bootstrap --cell 22.1-zoneless"
+      },
+      "configurations": {
+        "floor": {
+          "outputs": [
+            "{workspaceRoot}/dist/consumer-fixtures/rn-forge-ng-bootstrap-*/22.0-zone/out"
+          ],
+          "command": "task ci:consumer -- libs/ng-bootstrap --cell 22.0-zone"
+        }
+      }
+    },
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}",
