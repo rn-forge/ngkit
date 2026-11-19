@@ -27,7 +27,7 @@ owner approves.
 | [F19.3 — Behavioral coverage and measured simplification](../../specs/epics/E19-ngkit-simplification/F19.3-behavioral-baselines.md) | E19 | Active |
 | [F19.4 — Bounded stream and permission-view lifetimes](../../specs/epics/E19-ngkit-simplification/F19.4-core-and-permissions.md) | E19 | Closed |
 | [F19.5 — Configuration and widgets with explicit owners](../../specs/epics/E19-ngkit-simplification/F19.5-configuration-and-widgets.md) | E19 | Active |
-| [F19.6 — Forms and CRUD preserve application values](../../specs/epics/E19-ngkit-simplification/F19.6-forms-and-crud.md) | E19 | New |
+| [F19.6 — Forms and CRUD preserve application values](../../specs/epics/E19-ngkit-simplification/F19.6-forms-and-crud.md) | E19 | Active |
 | [F19.7 — Settings notifications with consumer lifetimes](../../specs/epics/E19-ngkit-simplification/F19.7-settings-lifetimes.md) | E19 | Active |
 | [F19.8 — Executable package boundaries and consumer contracts](../../specs/epics/E19-ngkit-simplification/F19.8-boundaries-and-consumers.md) | E19 | New |
 
@@ -41,11 +41,23 @@ owner approves.
 
 ## Breaking changes
 
-None known yet. E19 preserves public imports, wire formats and optional
-features; an intentional contract change gets explicit acceptance, a changelog
-entry and a versioning assessment
-([E19](../../specs/epics/E19-ngkit-simplification/index.md#scope-constraints)),
-and would be listed here.
+E19 preserves public imports, wire formats and optional features; an intentional
+contract change gets explicit acceptance, a changelog entry and a versioning
+assessment
+([E19](../../specs/epics/E19-ngkit-simplification/index.md#scope-constraints)).
+The release must announce:
+
+- `@rn-forge/ng-bootstrap/form`: `MultiTypeaheadFieldComponent` no longer
+  exposes `onChange`, `onTouched`, `writeValue`, `registerOnChange`,
+  `registerOnTouched` or `setDisabledState`. They were never connected to
+  Angular forms; the field now reads and writes its control in the parent
+  `FormGroup`
+  ([S19.6.3](../../specs/epics/E19-ngkit-simplification/F19.6-forms-and-crud.md#s1963-wire-multi-typeahead-to-one-reactive-form-value)).
+  Pre-1.0, so it ships in the next minor.
+
+Additive, to list as features: `UserSettingsService.registerChangeListener`
+returns a disposer
+([S19.7.1](../../specs/epics/E19-ngkit-simplification/F19.7-settings-lifetimes.md#s1971-release-settings-observers-with-their-views)).
 
 ## Progress
 
