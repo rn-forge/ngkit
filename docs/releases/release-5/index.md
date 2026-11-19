@@ -26,7 +26,7 @@ owner approves.
 | [F19.2 — One current explanation per audience](../../specs/epics/E19-ngkit-simplification/F19.2-current-documentation.md) | E19 | New |
 | [F19.3 — Behavioral coverage and measured simplification](../../specs/epics/E19-ngkit-simplification/F19.3-behavioral-baselines.md) | E19 | Closed |
 | [F19.4 — Bounded stream and permission-view lifetimes](../../specs/epics/E19-ngkit-simplification/F19.4-core-and-permissions.md) | E19 | Closed |
-| [F19.5 — Configuration and widgets with explicit owners](../../specs/epics/E19-ngkit-simplification/F19.5-configuration-and-widgets.md) | E19 | Active |
+| [F19.5 — Configuration and widgets with explicit owners](../../specs/epics/E19-ngkit-simplification/F19.5-configuration-and-widgets.md) | E19 | Closed |
 | [F19.6 — Forms and CRUD preserve application values](../../specs/epics/E19-ngkit-simplification/F19.6-forms-and-crud.md) | E19 | Closed |
 | [F19.7 — Settings notifications with consumer lifetimes](../../specs/epics/E19-ngkit-simplification/F19.7-settings-lifetimes.md) | E19 | Closed |
 | [F19.8 — Executable package boundaries and consumer contracts](../../specs/epics/E19-ngkit-simplification/F19.8-boundaries-and-consumers.md) | E19 | Active |
