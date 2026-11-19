@@ -24,8 +24,20 @@ import {
  *
  * @example
  * ```typescript
- * const userSettingsService = new UserSettingsService();
- * userSettingsService.updateSettings('theme', 'dark');
+ * // In an injection context (a field initializer or constructor body)
+ * private readonly settings = inject(UserSettingsService);
+ * private readonly stopListening = this.settings.registerChangeListener(
+ *   'theme',
+ *   (value) => (this.theme = value),
+ * );
+ *
+ * this.settings.updateSetting('theme', 'dark');
+ * this.settings.hasStoredSetting('theme'); // true
+ * this.settings.clearStoredSettings();
+ *
+ * ngOnDestroy() {
+ *   this.stopListening();
+ * }
  * ```
  *
  * @public

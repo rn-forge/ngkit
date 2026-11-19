@@ -258,7 +258,9 @@ export abstract class ConfigurableComponent<
 
   /**
    * Replaces the current runtime overrides with `updates`.
-   * Pass `undefined` to clear overrides without changing anything else.
+   * Calling it with `undefined` (or no argument) does nothing and leaves the
+   * current overrides in place, so a caller may forward an optional argument.
+   * Use {@link clearOverrides} to remove the overrides.
    */
   updateOptions(updates?: Partial<$O>): void {
     if (updates) {

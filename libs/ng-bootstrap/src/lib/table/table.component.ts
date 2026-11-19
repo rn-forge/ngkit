@@ -181,7 +181,8 @@ export class TableComponent
   }
 
   /**
-   * (Re-)renders the table. Optionally merges `updatedOptions` before rendering.
+   * (Re-)renders the table. When `updatedOptions` is given it replaces the
+   * runtime overrides before rendering; when omitted they are unchanged.
    * Called automatically on init when `autoRender` is `true` (the default).
    */
   render(updatedOptions?: Partial<TableOptions>) {
