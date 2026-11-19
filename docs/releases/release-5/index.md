@@ -55,6 +55,11 @@ The release must announce:
   ([S19.6.3](../../specs/epics/E19-ngkit-simplification/F19.6-forms-and-crud.md#s1963-wire-multi-typeahead-to-one-reactive-form-value)).
   Pre-1.0, so it ships in the next minor.
 
+Behaviour changes, to list as fixes: a CRUD form submission keeps `0` and
+`false`, and sends arrays, dates and objects without an `id` unchanged instead
+of dropping them
+([S19.6.1](../../specs/epics/E19-ngkit-simplification/F19.6-forms-and-crud.md#s1961-serialize-values-without-truthiness-loss)).
+
 Additive, to list as features: `UserSettingsService.registerChangeListener`
 returns a disposer
 ([S19.7.1](../../specs/epics/E19-ngkit-simplification/F19.7-settings-lifetimes.md#s1971-release-settings-observers-with-their-views)).

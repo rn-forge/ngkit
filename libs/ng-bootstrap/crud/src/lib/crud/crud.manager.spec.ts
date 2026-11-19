@@ -83,6 +83,26 @@ class TestManager extends AbstractCrudManager<TestWrite, TestRead> {
   }
 }
 
+/** Like `TestManager`, but the real form-value conversion runs. */
+@Injectable()
+class FormValueManager extends AbstractCrudManager<TestWrite, TestRead> {
+  override name = 'Widget';
+  override permissionKey = 'demo.widgets';
+  source: Source = makeSource();
+  override get dataSource() {
+    return this.source;
+  }
+  override tableColumns() {
+    return [];
+  }
+  override addUpdateFormControls() {
+    return { name: [''] };
+  }
+  override toAddUpdateFormValue(data: TestRead): TestWrite {
+    return { id: data.id, name: data.name };
+  }
+}
+
 /** Presses the toolbar button labelled `label`, as a user would. */
 function press(
   manager: Pick<AbstractCrudManager<TestWrite, TestRead>, 'tableOptions'>,
@@ -551,6 +571,117 @@ describe('AbstractCrudManager', () => {
         b: 3,
         c: 'x',
       });
+    });
+  });
+
+  describe('form value conversion', () => {
+    async function formSetup(
+      create = vi.fn(() => of({ value: { id: 9, name: 'new' } })),
+    ) {
+      TestBed.configureTestingModule({
+        providers: [APP_CONFIG_PROVIDER, FormValueManager],
+      });
+      const manager = TestBed.inject(FormValueManager);
+      manager.source = makeSource({ create });
+      const { ctx } = makeContext();
+      manager.init(ctx);
+      press(manager, 'Add');
+      const setForm = (value: unknown) => {
+        (ctx.addUpdateForm as unknown as { rawValue: unknown }).rawValue =
+          value;
+      };
+      return { manager, ctx, create, setForm };
+    }
+
+    it('submits 0 and false unchanged', async () => {
+      const { manager, create, setForm } = await formSetup();
+      setForm({ count: 0, active: false });
+      manager.submitAddUpdate();
+      expect((create.mock.calls[0] as unknown[])[0]).toEqual({
+        count: 0,
+        active: false,
+      });
+    });
+
+    it('an update submits 0 and false unchanged', async () => {
+      const { manager, ctx, setForm } = await formSetup();
+      await settle();
+      manager.cancelAddUpdate();
+      manager.list.select([1]);
+      press(manager, 'Update');
+      setForm({ count: 0, active: false });
+      manager.submitAddUpdate();
+      expect(manager.source.update).toHaveBeenCalledWith(
+        1,
+        { count: 0, active: false },
+        { etag: '"e1"' },
+      );
+      expect(ctx).toBeTruthy();
+    });
+
+    it('submits empty strings and nullish values as null', async () => {
+      const { manager, create, setForm } = await formSetup();
+      setForm({ a: '', b: null, c: undefined });
+      manager.submitAddUpdate();
+      const payload = (create.mock.calls[0] as unknown[])[0] as object;
+      expect(payload).toEqual({ a: null, b: null, c: null });
+      expect(Object.keys(payload)).toEqual(['a', 'b', 'c']);
+    });
+
+    it('submits a relation as its id, including zero', async () => {
+      const { manager, create, setForm } = await formSetup();
+      setForm({ owner: { id: 5 }, parent: { id: 0 }, unset: { id: null } });
+      manager.submitAddUpdate();
+      expect((create.mock.calls[0] as unknown[])[0]).toEqual({
+        owner: 5,
+        parent: 0,
+        unset: null,
+      });
+    });
+
+    it('submits other scalars unchanged', async () => {
+      const { manager, create, setForm } = await formSetup();
+      setForm({ s: 'x', zero: '0', n: -1, t: true });
+      manager.submitAddUpdate();
+      expect((create.mock.calls[0] as unknown[])[0]).toEqual({
+        s: 'x',
+        zero: '0',
+        n: -1,
+        t: true,
+      });
+    });
+
+    it('passes arrays, dates and objects without an id through unchanged', async () => {
+      const { manager, create, setForm } = await formSetup();
+      const when = new Date(0);
+      const form = {
+        tags: ['a', 'b'],
+        items: [{ id: 1 }, { name: 'x' }],
+        when,
+        nested: { a: { id: 2 } },
+        none: {},
+      };
+      setForm(form);
+      manager.submitAddUpdate();
+      const payload = (create.mock.calls[0] as unknown[])[0] as typeof form;
+      expect(payload).toEqual(form);
+      expect(payload.when).toBe(when);
+      expect(payload.items).toBe(form.items);
+    });
+
+    it('renews the idempotency key when 0 replaces an empty value', async () => {
+      const create = vi.fn(() => throwError(() => http(500)));
+      const { manager, setForm } = await formSetup(create);
+      setForm({ count: null });
+      manager.submitAddUpdate();
+      setForm({ count: 0 });
+      manager.submitAddUpdate();
+      manager.submitAddUpdate();
+      const keys = (
+        create.mock.calls as unknown as [unknown, { idempotencyKey: string }][]
+      ).map((c) => c[1].idempotencyKey);
+      expect(keys[1]).not.toBe(keys[0]);
+      expect(keys[2]).toBe(keys[1]);
     });
   });
 
