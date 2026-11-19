@@ -1,5 +1,6 @@
 import { Component, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import $ from 'jquery';
 import { loadBootstrapTable } from './bootstrap-table-loader';
 import { TableComponent, TableOptions, ToolbarHelper } from './table.component';
 
@@ -158,5 +159,99 @@ describe('TableComponent rendered host', () => {
     table.destroy();
     fixture.destroy();
     await expect(vi.advanceTimersByTimeAsync(5000)).resolves.not.toThrow();
+  });
+
+  const listenerCount = (t: JQuery) => {
+    const events = ($ as any)._data(t[0], 'events') ?? {};
+    let n = 0;
+    for (const list of Object.values<any[]>(events))
+      n += list.filter((h) => String(h.namespace).includes('ng-accel')).length;
+    return n;
+  };
+  const highlighted = () =>
+    Array.from(el().querySelectorAll('tbody tr.highlight-update')).map((tr) =>
+      tr.getAttribute('data-uniqueid'),
+    );
+  const punctuatedIds = ["a'b", 'a b', 'a.b', 'a]b', 'a:b'];
+  const loadIdRows = (extra: { id: string | number; name: string }[] = []) => {
+    table.load([
+      ...punctuatedIds.map((id) => ({ id, name: id })),
+      { id: 'a', name: 'a' },
+      { id: 1, name: 'one' },
+      ...extra,
+    ]);
+    fixture.detectChanges();
+  };
+
+  it('fixture destruction releases the plugin, listeners and highlight timers', () => {
+    click(rowChecks()[0]);
+    table.highlightRow(1);
+    const t = table.table;
+    expect(listenerCount(t)).toBe(4);
+    expect(vi.getTimerCount()).toBe(1);
+    expect(t.data('bootstrap.table')).toBeDefined();
+    fixture.destroy();
+    expect(table.rendered).toBe(false);
+    expect(listenerCount(t)).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(t.data('bootstrap.table')).toBeUndefined();
+  });
+
+  it('destroy() cancels pending highlight timers', async () => {
+    table.highlightRow(1);
+    table.destroy();
+    fixture.detectChanges();
+    expect(vi.getTimerCount()).toBe(0);
+    await expect(vi.advanceTimersByTimeAsync(5000)).resolves.not.toThrow();
+  });
+
+  it('explicit destroy() then fixture destruction is safe', async () => {
+    table.highlightRow(1);
+    const t = table.table;
+    table.destroy();
+    fixture.detectChanges();
+    expect(() => fixture.destroy()).not.toThrow();
+    expect(vi.getTimerCount()).toBe(0);
+    expect(listenerCount(t)).toBe(0);
+    await expect(vi.advanceTimersByTimeAsync(5000)).resolves.not.toThrow();
+  });
+
+  for (const id of punctuatedIds) {
+    it(`highlights rows whose ids contain spaces, quotes or selector punctuation: ${id}`, async () => {
+      loadIdRows();
+      expect(() => table.highlightRow(id)).not.toThrow();
+      expect(highlighted()).toEqual([id]);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(highlighted()).toEqual([]);
+    });
+  }
+
+  it('highlight matches the whole id only', () => {
+    loadIdRows();
+    table.highlightRow('a');
+    expect(highlighted()).toEqual(['a']);
+    table.highlightRow(1);
+    table.highlightRow('1');
+    expect(highlighted().sort()).toEqual(['1', 'a']);
+  });
+
+  it('deleteRows with a punctuated id removes the row', () => {
+    loadIdRows();
+    table.deleteRows(["a'b"]);
+    const ids = table.getData<{ id: string | number }>().map((r) => r.id);
+    expect(ids).not.toContain("a'b");
+    expect(ids).toEqual(expect.arrayContaining(['a b', 'a', 1]));
+  });
+
+  it('updateRow with a punctuated id updates the row and highlights it', async () => {
+    loadIdRows();
+    table.updateRow({ id: "a'b", name: 'changed' });
+    const row = table
+      .getData<{ id: string; name: string }>()
+      .find((r) => r.id === "a'b");
+    expect(row?.name).toBe('changed');
+    expect(highlighted()).toEqual(["a'b"]);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(highlighted()).toEqual([]);
   });
 });
