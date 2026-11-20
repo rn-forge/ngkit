@@ -2,7 +2,8 @@
 
 |  |  |
 | -- | -- |
-| **Status** | planned |
+| **Status** | in progress |
+| **Start Date** | 2026-11-18 |
 
 [Back to releases](../index.md) · [Releasing](../../runbooks/releasing.md)
 
@@ -66,13 +67,55 @@ returns a disposer
 
 ## Progress
 
-F6.1 and F19.1–F19.8 closed 2026-11-18, closing E19. The cut, `0.6.0`, follows
-once this work is on `main`.
+F6.1 and F19.1–F19.8 closed 2026-11-18, closing E19, and reached `main` in pull
+request #28. The release is cut as `v0.6.0` (`task version -- minor` on
+`chore/release-5-cut`); it ships when that pull request merges and the `release`
+job runs. The Shipped table is recorded after that run.
 
 ## Commits
 
 ```console
 $ git log --oneline -E --grep 'F19\.[0-9]|S19\.[0-9]\.[0-9]|F6\.1|S6\.1\.[0-9]'
+6fedeac Merge pull request #28 from rn-forge/feature/release-5
+aed6efb S19.2.1; F19.2 and E19 closed
+5eea003 S19.2.2
+a5e24ed Brief: S19.2.1
+4502c8e Brief: S19.2.2
+7373431 S19.8.2; F19.8 closed
+9abf05f S19.5.1; F19.5 closed
+fb2fc23 Brief: S19.8.2
+6476666 S19.6.2; F19.6 closed
+3be2611 S19.6.1
+7ad2b65 Brief: S19.5.1
+031ac3a Brief: S19.6.2
+67d70cc S19.7.2; F19.7 closed
+50f0020 Brief: S19.6.1
+0e845e7 S19.8.1
+b3151a7 S19.3.2; F19.3 closed
+7abba6f S19.3.2 harness and results (brief kept for history)
+bfd1392 S19.6.3
+ea9081a S19.5.2
+9d331fa Brief: S19.7.2
+61a32e8 Brief: S19.8.1
+dbc5294 Brief: S19.6.3
+e547f79 Brief: S19.5.2
+2b55a99 S19.7.1
+16e15df S19.4.1; F19.4 closed
+21a3b92 S19.4.2
+2b6e70e Brief: S19.7.1
+93394e0 Brief: S19.4.2
+66227b3 Brief: S19.4.1
+91d9713 S19.3.1
+4e0d8b1 Briefs: S19.3.1, S19.3.2
+8b1e60a S19.1.2; F19.1 closed
+48e181a Brief: S19.1.2
+9278590 S6.1.2; F6.1 closed
+51d94ce Brief: S6.1.2
+508e700 S6.1.1
+973ee6a S19.1.1
+f8583d6 Briefs: S6.1.1, S19.1.1
+282f4f2 F6.1: minDuration option, default 0 (owner decision)
+3038497 Release 5: plan; E19 and F6.1 in scope
 ```
 
 ## Exit criteria
