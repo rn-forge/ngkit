@@ -465,12 +465,22 @@ export abstract class AbstractCrudManager<
     return true;
   }
 
+  /**
+   * Converts raw form values to a request body: `''`, `null` and `undefined`
+   * become `null`; `0` and `false` are values and pass through; a non-array object
+   * with an own `id` (a relation) becomes its `id`; anything else, including
+   * arrays, dates and objects without `id`, passes through unchanged.
+   */
   protected toRequestParams<T>(rawValue: GenericType): T {
     return Object.entries(rawValue).reduce((result: T, [key, value]) => {
       let resolvedValue: unknown;
-      if (!value) {
+      if (value === undefined || value === null || value === '') {
         resolvedValue = null;
-      } else if (typeof value === 'object') {
+      } else if (
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        Object.hasOwn(value, 'id')
+      ) {
         resolvedValue = (value as GenericType)['id'];
       } else {
         resolvedValue = value;

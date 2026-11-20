@@ -54,7 +54,15 @@ export interface Configurable<$O extends ConfigOptions> {
  * 4. `updateOptions()` / `mergeOptions()` — imperative runtime overrides
  *
  * Results are cached per `(configKey, instanceId)` and only recomputed when inputs or
- * overrides change.
+ * overrides change. The contract:
+ * - Arrays merge by index at resolution: a shorter or empty array never shortens or
+ *   clears a default, global or input array (only `mergeOptions` replaces arrays, and
+ *   only while accumulating overrides).
+ * - Option objects are treated as immutable values: mutating one in place and passing
+ *   the same reference is not seen.
+ * - Changes are detected by content and ignore functions: a changed callback is picked
+ *   up together with another change, not alone.
+ * - Results are cached per instance and released on destroy.
  */
 @Injectable({
   providedIn: 'root',
@@ -111,11 +119,10 @@ export class ConfigurerService {
 
     let inputChanged = true;
     if (component.instanceId in this.inputsCache) {
-      const inputDiff = ObjectUtil.diff(
-        this.inputsCache[component.instanceId] as Partial<$O>,
-        inputOptions,
-      );
-      inputChanged = !isEmpty(inputDiff);
+      const cached = this.inputsCache[component.instanceId] as Partial<$O>;
+      inputChanged =
+        cached !== inputOptions &&
+        !isEmpty(ObjectUtil.diff(cached, inputOptions));
     }
     if (inputChanged) {
       this.inputsCache[component.instanceId] = inputOptions as ConfigOptions;
@@ -123,11 +130,9 @@ export class ConfigurerService {
 
     let overridesChanged = true;
     if (component.instanceId in this.overridesCache) {
-      const overrideDiff = ObjectUtil.diff(
-        this.overridesCache[component.instanceId] as Partial<$O>,
-        overrides,
-      );
-      overridesChanged = !isEmpty(overrideDiff);
+      const cached = this.overridesCache[component.instanceId] as Partial<$O>;
+      overridesChanged =
+        cached !== overrides && !isEmpty(ObjectUtil.diff(cached, overrides));
     }
     if (overridesChanged) {
       this.overridesCache[component.instanceId] = overrides as ConfigOptions;
@@ -209,7 +214,7 @@ export abstract class ConfigurableComponent<
           this,
           this._updatedOptions(),
         ) as Partial<$O>,
-      { equal: (a, b) => isEmpty(ObjectUtil.diff(a, b)) },
+      { equal: (a, b) => a === b || isEmpty(ObjectUtil.diff(a, b)) },
     );
 
     effect(() => {
@@ -253,7 +258,9 @@ export abstract class ConfigurableComponent<
 
   /**
    * Replaces the current runtime overrides with `updates`.
-   * Pass `undefined` to clear overrides without changing anything else.
+   * Calling it with `undefined` (or no argument) does nothing and leaves the
+   * current overrides in place, so a caller may forward an optional argument.
+   * Use {@link clearOverrides} to remove the overrides.
    */
   updateOptions(updates?: Partial<$O>): void {
     if (updates) {

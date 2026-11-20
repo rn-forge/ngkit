@@ -5,7 +5,7 @@ are in [ADR-0001](../adr/ADR-0001.md) and [ADR-0002](../adr/ADR-0002.md).
 
 ## Commands
 
-This workspace uses **pnpm**, not npm/npx. Install it via
+This workspace uses **pnpm**, not npm. Install it via
 [Corepack](https://nodejs.org/api/corepack.html) (`corepack enable`) so you get
 the version pinned in `package.json#packageManager`.
 
@@ -18,22 +18,24 @@ task typecheck       # type-check every project
 task test            # every project's tests
 task test:coverage   # the same, writing lcov reports to coverage/
 task build           # build every project
+task format          # format the repository
 task docs:build      # build the MkDocs site
+task docs:serve      # serve the MkDocs site locally
+task docs:generate   # regenerate the docs navigation and indexes
 task validate        # the gate: lint, typecheck, test, docs build
 task version         # print the version, or bump it: task version -- patch
 ```
 
-Commands for working in one project, which the task verbs do not cover, run Nx
-directly:
+Commands for one project, which no verb covers, run Nx through pnpm:
 
 ```sh
-pnpm nx serve ng-demo          # dev server
-pnpm nx build ng-demo          # production bundle
-pnpm nx build ng               # build the ng library
-pnpm nx test ng-bootstrap      # unit tests
-pnpm nx lint ng                # lint
-pnpm nx e2e ng-demo-e2e        # playwright e2e, run locally
-pnpm nx show project ng-demo   # list all available targets for a project
+pnpm exec nx serve ng-demo          # dev server
+pnpm exec nx build ng-demo          # production bundle
+pnpm exec nx build ng               # build the ng library
+pnpm exec nx test ng-bootstrap      # unit tests
+pnpm exec nx lint ng                # lint
+pnpm exec nx e2e ng-demo-e2e        # playwright e2e, run locally
+pnpm exec nx show project ng-demo   # list all available targets for a project
 ```
 
 Targets are either
@@ -56,8 +58,8 @@ needs [`uv`](https://docs.astral.sh/uv/), which provides the Python it declares.
 Run it beside the demo built for it:
 
 ```sh
-pnpm nx run ng-demo-api-fastapi:serve  # http://localhost:8100
-pnpm nx run ng-demo:serve:fixture      # http://localhost:4200, /api and /auth proxied to the fixture
+pnpm exec nx run ng-demo-api-fastapi:serve  # http://localhost:8100
+pnpm exec nx run ng-demo:serve:fixture      # http://localhost:4200, /api and /auth proxied to the fixture
 ```
 
 Both fixtures expose the development identity provider and accounts `demo-admin`
@@ -70,14 +72,14 @@ and `demo.products.upload`. The reader has `demo.products`,
 `/auth/login/development?account=demo-admin` in the fixture demo. The fixtures
 require an authenticated session for product routes and an XSRF token on unsafe
 requests. `POST /api/_test/reset` restores the seed data. The e2e command starts
-both servers itself. The plain `pnpm nx serve ng-demo` keeps the in-browser
+both servers itself. The plain `pnpm exec nx serve ng-demo` keeps the in-browser
 mock.
 
 `ng-demo-api` is the Django fixture. Set `NG_DEMO_BACKEND=django` to run the
 same suite against it; unset `NG_DEMO_BACKEND` selects FastAPI:
 
 ```sh
-NG_DEMO_BACKEND=django pnpm nx e2e ng-demo-e2e
+NG_DEMO_BACKEND=django pnpm exec nx e2e ng-demo-e2e
 ```
 
 CI runs the FastAPI backend by default (see
@@ -89,25 +91,35 @@ Use an [Nx plugin](https://nx.dev/concepts/nx-plugins) generator to scaffold new
 projects:
 
 ```sh
-pnpm nx g @nx/angular:app demo
-pnpm nx g @nx/angular:lib mylib
+pnpm exec nx g @nx/angular:app demo
+pnpm exec nx g @nx/angular:lib mylib
 ```
 
-`pnpm nx list` shows installed plugins; `pnpm nx list <plugin-name>` shows what
-a specific plugin can generate.
+`pnpm exec nx list` shows installed plugins; `pnpm exec nx list <plugin-name>`
+shows what a specific plugin can generate.
 [Nx Console](https://nx.dev/getting-started/editor-setup) provides the same
 browsing experience inside your IDE.
 
 [Learn more about Nx plugins »](https://nx.dev/concepts/nx-plugins) |
 [Browse the plugin registry »](https://nx.dev/plugin-registry)
 
+### Tooling gaps
+
+The verb set and the generated release workflow are kiln's, so these gaps are
+recorded here, not worked around.
+
+| Gap | Owner | Until then |
+| -- | -- | -- |
+| No verb packs and verifies every publishable project (`task ci:smoke` does, but is CI only) | kiln (verb set) | `pnpm exec nx verify-consumer <project>` and `verify-dist <project>` per library |
+| The generated release has no npm publish step; a first publish has no verb | kiln (release workflow) | npm stays disabled; the manual first publish is in the [release runbook](../runbooks/releasing.md#3-re-enabling-npm) |
+
 ## Checks before a PR
 
 Each PR names its source files, public exports and test evidence. No vague
 "implement shared UI" tasks.
 
-Inspect resolved Nx targets with `pnpm nx show project <name> --json`; run the
-relevant library lint/test/build/pack via the `task` verbs, or Nx for one
+Inspect resolved Nx targets with `pnpm exec nx show project <name> --json`; run
+the relevant library lint/test/build/pack via the `task` verbs, or Nx for one
 project. For each new published entry point, add it to the
 `workspace-ci.consumer` cells' expectations: kiln imports every JavaScript
 subpath of the packed `exports`, so a new entry point needs no matrix edit; test
@@ -117,8 +129,13 @@ validation shortcut.
 
 ```sh
 task validate
-pnpm nx run-many -t pack verify-dist verify-consumer
+pnpm exec nx verify-dist <project>
+pnpm exec nx verify-consumer <project>
 ```
+
+Run the last two for each library you changed; each depends on `pack`. No `task`
+verb runs `pack`, `verify-dist` and `verify-consumer` on every publishable
+project; see [Tooling gaps](#tooling-gaps).
 
 **Coverage.** `ng`'s test target enforces 80%
 statements/branches/functions/lines across `core`, `auth` and `crud`
@@ -142,19 +159,21 @@ when packed:
    thresholds are enforced.
 1. `libs/ng/package.json` → add any new peer deps to **both** `devDependencies`
    and `peerDependencies`. Angular packages are the exception to keeping them
-   equal: their peers stay at the tested floor (`^22.0.6`) while
-   `devDependencies` follow the workspace version
+   equal: their peers stay at the published floor and `devDependencies` follow
+   the workspace version; the three Angular versions and their owners are in
+   [Angular versions](../architecture/release-pipeline.md#angular-versions)
    ([ADR-0002](../adr/ADR-0002.md)). An implementation library goes in
-   `dependencies`, declared in `ng-package.json`'s `allowedNonPeerDependencies`,
-   and in the root `package.json`, like the existing ones.
-1. Verify the packed output: `pnpm nx build ng && ls dist/libs/ng/<name>`.
-1. Run `task ci:consumer -- libs/ng`: kiln imports the new subpath from the
-   packed tarball.
+   `dependencies`, declared in `ng-package.json`'s
+   `allowedNonPeerDependencies`, and in the root `package.json`, like the
+   existing ones.
+1. Verify the packed output: `pnpm exec nx build ng && ls dist/libs/ng/<name>`.
+1. Run `pnpm exec nx verify-consumer ng`: it packs the library, then kiln
+   imports the new subpath from the packed tarball.
 
 ## Adding a publishable library
 
 Scaffold the library through an Nx generator
-(`pnpm nx g @nx/angular:lib <name> --publishable`; check `--help` for the
+(`pnpm exec nx g @nx/angular:lib <name> --publishable`; check `--help` for the
 flags), then work through this list once:
 
 1. `libs/<name>/package.json` carries the metadata `ng` and `ng-bootstrap`
@@ -175,9 +194,12 @@ flags), then work through this list once:
    between these libraries.
 1. Declare `"pack": {}` and `"verify-dist": {}`, which take their definition
    from `nx.json#targetDefaults`, and an `nx-release-publish` target with
-   `dryRun: true` while npm is disabled. The release's publish step passes
-   `--excludeTaskDependencies`, so it publishes the `dist/` its verify step
-   built.
+   `dryRun: true` while npm is disabled. The release runs no publish step
+   while npm is disabled ([Tooling gaps](#tooling-gaps)).
+1. If it depends on a sibling publishable library, its consumer cells list the
+   sibling's packed tarball as a dependency
+   (`"file:../../../tarballs/<tarball>.tgz"`) and its `verify-consumer` target
+   depends on `^pack`, as `ng-bootstrap` does for `ng`.
 1. If the library ships non-TS assets alongside compiled entry points, declare
    their subpaths in its source `package.json` `exports`, as `ng-bootstrap`
    does ([details](../architecture/release-pipeline.md#asset-subpaths)).
@@ -189,8 +211,9 @@ flags), then work through this list once:
    `project.json` and declare `workspace-ci.consumer` in its `package.json`
    (`libs/ng/package.json` is the example), and test the exports from the
    packed artifact.
-1. Add a row for it to the Projects table in `README.md` and
-   [Workspace](../architecture/workspace.md).
+1. Add a row for it to the Projects table in
+   [Workspace](../architecture/workspace.md), and to the root `README.md`
+   table; it is publishable.
 1. Reviewing a pull request that adds a library, check `nx.json`, `project.json`
    and package metadata together: this is repository configuration, and it
    changes what is released.

@@ -2,10 +2,10 @@
 
 An [Nx](https://nx.dev) monorepo for the rn-forge Angular toolkit: reusable
 libraries published as `@rn-forge/ng`, `@rn-forge/ng-bootstrap` and
-`@rn-forge/ng-tailwind`, plus a demo app used for local development and e2e
-testing.
+`@rn-forge/ng-tailwind`, an Nx plugin published as `@rn-forge/ng-plugin`, plus a
+demo app used for local development and e2e testing.
 
-This workspace uses **pnpm**, not npm/npx. Install it via
+This workspace uses **pnpm**, not npm. Install it via
 [Corepack](https://nodejs.org/api/corepack.html) (`corepack enable`) so you get
 the version pinned in `package.json#packageManager`.
 
@@ -13,18 +13,13 @@ the version pinned in `package.json#packageManager`.
 
 | Project | Type | Description |
 | -- | -- | -- |
-| `ng` | library | Core Angular utilities (`libs/ng`), published as `@rn-forge/ng` |
-| `ng-bootstrap` | library | Bootstrap-based UI kit (`libs/ng-bootstrap`), published as `@rn-forge/ng-bootstrap`, depends on `ng` |
-| `ng-tailwind` | library | Tailwind-friendly UI package (`libs/ng-tailwind`), published as `@rn-forge/ng-tailwind`: `--rnf-*` tokens and prebuilt component CSS, no Bootstrap |
-| `ng-plugin` | library | Nx plugin (`tools/ng-plugin`), published as `@rn-forge/ng-plugin`: generators that set up Angular apps for the rn-forge libraries |
-| `ng-demo` | app | Demo/dev app exercising both libraries (`apps/ng-demo`) |
-| `ng-demo-e2e` | e2e app | Playwright tests for `ng-demo` (`apps/ng-demo-e2e`) |
-| `ng-tailwind-e2e` | e2e app | Playwright and axe-core checks over the built `ng-tailwind` Storybook (`apps/ng-tailwind-e2e`) |
-| `ng-demo-api` | app | Django backend fixture serving `ng-demo`'s `products` over the wire standards (`apps/ng-demo-api`) |
-| `ng-demo-api-fastapi` | app | FastAPI backend fixture serving the same resource on the same port (`apps/ng-demo-api-fastapi`) |
+| [`ng`](libs/ng/README.md) | library | Core Angular utilities (`libs/ng`), published as `@rn-forge/ng` |
+| [`ng-bootstrap`](libs/ng-bootstrap/README.md) | library | Bootstrap-based UI kit (`libs/ng-bootstrap`), published as `@rn-forge/ng-bootstrap`, depends on `ng` |
+| [`ng-tailwind`](libs/ng-tailwind/README.md) | library | Tailwind-friendly UI package (`libs/ng-tailwind`), published as `@rn-forge/ng-tailwind`: `--rnf-*` tokens and prebuilt component CSS, no Bootstrap |
+| [`ng-plugin`](tools/ng-plugin/README.md) | library | Nx plugin (`tools/ng-plugin`), published as `@rn-forge/ng-plugin`: generators that set up Angular apps for the rn-forge libraries |
 
-Run `pnpm nx show project <name> --web` to see a project's full, resolved target
-list.
+The demo, end-to-end and backend-fixture projects are listed in
+[Workspace](docs/architecture/workspace.md#projects).
 
 ## Design principles
 
@@ -38,8 +33,8 @@ writes only functional code.
 1. **Package boundaries are one-way.** `ng` has no UI, `ng-bootstrap` depends on
    `ng` and never the reverse, and presentation libraries only render
    ([ADR-0002](docs/adr/ADR-0002.md)).
-1. **`ng` and `ng-bootstrap` release together.** They share one version and ship
-   as tarballs on GitHub Releases ([ADR-0003](docs/adr/ADR-0003.md)).
+1. **Every publishable library releases together.** They share one version and
+   ship as tarballs on GitHub Releases ([ADR-0003](docs/adr/ADR-0003.md)).
 1. **ngkit is upstream.** Apps build on these libraries instead of re-deriving
    them ([ADR-0001](docs/adr/ADR-0001.md)).
 
@@ -51,17 +46,23 @@ plan or change records the deviation and its reason.
 
 ```sh
 task setup
-pnpm nx serve ng-demo
+pnpm exec nx serve ng-demo
 ```
 
 ## Packing libraries
 
-`ng` and `ng-bootstrap` each have a `pack` target that builds the library and
-produces an installable tarball under `dist/tarballs/`:
+Each publishable project has a `pack` target that builds it and writes an
+installable tarball under `dist/tarballs/`:
 
 ```sh
-pnpm nx run-many -t pack -p tag:publishable
+pnpm exec nx pack ng
+pnpm exec nx pack ng-bootstrap
+pnpm exec nx pack ng-tailwind
+pnpm exec nx pack ng-plugin
 ```
+
+No `task` verb packs every project locally; see
+[Tooling gaps](docs/guides/development.md#tooling-gaps).
 
 CI uploads these as a `package-tarballs` artifact on every run, and the release
 job attaches them to the corresponding GitHub Release (both the versioned tag

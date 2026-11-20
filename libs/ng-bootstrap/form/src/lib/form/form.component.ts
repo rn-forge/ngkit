@@ -29,6 +29,8 @@ import {
   isDebugMode,
 } from '@rn-forge/ng/core';
 
+import { isEqual } from 'lodash-es';
+
 // internal imports
 import {
   ButtonComponent,
@@ -74,7 +76,9 @@ export class FormComponent
   private _formGroup!: FormGroup;
   private _context!: TemplateContext;
   private _updateFlag = false;
-  private _lastControlKeys: string | undefined;
+  private _lastControlKeys: string[] | undefined;
+  private _lastDateRange: string[] | undefined;
+  private _lastContextParams: GenericType | undefined;
 
   protected visible: WritableSignal<boolean> = signal(true);
 
@@ -82,19 +86,56 @@ export class FormComponent
   constructor() {
     super();
 
+    /**
+     * Applies option changes to the form group.
+     *
+     * - A change to the set of control names (order ignored) rebuilds the
+     *   group: the new group holds the new definitions' defaults and is
+     *   pristine, untouched and enabled; the old values and state are
+     *   discarded.
+     * - Any other option change is applied in place and keeps value, touched,
+     *   dirty and disabled state: a changed `validators.validateDateRange` is
+     *   set on the group and a changed `contextParams` yields a new context
+     *   around the same group.
+     * - A same-name control-definition change (default, `FormControl`,
+     *   control-level validator or kind) is not applied: the existing control
+     *   is kept. Rename the control or recreate the form to use a new
+     *   definition.
+     */
     effect(() => {
       const controls = this.config.controls;
-      const controlKeys = Object.keys(controls ?? {})
-        .sort((a, b) => a.localeCompare(b))
-        .join(',');
-      if (controlKeys === this._lastControlKeys) {
+      const controlKeys = Object.keys(controls ?? {}).sort((a, b) =>
+        a.localeCompare(b),
+      );
+      const dateRange = this.config.validators?.validateDateRange;
+      const contextParams = this.config.contextParams;
+
+      const last = this._lastControlKeys;
+      if (
+        last?.length === controlKeys.length &&
+        last.every((key, i) => key === controlKeys[i])
+      ) {
+        if (!FormComponent._sameArray(dateRange, this._lastDateRange)) {
+          this._lastDateRange = dateRange;
+          this._formGroup.setValidators(
+            dateRange ? FormUtil.VALIDATORS.DATE_RANGE(...dateRange) : null,
+          );
+          this._formGroup.updateValueAndValidity({ emitEvent: false });
+        }
+        if (!isEqual(contextParams, this._lastContextParams)) {
+          this._lastContextParams = contextParams;
+          this._context = {
+            $implicit: { formGroup: this._formGroup, ...contextParams },
+          };
+        }
         return;
       }
       this._lastControlKeys = controlKeys;
+      this._lastDateRange = dateRange;
+      this._lastContextParams = contextParams;
       if (isDebugMode())
         console.debug('FormComponent.rebuildGroup: fields=', controlKeys);
 
-      const dateRange = this.config.validators?.validateDateRange;
       this._formGroup = this.formBuilder.group(
         controls,
         dateRange
@@ -102,9 +143,16 @@ export class FormComponent
           : {},
       );
       this._context = {
-        $implicit: { formGroup: this._formGroup, ...this.config.contextParams },
+        $implicit: { formGroup: this._formGroup, ...contextParams },
       };
     });
+  }
+
+  private static _sameArray(a?: string[], b?: string[]): boolean {
+    return (
+      a === b ||
+      (!!a && !!b && a.length === b.length && a.every((v, i) => v === b[i]))
+    );
   }
 
   /* ConfigurableComponent overrides */

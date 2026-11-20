@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   Component,
   computed,
-  effect,
+  DestroyRef,
   inject,
   input,
   InputSignal,
@@ -48,9 +48,15 @@ export class HeaderComponent
   private readonly appConfig: RnForgeCoreConfig = inject(
     RN_FORGE_APP_CONFIG_TOKEN,
   );
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly userSettingsService: UserSettingsService =
     inject(UserSettingsService);
-  protected navbarColor: WritableSignal<string> = signal('default');
+  /** The color the user explicitly saved, if any; it beats the config. */
+  private readonly savedNavbarColor: WritableSignal<string | undefined> =
+    signal(undefined);
+  protected readonly navbarColor: Signal<string> = computed(
+    () => this.savedNavbarColor() ?? this.config.navbarColor ?? 'default',
+  );
 
   protected readonly brandPositionClass: Signal<string> = computed(() => {
     const position = this.config.position?.brand ?? 'left';
@@ -79,22 +85,19 @@ export class HeaderComponent
     return `m${marginClass}-auto mx-${this.config.navbar?.breakpoint}-auto`;
   });
 
-  constructor() {
-    super();
-
-    effect(() => {
-      this.navbarColor.set(this.config.navbarColor ?? 'default');
-    });
-  }
-
   override ngOnInit(): void {
     super.ngOnInit();
-    this.userSettingsService.registerChangeListener(
+    const dispose = this.userSettingsService.registerChangeListener(
       'navbarColor',
       (navbarColor: string) => {
-        this.navbarColor.set(navbarColor);
+        this.savedNavbarColor.set(
+          this.userSettingsService.hasStoredSetting('navbarColor')
+            ? navbarColor
+            : undefined,
+        );
       },
     );
+    this.destroyRef.onDestroy(dispose);
   }
 
   /** ConfigurableComponent overrides **/

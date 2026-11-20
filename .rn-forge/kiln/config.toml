@@ -35,7 +35,7 @@ lifecycle = false
 [kiln]
 # A kiln release tag, `v<version>`; a branch only before kiln's first
 # release. `kiln apply` pins the dev dependency and the CI install to it.
-ref = "5a865f66e2c9e3b0dd5dc2bd11f6ccffa88aa311"
+ref = "1b2dedf38df79dc7134acdae85c59849912b9956"
 
 # Settings of the repository's archetype, in one table named for it.
 track = "feature/v1"
@@ -120,6 +120,7 @@ sonar_coverage_exclusions = [
     "apps/*-e2e/**",
     "apps/*/src/environments/**",
     "apps/*/src/app/app.config.ts",
+    "libs/*/src/lib/measure/*.fixtures.ts",
 ]
 
 # Extra jobs, each calling one reusable workflow after `validate`. Changing

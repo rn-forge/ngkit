@@ -15,10 +15,28 @@ export default [
         {
           enforceBuildableLibDependency: true,
           allow: [String.raw`^.*/eslint(\.base)?\.config\.[cm]?[jt]s$`],
+          // ADR-0002's direction: core below presentation, and the two
+          // presentation libraries independent of each other.
           depConstraints: [
             {
               sourceTag: '*',
               onlyDependOnLibsWithTags: ['*'],
+            },
+            {
+              sourceTag: 'type:core',
+              onlyDependOnLibsWithTags: ['type:core'],
+            },
+            {
+              sourceTag: 'type:ui',
+              onlyDependOnLibsWithTags: ['type:core', 'type:ui'],
+            },
+            {
+              sourceTag: 'ui:bootstrap',
+              notDependOnLibsWithTags: ['ui:tailwind'],
+            },
+            {
+              sourceTag: 'ui:tailwind',
+              notDependOnLibsWithTags: ['ui:bootstrap'],
             },
           ],
         },

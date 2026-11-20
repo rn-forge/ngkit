@@ -2,7 +2,8 @@
 
 |  |  |
 | -- | -- |
-| **State** | New |
+| **State** | Active |
+| **Start Date** | 2026-11-18 |
 
 **Source:** former roadmap item E1; elaborated at the owner's request,
 2026-10-24, against Angular 22.1.
@@ -22,7 +23,7 @@ Angular's own composition API to be stable.
 
 | Feature | State | Iteration | Stories |
 | -- | -- | -- | -- |
-| [F6.1 — `loadingTimings`](F6.1-loading-timings.md) | New | — | 2 New |
+| [F6.1 — `loadingTimings`](F6.1-loading-timings.md) | Closed | release-5 | 2 Closed |
 | [F6.2 — `keepPrevious`](F6.2-keep-previous.md) | New | deferred | 1 New |
 
 <!-- END derived features -->

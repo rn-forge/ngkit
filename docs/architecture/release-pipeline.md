@@ -36,12 +36,14 @@ runs only on a push to `main`, after `checks-ok`, and never commits. In order:
    `GITHUB_TOKEN` cannot bypass it.
 1. `ci:release:github` creates the GitHub Release for the tag as a draft, with
    the tarballs and the `CHANGELOG.md` section as notes.
-1. `ci:release:publish` runs
-   `nx release publish --tag=<dist-tag> --excludeTaskDependencies`, so it uses
-   the `dist/` the verify step built. It is a dry run while npm is disabled.
 1. `ci:release:finalize` publishes the draft, so a published release is a
    finished one.
 1. `ci:release:latest` moves the rolling `latest` release to the tag.
+
+No step publishes to npm: npm is disabled, and the per-project
+`nx-release-publish` targets stay `dryRun: true`. A publish step would be a
+change to the generated release workflow; recorded in
+[Tooling gaps](../guides/development.md#tooling-gaps).
 
 **Modes.** A version counts as shipped when its GitHub Release is published (not
 a draft).
@@ -233,10 +235,40 @@ installed; the Tailwind build emits the mapped utilities resolving to
 `var(--rnf-*)` and none for the default palette. There is no verdaccio and no
 workspace fixture.
 
-`--cell <name>` runs one cell; the `ng-tailwind:consumer-fixture` target uses
+`ng-bootstrap` has four cells (the same Angular and zone pairs), and
+`tools/consumer/ng-bootstrap-app.mjs` builds a real application from the packed
+`ng-bootstrap` and `ng` tarballs with `ng build` (AOT, `strictTemplates`, no
+`paths`): the theme, a root section, a form and a CRUD table over an in-memory
+interceptor. Because `ng` is on no registry, each cell lists the packed `ng`
+tarball as `@rn-forge/ng: file:../../../tarballs/rn-forge-ng-<version>.tgz`
+(`verify-consumer` depends on `^pack` for it; a version bump edits the four
+strings, see the [release runbook](../runbooks/releasing.md)). The library
+imports `jquery` statically, so the cells preload `global-jsdom/register`
+(`jsdom` and `global-jsdom` live only in the fixtures' manifests) before kiln
+imports the entry points. The hook asserts on the built CSS and JS: theme,
+vendor and icon styles, lazy vendor chunks and no `workspace:` range.
+
+`--cell <name>` runs one cell. The `ng-tailwind:consumer-fixture` target uses
 `--cell tailwind-22.1-zoneless` to build the single Tailwind fixture that
-`ng-tailwind-e2e` serves for its cascade checks. It runs in the `smoke` job and
-the release.
+`ng-tailwind-e2e` serves for its cascade checks. The `ng-bootstrap`
+`consumer-fixture` target builds `22.1-zoneless` (and, with `:floor`,
+`22.0-zone`) for `ng-bootstrap-e2e`, which serves both in Chromium and checks
+that the vendor plugins exist before the first render, the app starts without
+errors, and the root, form and CRUD components and the theme work. It runs in
+the `smoke` job and the release.
+
+### Angular versions
+
+Three separate facts, each with its own owner; a document states the owner, not
+a copy of the number.
+
+| Fact | What it says | Owner |
+| -- | -- | -- |
+| Workspace version | what the repository builds and develops against | the root `package.json` |
+| Published peer floor | what a consumer must satisfy | each `libs/*/package.json` `peerDependencies` ([ADR-0002](../adr/ADR-0002.md)) |
+| Consumer matrix | what the release proves | each `workspace-ci.consumer.cells` (the cells above) |
+
+`ng-plugin` declares no consumer cells; it has `verify-dist` only.
 
 ## What a repository declares
 

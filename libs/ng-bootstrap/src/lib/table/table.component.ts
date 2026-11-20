@@ -181,7 +181,8 @@ export class TableComponent
   }
 
   /**
-   * (Re-)renders the table. Optionally merges `updatedOptions` before rendering.
+   * (Re-)renders the table. When `updatedOptions` is given it replaces the
+   * runtime overrides before rendering; when omitted they are unchanged.
    * Called automatically on init when `autoRender` is `true` (the default).
    */
   render(updatedOptions?: Partial<TableOptions>) {
@@ -197,8 +198,10 @@ export class TableComponent
 
   /** Destroys the bootstrap-table plugin instance and clears the selection count. */
   destroy() {
+    this._highlightTimers.forEach((handle) => window.clearTimeout(handle));
+    this._highlightTimers.clear();
     this._table?.off('.ng-accel');
-    this.bootstrapTable('destroy');
+    if (this._rendered()) this.bootstrapTable('destroy');
     this._selectedCount.set(0);
     this._rendered.set(false);
   }
@@ -288,13 +291,28 @@ export class TableComponent
   /** Briefly applies a CSS highlight class to the row with the given `id`. `error=true` uses a red highlight. */
   highlightRow(id: unknown, error = false) {
     const cssClass = error ? 'highlight-error' : 'highlight-update';
-    this._table.find(`tr[data-uniqueid=${id}]`).addClass(cssClass);
-    window.setTimeout(() => {
-      this._table
-        .find(`tr[data-uniqueid=${id}]`)
-        .removeClass('highlight-update highlight-error');
+    this._rowsById(id).addClass(cssClass);
+    const handle = window.setTimeout(() => {
+      this._highlightTimers.delete(handle);
+      this._rowsById(id).removeClass('highlight-update highlight-error');
     }, 5000);
+    this._highlightTimers.add(handle);
   }
+
+  /** Releases the plugin instance, selection listeners and highlight timers with the component. */
+  override ngOnDestroy(): void {
+    this.destroy();
+    super.ngOnDestroy();
+  }
+
+  /** Matches rows by comparing `data-uniqueid` as a string, so no selector contains the ID. */
+  private _rowsById(id: unknown) {
+    return this._table
+      .find('tr[data-uniqueid]')
+      .filter((_, tr) => tr.dataset['uniqueid'] === String(id));
+  }
+
+  private readonly _highlightTimers = new Set<number>();
 
   private _attachSelectionListeners(): void {
     this._table.off('.ng-accel');

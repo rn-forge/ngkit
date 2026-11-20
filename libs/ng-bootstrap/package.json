@@ -60,5 +60,90 @@
     "quill": "^2.0.3",
     "rxjs": "~7.8.2",
     "uuid": "^14.0.1"
+  },
+  "workspace-ci": {
+    "consumer": {
+      "dependencies": {
+        "rxjs": "~7.8.2",
+        "zone.js": "~0.16.0",
+        "@ng-bootstrap/ng-bootstrap": "^21.0.0",
+        "bootstrap": "^5.3.8",
+        "bootstrap-icons": "^1.13.1",
+        "bootstrap-table": "^1.27.3",
+        "jquery": "^4.0.0",
+        "jquery-treegrid": "^0.3.0",
+        "lodash-es": "^4.18.1",
+        "ngx-quill": "^31.0.1",
+        "quill": "^2.0.3",
+        "uuid": "^14.0.1",
+        "jsdom": "31.0.1",
+        "global-jsdom": "31.0.0"
+      },
+      "preload": [
+        "@angular/compiler",
+        "global-jsdom/register"
+      ],
+      "cells": {
+        "22.0-zone": {
+          "dependencies": {
+            "@angular/cdk": "22.0.6",
+            "@angular/common": "22.0.6",
+            "@angular/compiler": "22.0.6",
+            "@angular/core": "22.0.6",
+            "@angular/forms": "22.0.6",
+            "@angular/localize": "22.0.6",
+            "@angular/platform-browser": "22.0.6",
+            "@angular/router": "22.0.6",
+            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.5.0.tgz"
+          },
+          "preload": [
+            "zone.js"
+          ]
+        },
+        "22.0-zoneless": {
+          "dependencies": {
+            "@angular/cdk": "22.0.6",
+            "@angular/common": "22.0.6",
+            "@angular/compiler": "22.0.6",
+            "@angular/core": "22.0.6",
+            "@angular/forms": "22.0.6",
+            "@angular/localize": "22.0.6",
+            "@angular/platform-browser": "22.0.6",
+            "@angular/router": "22.0.6",
+            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.5.0.tgz"
+          }
+        },
+        "22.1-zone": {
+          "dependencies": {
+            "@angular/cdk": "22.1.7",
+            "@angular/common": "22.1.7",
+            "@angular/compiler": "22.1.7",
+            "@angular/core": "22.1.7",
+            "@angular/forms": "22.1.7",
+            "@angular/localize": "22.1.7",
+            "@angular/platform-browser": "22.1.7",
+            "@angular/router": "22.1.7",
+            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.5.0.tgz"
+          },
+          "preload": [
+            "zone.js"
+          ]
+        },
+        "22.1-zoneless": {
+          "dependencies": {
+            "@angular/cdk": "22.1.7",
+            "@angular/common": "22.1.7",
+            "@angular/compiler": "22.1.7",
+            "@angular/core": "22.1.7",
+            "@angular/forms": "22.1.7",
+            "@angular/localize": "22.1.7",
+            "@angular/platform-browser": "22.1.7",
+            "@angular/router": "22.1.7",
+            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.5.0.tgz"
+          }
+        }
+      },
+      "hook": "tools/consumer/ng-bootstrap-app.mjs"
+    }
   }
 }

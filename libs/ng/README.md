@@ -1,6 +1,7 @@
 # ng
 
-This library was generated with [Nx](https://nx.dev).
+`@rn-forge/ng`: core utilities, session auth and the CRUD data contract, with no
+UI.
 
 ## HTTP
 
@@ -67,4 +68,4 @@ provide `RNF_BROWSER_STORAGE` explicitly — see `tools/consumer/ng-smoke.mjs`.
 
 ## Running unit tests
 
-Run `nx test ng` to execute the unit tests.
+Run `pnpm exec nx test ng` to execute the unit tests.

@@ -3,6 +3,7 @@ import { CdkDragStart, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  DestroyRef,
   inject,
   input,
   InputSignal,
@@ -41,6 +42,7 @@ export class ColorMode extends ConfigurableComponent<ColorModeOptions> {
 
   private readonly userSettingsService: UserSettingsService =
     inject(UserSettingsService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly styleHelper: StyleHelper = inject(StyleHelper);
   private dragging = false;
 
@@ -57,13 +59,14 @@ export class ColorMode extends ConfigurableComponent<ColorModeOptions> {
       this.setColorMode(stored);
     }
 
-    this.userSettingsService.registerChangeListener(
+    const dispose = this.userSettingsService.registerChangeListener(
       'colorMode',
       (colorMode: string) => {
         if (!colorMode) return;
         this.setColorMode(colorMode as COLOR_MODE);
       },
     );
+    this.destroyRef.onDestroy(dispose);
   }
 
   /** ConfigurableComponent overrides **/

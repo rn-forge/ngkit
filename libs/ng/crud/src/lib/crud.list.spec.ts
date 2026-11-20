@@ -1,6 +1,7 @@
 import { Injector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Observable, Subject, of } from 'rxjs';
+import { loadingTimings } from '@rn-forge/ng/core';
 import { createCrudList } from './crud.list';
 import { ListRequest, ListResponse, ReadModel } from './crud.types';
 
@@ -191,5 +192,47 @@ describe('createCrudList', () => {
         { injector: TestBed.inject(Injector) },
       ),
     ).not.toThrow();
+  });
+});
+
+describe('createCrudList loading timings', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('shows after delay while the next page is slow', async () => {
+    vi.useFakeTimers();
+    const second = new Subject<ListResponse<Row>>();
+    let calls = 0;
+    const source = {
+      list: (): Observable<ListResponse<Row>> =>
+        calls++ === 0 ? of(page([1], 't2')) : second,
+    };
+    const injector = TestBed.inject(Injector);
+    const list = createCrudList(source, { injector });
+    const timing = loadingTimings(list.loading, { injector });
+    const flags = () => [timing.show(), timing.slow(), timing.stalled()];
+    await settle();
+    expect(list.items().map((r) => r.id)).toEqual([1]);
+    expect(flags()).toEqual([false, false, false]);
+    vi.advanceTimersByTime(5000);
+    expect(flags()).toEqual([false, false, false]);
+
+    list.next();
+    await settle();
+    expect(list.loading()).toBe(true);
+    expect(timing.show()).toBe(false);
+    vi.advanceTimersByTime(299);
+    expect(timing.show()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(timing.show()).toBe(true);
+    vi.advanceTimersByTime(700);
+    expect(timing.slow()).toBe(true);
+
+    second.next(page([2], null));
+    await settle();
+    expect(list.loading()).toBe(false);
+    expect(flags()).toEqual([false, false, false]);
+    expect(list.items().map((r) => r.id)).toEqual([2]);
   });
 });
