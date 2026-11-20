@@ -1,3 +1,34 @@
+## 0.6.0 (2026-11-20)
+
+Release 5 simplifies ngkit (E19) without changing its public imports or wire
+formats, apart from the break below, and adds loading timings (F6.1).
+
+### 🚀 Features
+
+- `@rn-forge/ng/core`: `loadingTimings(loading, options?)` turns a loading
+  signal into a `show` signal that appears only after `delay` (default 300 ms)
+  and, with `minDuration` (default 0), stays up at least that long.
+  `RNF_LOADING_TIMINGS` sets the defaults.
+- `@rn-forge/ng-bootstrap/auth`: `UserSettingsService.registerChangeListener`
+  returns a disposer, and `UserSettingsService.hasStoredSetting(key)` reports
+  whether a setting is explicitly stored.
+
+### 🩹 Fixes
+
+- `@rn-forge/ng/crud`: a CRUD form submission keeps `0` and `false`, and sends
+  arrays, dates and objects without an `id` unchanged instead of dropping
+  them.
+- `@rn-forge/ng-bootstrap/shell`: the header uses the user's saved navbar colour
+  over `config.navbarColor`.
+
+### ⚠️ Breaking Changes
+
+- `@rn-forge/ng-bootstrap/form`: `MultiTypeaheadFieldComponent` no longer
+  exposes `onChange`, `onTouched`, `writeValue`, `registerOnChange`,
+  `registerOnTouched` or `setDisabledState`. They were never connected to
+  Angular forms; the field now reads and writes its control in the parent
+  `FormGroup`.
+
 ## 0.5.0 (2026-11-18)
 
 Release 4 adds the session client and its Bootstrap auth UI, and a new package,

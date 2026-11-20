@@ -1,6 +1,6 @@
 {
   "name": "@rn-forge/ng-bootstrap",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Bootstrap themed common components for the rn-forge toolkit.",
   "license": "MIT",
   "repository": {
@@ -94,7 +94,7 @@
             "@angular/localize": "22.0.6",
             "@angular/platform-browser": "22.0.6",
             "@angular/router": "22.0.6",
-            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.5.0.tgz"
+            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.6.0.tgz"
           },
           "preload": [
             "zone.js"
@@ -110,7 +110,7 @@
             "@angular/localize": "22.0.6",
             "@angular/platform-browser": "22.0.6",
             "@angular/router": "22.0.6",
-            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.5.0.tgz"
+            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.6.0.tgz"
           }
         },
         "22.1-zone": {
@@ -123,7 +123,7 @@
             "@angular/localize": "22.1.7",
             "@angular/platform-browser": "22.1.7",
             "@angular/router": "22.1.7",
-            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.5.0.tgz"
+            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.6.0.tgz"
           },
           "preload": [
             "zone.js"
@@ -139,7 +139,7 @@
             "@angular/localize": "22.1.7",
             "@angular/platform-browser": "22.1.7",
             "@angular/router": "22.1.7",
-            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.5.0.tgz"
+            "@rn-forge/ng": "file:../../../tarballs/rn-forge-ng-0.6.0.tgz"
           }
         }
       },
