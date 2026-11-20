@@ -2,8 +2,9 @@
 
 |  |  |
 | -- | -- |
-| **Status** | in progress |
+| **Status** | shipped |
 | **Start Date** | 2026-11-18 |
+| **Finish Date** | 2026-11-20 |
 
 [Back to releases](../index.md) · [Releasing](../../runbooks/releasing.md)
 
@@ -68,9 +69,12 @@ returns a disposer
 ## Progress
 
 F6.1 and F19.1–F19.8 closed 2026-11-18, closing E19, and reached `main` in pull
-request #28. The release is cut as `v0.6.0` (`task version -- minor` on
-`chore/release-5-cut`); it ships when that pull request merges and the `release`
-job runs. The Shipped table is recorded after that run.
+request #28. The release was cut as `v0.6.0` (`task version -- minor` on
+`chore/release-5-cut`). Pull request #30 merged 2026-11-20 as `7d6facd`, and
+Release 5 shipped as `v0.6.0`: the `main` run (44677743004) passed, including
+`release` and `verify-release`, and the GitHub Release was published with the
+tarballs of all four `publishable` projects. E19 closed 2026-11-18; E6 stays
+active with its remaining feature. Nothing remains.
 
 ## Commits
 
@@ -125,3 +129,12 @@ f8583d6 Briefs: S6.1.1, S19.1.1
   `publishable` project.
 - `CHANGELOG.md` has an entry for the version.
 - `verify-consumer` passes on the released tarballs.
+
+## Shipped
+
+| Deliverable | Version | Tag | Commit | Verification |
+| -- | -- | -- | -- | -- |
+| `@rn-forge/ng` | `0.6.0` | `v0.6.0` | `7d6facd` | `rn-forge-ng-0.6.0.tgz` attached to the published GitHub Release [v0.6.0](https://github.com/rn-forge/ngkit/releases/tag/v0.6.0) (2026-11-20T05:11:34Z) |
+| `@rn-forge/ng-bootstrap` | `0.6.0` | `v0.6.0` | `7d6facd` | `rn-forge-ng-bootstrap-0.6.0.tgz` attached to the published GitHub Release [v0.6.0](https://github.com/rn-forge/ngkit/releases/tag/v0.6.0) (2026-11-20T05:11:34Z); the tarball declares `@rn-forge/ng` as `^0.6.0` |
+| `@rn-forge/ng-tailwind` | `0.6.0` | `v0.6.0` | `7d6facd` | `rn-forge-ng-tailwind-0.6.0.tgz` attached to the published GitHub Release [v0.6.0](https://github.com/rn-forge/ngkit/releases/tag/v0.6.0) (2026-11-20T05:11:34Z) |
+| `@rn-forge/ng-plugin` | `0.6.0` | `v0.6.0` | `7d6facd` | `rn-forge-ng-plugin-0.6.0.tgz` attached to the published GitHub Release [v0.6.0](https://github.com/rn-forge/ngkit/releases/tag/v0.6.0) (2026-11-20T05:11:34Z); `verify-release` passed in `main` run 44677743004 |
