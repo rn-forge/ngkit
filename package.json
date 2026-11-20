@@ -62,7 +62,7 @@
     "eslint-plugin-playwright": "^2.12.2",
     "eslint-plugin-storybook": "^10.6.6",
     "jsdom": "^27.4.0",
-    "jsonc-eslint-parser": "^2.4.2",
+    "jsonc-eslint-parser": "^3.3.0",
     "ng-packagr": "~22.2.6",
     "nx": "24.0.4",
     "postcss": "^8.5.32",
