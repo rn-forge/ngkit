@@ -16,10 +16,10 @@
     "content-disposition": "^3.0.0"
   },
   "devDependencies": {
-    "@angular/common": "^22.2.5",
-    "@angular/core": "^22.2.5",
-    "@angular/forms": "^22.2.5",
-    "@angular/router": "^22.2.5",
+    "@angular/common": "^22.2.6",
+    "@angular/core": "^22.2.6",
+    "@angular/forms": "^22.2.6",
+    "@angular/router": "^22.2.6",
     "@types/lodash-es": "^4.17.12",
     "rxjs": "~7.8.2"
   },
